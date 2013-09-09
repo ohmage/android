@@ -24,4 +24,18 @@
     <style name="AppBaseTheme" parent="@style/Theme.AppCompat.Light">
         <!-- API 14 theme customizations can go here. -->
     </style>
+
+    <!--
+        Logo Base Theme which is for the authentication screen
+    -->
+    <style name="LogoBaseTheme" parent="@style/Theme.AppCompat.Light">
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowNoTitle">true</item>
+    </style>
+
+    <style name="Signup.H3" parent="Signup.H3.Base">
+        <item name="android:textAllCaps">true</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:maxLines">1</item>
+    </style>
 </resources>

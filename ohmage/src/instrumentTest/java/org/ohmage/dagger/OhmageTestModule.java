@@ -16,8 +16,22 @@
 
 package org.ohmage.dagger;
 
+import android.accounts.AccountManager;
+
 import com.android.volley.RequestQueue;
 import com.squareup.otto.Bus;
+
+import org.ohmage.app.MainActivity;
+import org.ohmage.app.MainActivityTest;
+import org.ohmage.auth.AuthHelper;
+import org.ohmage.auth.AuthenticateFragment;
+import org.ohmage.auth.Authenticator;
+import org.ohmage.auth.AuthenticatorTest;
+import org.ohmage.auth.CreateAccountFragment;
+import org.ohmage.auth.SignInFragment;
+import org.ohmage.requests.AccessTokenRequest;
+import org.ohmage.requests.CreateUserRequest;
+import org.ohmage.tasks.LogoutTaskFragment;
 
 import javax.inject.Singleton;
 
@@ -29,6 +43,17 @@ import static org.mockito.Mockito.mock;
 @Module(
         injects = {
                 InjectedAndroidTestCase.class,
+                MainActivityTest.class,
+                AuthenticatorTest.class,
+
+                MainActivity.class,
+                AuthenticateFragment.class,
+                Authenticator.class,
+                CreateAccountFragment.class,
+                SignInFragment.class,
+                AccessTokenRequest.class,
+                CreateUserRequest.class,
+                LogoutTaskFragment.class
         },
         complete = false,
         library = true,
@@ -42,5 +67,13 @@ public class OhmageTestModule {
 
     @Provides @Singleton Bus provideBus() {
         return new Bus();
+    }
+
+    @Provides @Singleton AccountManager provideAccountManager() {
+        return mock(AccountManager.class);
+    }
+
+    @Provides @Singleton AuthHelper provideAuthHelper() {
+        return mock(AuthHelper.class);
     }
 }

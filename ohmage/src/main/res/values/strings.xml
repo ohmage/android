@@ -20,4 +20,36 @@
     <string name="action_settings">Settings</string>
     <string name="drawer_open">navigation drawer open</string>
     <string name="drawer_close">navigation drawer closed</string>
+    <string name="action_help">help</string>
+    <string name="action_send_feedback">Send feedback</string>
+    <string name="action_sign_out">Sign Out</string>
+    <string name="network_error">Network Error. Try again later.</string>
+    <string name="account_error">Unexpected Error. Try to login with a different account.</string>
+    <string name="google_progress_message">Signing in to Google&#8230;</string>
+    <string name="logging_out">Logging Out&#8230;</string>
+    <!-- Create Account -->
+    <string name="title_create_account">Create Account</string>
+    <string name="prompt_email">E-mail</string>
+    <string name="prompt_email_hint">Enter your E-mail</string>
+    <string name="prompt_password">Password</string>
+    <string name="prompt_password_hint">Enter your password</string>
+    <string name="create_password_hint">Enter a password</string>
+    <string name="prompt_fullname">Full Name</string>
+    <string name="prompt_fullname_hint">Your real name</string>
+    <string name="prompt_username">Username</string>
+    <string name="prompt_username_hint">Enter a Username</string>
+    <string name="action_create">Create Account</string>
+    <string name="action_create_short">Create</string>
+    <string name="error_invalid_username">This username is too short</string>
+    <string name="error_field_required">This field is required</string>
+    <string name="account_creation_progress">Creating Account…</string>
+    <string name="sign_in_with_ohmage">Sign in with Username</string>
+    <string name="sign_up_with_ohmage">Create Account</string>
+    <string name="sign_in_with_twitter">Sign in with Twitter</string>
+    <string name="unknown_error">Unknown error. Please try again later. Send feedback to us if this continues to happen.</string>
+    <string name="create_ohmage_account_title">Create an ohmage account</string>
+    <string name="sign_in">Sign In</string>
+    <string name="action_sign_in_short">Sign In</string>
+    <string name="error_invalid_credentials">Invalid username or password, please try again.</string>
+    <string name="error_invalid_email_address">Invalid E\u2011mail Address</string>
 </resources>

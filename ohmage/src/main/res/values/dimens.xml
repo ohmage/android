@@ -17,7 +17,15 @@
 
 <resources>
     <!-- Default screen margins, per the Android Design guidelines. -->
-    <dimen name="activity_horizontal_margin">16dp</dimen>
-    <dimen name="activity_vertical_margin">16dp</dimen>
+    <dimen name="activity_horizontal_margin">8dp</dimen>
+    <dimen name="activity_vertical_margin">8dp</dimen>
     <dimen name="navigation_icon_bounds">24dp</dimen>
+    <!-- Border values for card items -->
+    <dimen name="card_border_left_padding">1.5dip</dimen>
+    <dimen name="card_border_right_padding">1.5dip</dimen>
+    <dimen name="card_border_top_padding">0.0dip</dimen>
+    <dimen name="card_border_bottom_padding">1.5dip</dimen>
+    <!-- Misc dimens -->
+    <dimen name="progress_bottom_padding">60dp</dimen>
+    <dimen name="gutter">8dp</dimen>
 </resources>

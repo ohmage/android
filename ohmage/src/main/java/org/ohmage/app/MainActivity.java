@@ -16,6 +16,9 @@
 
 package org.ohmage.app;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
@@ -25,7 +28,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -35,9 +37,20 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import org.ohmage.auth.AuthUtil;
+import org.ohmage.auth.AuthenticatorActivity;
+import org.ohmage.dagger.InjectedActionBarActivity;
 import org.ohmage.fragments.HomeFragment;
+import org.ohmage.tasks.LogoutTaskFragment;
 
-public class MainActivity extends ActionBarActivity implements AdapterView.OnItemClickListener {
+import javax.inject.Inject;
+
+public class MainActivity extends InjectedActionBarActivity implements AdapterView.OnItemClickListener,
+        LogoutTaskFragment.LogoutCallbacks {
+
+    private static final String TAG = MainActivity.class.getSimpleName();
+
+    @Inject AccountManager accountManager;
 
     /**
      * The sliding drawer
@@ -119,6 +132,19 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
         mDrawerToggle.syncState();
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        // Check to see if the account still exists.
+        Account[] accounts = accountManager.getAccountsByType(AuthUtil.ACCOUNT_TYPE);
+        if (accounts.length == 0) {
+            startActivity(new Intent(this, AuthenticatorActivity.class));
+            finish();
+            return;
+        }
+    }
+
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         mDrawerToggle.onConfigurationChanged(newConfig);
@@ -155,8 +181,32 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
         if (mDrawerToggle.onOptionsItemSelected(item)) {
             return true;
         }
-        // Handle your other action bar items...
+
+        switch (item.getItemId()) {
+            case R.id.action_settings:
+                //TODO: show settings
+                return true;
+
+            case R.id.action_sign_out:
+                FragmentManager fm = getSupportFragmentManager();
+                LogoutTaskFragment logoutTaskFragment = (LogoutTaskFragment) fm.findFragmentByTag("logout");
+
+                // If the Fragment is non-null, then it is currently being
+                // retained across a configuration change.
+                if (logoutTaskFragment == null) {
+                    logoutTaskFragment = new LogoutTaskFragment();
+                    fm.beginTransaction().add(logoutTaskFragment, "logout").commit();
+                }
+
+                return true;
+        }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onLogoutFinished() {
+        startActivity(new Intent(this, AuthenticatorActivity.class));
+        finish();
     }
 }

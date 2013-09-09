@@ -16,17 +16,23 @@
 
 package org.ohmage.dagger;
 
-/**
- * Created by cketcham on 12/2/13.
- */
-
+import android.accounts.AccountManager;
 import android.content.Context;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
 import com.squareup.otto.Bus;
 
+import org.ohmage.app.MainActivity;
 import org.ohmage.app.OkHttpStack;
+import org.ohmage.auth.AuthHelper;
+import org.ohmage.auth.AuthenticateFragment;
+import org.ohmage.auth.Authenticator;
+import org.ohmage.auth.CreateAccountFragment;
+import org.ohmage.auth.SignInFragment;
+import org.ohmage.requests.AccessTokenRequest;
+import org.ohmage.requests.CreateUserRequest;
+import org.ohmage.tasks.LogoutTaskFragment;
 
 import javax.inject.Singleton;
 
@@ -34,6 +40,16 @@ import dagger.Module;
 import dagger.Provides;
 
 @Module(
+        injects = {
+                MainActivity.class,
+                AuthenticateFragment.class,
+                Authenticator.class,
+                CreateAccountFragment.class,
+                SignInFragment.class,
+                AccessTokenRequest.class,
+                CreateUserRequest.class,
+                LogoutTaskFragment.class
+        },
         complete = false,
         library = true
 )
@@ -45,5 +61,13 @@ public class OhmageModule {
 
     @Provides @Singleton Bus provideBus() {
         return new Bus();
+    }
+
+    @Provides @Singleton AccountManager provideAccountManager(@ForApplication Context context) {
+        return AccountManager.get(context);
+    }
+
+    @Provides @Singleton AuthHelper provideAuthHelper(@ForApplication Context context) {
+        return new AuthHelper(context);
     }
 }

@@ -27,6 +27,7 @@
             backward-compatibility can go here.
         -->
     </style>
+
     <!-- Application theme. -->
     <style name="AppTheme" parent="AppBaseTheme">
         <!-- All customizations that are NOT specific to a particular API-level can go here. -->
@@ -34,5 +35,55 @@
         <item name="listPreferredItemPaddingRight">8dp</item>
         <item name="listPreferredItemPaddingLeft">8dp</item>
         <item name="textAppearanceListItemSmall">?android:attr/textAppearanceMedium</item>
+        <item name="android:windowBackground">@color/host_background</item>
+        <item name="android:windowSoftInputMode">adjustResize</item>
+    </style>
+
+    <!-- Base Logo theme, dependant on API level -->
+    <style name="LogoBaseTheme" parent="@style/Theme.AppCompat.Light">
+        <item name="android:windowNoTitle">true</item>
+    </style>
+
+    <!-- Logo theme. This is shown when the app starts up -->
+    <style name="LogoTheme" parent="LogoBaseTheme">
+        <item name="android:windowSoftInputMode">adjustResize</item>
+    </style>
+
+    <!-- Base Card Background -->
+    <style name="CardContainer">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:paddingLeft">@dimen/card_border_left_padding</item>
+        <item name="android:paddingTop">@dimen/card_border_top_padding</item>
+        <item name="android:paddingRight">@dimen/card_border_right_padding</item>
+        <item name="android:paddingBottom">@dimen/card_border_bottom_padding</item>
+        <item name="android:layout_marginLeft">@dimen/activity_horizontal_margin</item>
+        <item name="android:layout_marginRight">@dimen/activity_horizontal_margin</item>
+        <item name="android:layout_marginTop">@dimen/activity_vertical_margin</item>
+        <item name="android:layout_marginBottom">@dimen/activity_vertical_margin</item>
+        <item name="android:background">@drawable/bg_tacos</item>
+    </style>
+
+    <!-- Styles for create account screen -->
+    <style name="LoginFormContainer" parent="CardContainer">
+        <item name="android:layout_gravity">center_horizontal</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:padding">16dp</item>
+    </style>
+
+    <style name="Signup" />
+
+    <style name="Signup.H3.Base" parent="@android:style/TextAppearance">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">#ff262626</item>
+        <item name="android:gravity">left|center</item>
+    </style>
+
+    <style name="Signup.H3" parent="Signup.H3.Base" />
+
+    <style name="Signup.Input" parent="Signup">
+        <item name="android:textSize">16sp</item>
     </style>
 </resources>
