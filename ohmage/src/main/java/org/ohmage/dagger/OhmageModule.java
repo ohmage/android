@@ -13,34 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.ohmage.dagger;
+
+/**
+ * Created by cketcham on 12/2/13.
+ */
 
 import android.content.Context;
 
-import org.ohmage.app.Ohmage;
+import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.Volley;
+
+import org.ohmage.app.OkHttpStack;
 
 import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
 
-/**
- * A module for Android-specific dependencies which require a {@link Context} or
- * {@link android.app.Application} to create.
- */
-@Module(library = true)
-public class AndroidModule {
-    private final Ohmage application;
+@Module(
+        complete = false,
+        library = true
+)
+public class OhmageModule {
 
-    public AndroidModule(Ohmage application) {
-        this.application = application;
-    }
-
-    /**
-     * Allow the application context to be injected but require that it be annotated with
-     * {@link ForApplication @Annotation} to explicitly differentiate it from an activity context.
-     */
-    @Provides @Singleton @ForApplication Context provideApplicationContext() {
-        return application;
+    @Provides @Singleton RequestQueue provideRequestQueue(@ForApplication Context context) {
+        return Volley.newRequestQueue(context, new OkHttpStack());
     }
 }

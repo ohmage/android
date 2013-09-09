@@ -19,6 +19,7 @@ package org.ohmage.app;
 import android.app.Application;
 
 import org.ohmage.dagger.AndroidModule;
+import org.ohmage.dagger.OhmageModule;
 
 import java.util.Arrays;
 import java.util.List;
@@ -61,7 +62,7 @@ public class Ohmage extends Application {
      * provide additional modules provided they call {@code super.getModules()}.
      */
     protected List<Object> getModules() {
-        return Arrays.<Object>asList(new AndroidModule(this));
+        return Arrays.<Object>asList(new AndroidModule(this), new OhmageModule());
     }
 
     /**
