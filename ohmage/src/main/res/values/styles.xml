@@ -30,5 +30,9 @@
     <!-- Application theme. -->
     <style name="AppTheme" parent="AppBaseTheme">
         <!-- All customizations that are NOT specific to a particular API-level can go here. -->
+        <item name="listPreferredItemHeightSmall">48dp</item>
+        <item name="listPreferredItemPaddingRight">8dp</item>
+        <item name="listPreferredItemPaddingLeft">8dp</item>
+        <item name="textAppearanceListItemSmall">?android:attr/textAppearanceMedium</item>
     </style>
 </resources>

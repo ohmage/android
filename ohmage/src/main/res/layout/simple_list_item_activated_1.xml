@@ -15,9 +15,13 @@
   limitations under the License.
   -->
 
-<resources>
-    <string name="app_name">ohmage</string>
-    <string name="action_settings">Settings</string>
-    <string name="drawer_open">navigation drawer open</string>
-    <string name="drawer_close">navigation drawer closed</string>
-</resources>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@android:id/text1"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:drawablePadding="8dp"
+    android:gravity="center_vertical"
+    android:minHeight="?attr/listPreferredItemHeightSmall"
+    android:paddingLeft="?attr/listPreferredItemPaddingLeft"
+    android:paddingRight="?attr/listPreferredItemPaddingRight"
+    android:textAppearance="?attr/textAppearanceListItemSmall" />

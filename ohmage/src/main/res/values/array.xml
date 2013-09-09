@@ -16,8 +16,13 @@
   -->
 
 <resources>
-    <string name="app_name">ohmage</string>
-    <string name="action_settings">Settings</string>
-    <string name="drawer_open">navigation drawer open</string>
-    <string name="drawer_close">navigation drawer closed</string>
+    <string-array name="navigation_items">
+        <item>Home</item>
+        <item>Projects</item>
+        <item>Profile</item>
+        <item>History</item>
+        <item>Upload</item>
+        <item>Streams</item>
+        <item>Help</item>
+    </string-array>
 </resources>
