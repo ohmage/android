@@ -17,6 +17,8 @@
 package org.ohmage.app;
 
 import android.content.res.Configuration;
+import android.content.res.TypedArray;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.app.Fragment;
@@ -27,9 +29,11 @@ import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import org.ohmage.fragments.HomeFragment;
 
@@ -55,6 +59,11 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
      */
     private ActionBarDrawerToggle mDrawerToggle;
 
+    /**
+     * An array which holds the icons for the navigation items
+     */
+    private TypedArray mNavigationIcons;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,12 +71,34 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
         setContentView(R.layout.activity_main);
 
         mNavigationItems = getResources().getStringArray(R.array.navigation_items);
+        mNavigationIcons = getResources().obtainTypedArray(R.array.navigation_icons);
+
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mDrawerList = (ListView) findViewById(R.id.left_drawer);
 
         // Set the adapter for the list view
-        mDrawerList.setAdapter(new ArrayAdapter<String>(this,
-                R.layout.simple_list_item_activated_1, mNavigationItems));
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
+                R.layout.simple_list_item_activated_1, mNavigationItems) {
+
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent) {
+                // Set the left drawable of the text view to be the icon for that item
+                TextView view = (TextView) super.getView(position, convertView, parent);
+                Drawable d = getResources()
+                        .getDrawable(mNavigationIcons.getResourceId(position, -1));
+
+                if (d != null && view != null) {
+                    int bounds = getResources()
+                            .getDimensionPixelSize(R.dimen.navigation_icon_bounds);
+                    d.setBounds(0, 0, bounds, bounds);
+                    view.setCompoundDrawables(d, null, null, null);
+                }
+                return view;
+            }
+        };
+
+        mDrawerList.setAdapter(adapter);
+
         // Set the list's click listener
         mDrawerList.setOnItemClickListener(this);
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
