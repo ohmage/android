@@ -19,19 +19,19 @@
     <string-array name="navigation_items">
         <item>Home</item>
         <item>Projects</item>
-        <item>Profile</item>
-        <item>History</item>
-        <item>Upload</item>
         <item>Streams</item>
-        <item>Help</item>
+        <item>Analytics</item>
+        <item>Upload</item>
+        <item>Reminders</item>
+        <item>Profile</item>
     </string-array>
     <array name="navigation_icons">
         <item>@drawable/ic_home_surveys</item>
         <item>@drawable/ic_home_projects</item>
-        <item>@drawable/ic_home_profile</item>
+        <item>@drawable/ic_home_streams</item>
         <item>@drawable/ic_home_history</item>
         <item>@drawable/ic_home_upload</item>
-        <item>@drawable/ic_home_streams</item>
-        <item>@drawable/ic_home_help</item>
+        <item>@drawable/ic_launcher</item>
+        <item>@drawable/ic_home_profile</item>
     </array>
 </resources>
