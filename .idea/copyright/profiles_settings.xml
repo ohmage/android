@@ -1,9 +1,7 @@
 <component name="CopyrightManager">
   <settings default="ohmage">
     <module2copyright />
-    <LanguageOptions name="JAVA">
-      <option name="fileLocation" value="2" />
-    </LanguageOptions>
+    <LanguageOptions name="JAVA" />
     <LanguageOptions name="XML">
       <option name="fileTypeOverride" value="3" />
       <option name="fileLocation" value="2" />
