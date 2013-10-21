@@ -19,7 +19,6 @@ package org.ohmage.requests;
 import com.android.volley.AuthFailureError;
 import com.android.volley.NetworkResponse;
 import com.android.volley.ParseError;
-import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.HttpHeaderParser;
@@ -37,7 +36,7 @@ import java.io.UnsupportedEncodingException;
  *
  * @param <T> JSON type of response expected
  */
-public abstract class GsonRequest<T> extends Request<T> {
+public abstract class GsonRequest<T> extends OttoRequest<T> {
     /** Charset for request. */
     private static final String PROTOCOL_CHARSET = "utf-8";
 
@@ -51,8 +50,6 @@ public abstract class GsonRequest<T> extends Request<T> {
 
     private final Class<T> clazz;
 
-    private final Response.Listener<T> listener;
-
     private final String mRequestBody;
 
     /**
@@ -62,11 +59,9 @@ public abstract class GsonRequest<T> extends Request<T> {
      * @param clazz  Relevant class object, for Gson's reflection
      * @param object The object to send in the body
      */
-    public GsonRequest(String url, Class<T> clazz, T object, Response.Listener<T> listener,
-                       Response.ErrorListener errorListener) {
-        super(Request.Method.POST, url, errorListener);
+    public GsonRequest(String url, Class<T> clazz, T object) {
+        super(Method.POST, url);
         this.clazz = clazz;
-        this.listener = listener;
         if (object != null)
             mRequestBody = gson.toJson(object);
         else
@@ -87,11 +82,6 @@ public abstract class GsonRequest<T> extends Request<T> {
                     mRequestBody, PROTOCOL_CHARSET);
             return null;
         }
-    }
-
-    @Override
-    protected void deliverResponse(T response) {
-        listener.onResponse(response);
     }
 
     @Override

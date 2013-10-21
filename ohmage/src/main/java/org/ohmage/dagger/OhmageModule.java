@@ -24,6 +24,7 @@ import android.content.Context;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
+import com.squareup.otto.Bus;
 
 import org.ohmage.app.OkHttpStack;
 
@@ -40,5 +41,9 @@ public class OhmageModule {
 
     @Provides @Singleton RequestQueue provideRequestQueue(@ForApplication Context context) {
         return Volley.newRequestQueue(context, new OkHttpStack());
+    }
+
+    @Provides @Singleton Bus provideBus() {
+        return new Bus();
     }
 }
