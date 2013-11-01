@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <!--
-  Copyright (C) 2014 ohmage
+  Copyright (C) 2013 ohmage
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -16,9 +16,12 @@
   limitations under the License.
   -->
 
-<resources>
-    <color name="host_background">#ffe5e5e5</color>
-    <color name="default_bg">#ffffffff</color>
-    <color name="ohmage_dark_blue">#ff0f7aab</color>
-    <color name="secondary_text">#ff808080</color>
-</resources>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_search"
+        android:title="@string/action_search"
+        android:icon="@drawable/abc_ic_search"
+        app:showAsAction="ifRoom"
+        app:actionViewClass="android.support.v7.widget.SearchView" />
+</menu>

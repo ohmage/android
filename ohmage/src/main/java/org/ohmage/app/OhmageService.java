@@ -20,6 +20,7 @@ import org.apache.http.auth.AuthenticationException;
 import org.ohmage.auth.AuthUtil;
 import org.ohmage.auth.AuthUtil.GrantType;
 import org.ohmage.models.AccessToken;
+import org.ohmage.models.Ohmlets;
 import org.ohmage.models.User;
 import org.ohmage.sync.StreamWriterOutput;
 
@@ -59,6 +60,11 @@ public interface OhmageService {
 
     @POST("/people") void createUser(@Query("password") String password, @Body User user,
             CancelableCallback<User> callback);
+
+    @GET("/ohmlets")
+    void searchOhmlets(@Query("query") String query, Callback<Ohmlets> ohmletsCallback);
+
+    @GET("/ohmlets") void getOhmlets(Callback<Ohmlets> ohmletsCallback);
 
     @POST("/streams/{streamId}/{streamVersion}/data")
     Response uploadStreamData(@Path("streamId") String streamId,

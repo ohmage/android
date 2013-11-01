@@ -22,6 +22,7 @@ import android.content.Context;
 import com.google.gson.Gson;
 
 import org.ohmage.app.MainActivity;
+import org.ohmage.app.MainActivityOhmletsTest;
 import org.ohmage.app.MainActivityTest;
 import org.ohmage.app.OhmageAuthenticator;
 import org.ohmage.app.OhmageService;
@@ -32,6 +33,9 @@ import org.ohmage.auth.AuthenticatorTest;
 import org.ohmage.auth.CreateAccountFragment;
 import org.ohmage.auth.SignInFragment;
 import org.ohmage.dagger.ForApplication;
+import org.ohmage.fragments.OhmletsFragment;
+import org.ohmage.fragments.OhmletsGridFragment;
+import org.ohmage.fragments.OhmletsSearchFragment;
 import org.ohmage.streams.StreamContentProvider;
 import org.ohmage.sync.StreamSyncAdapter;
 import org.ohmage.sync.StreamSyncAdapterTest;
@@ -50,6 +54,7 @@ import static org.mockito.Mockito.mock;
                 MainActivityTest.class,
                 AuthenticatorTest.class,
                 StreamSyncAdapterTest.class,
+                MainActivityOhmletsTest.class,
 
                 MainActivity.class,
                 AuthenticateFragment.class,
@@ -59,7 +64,10 @@ import static org.mockito.Mockito.mock;
                 LogoutTaskFragment.class,
                 StreamContentProvider.class,
                 StreamSyncAdapter.class,
-                OhmageAuthenticator.class
+                OhmageAuthenticator.class,
+                OhmletsSearchFragment.class,
+                OhmletsGridFragment.OhmletAdapter.class,
+                OhmletsFragment.class
         },
         complete = false,
         library = true,

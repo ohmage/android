@@ -37,6 +37,9 @@ import org.ohmage.auth.AuthenticateFragment;
 import org.ohmage.auth.Authenticator;
 import org.ohmage.auth.CreateAccountFragment;
 import org.ohmage.auth.SignInFragment;
+import org.ohmage.fragments.OhmletsFragment;
+import org.ohmage.fragments.OhmletsGridFragment;
+import org.ohmage.fragments.OhmletsSearchFragment;
 import org.ohmage.streams.StreamContentProvider;
 import org.ohmage.sync.StreamSyncAdapter;
 import org.ohmage.tasks.LogoutTaskFragment;
@@ -64,7 +67,10 @@ import retrofit.converter.GsonConverter;
                 LogoutTaskFragment.class,
                 StreamContentProvider.class,
                 StreamSyncAdapter.class,
-                OhmageAuthenticator.class
+                OhmageAuthenticator.class,
+                OhmletsSearchFragment.class,
+                OhmletsGridFragment.OhmletAdapter.class,
+                OhmletsFragment.class
         },
         complete = false,
         library = true

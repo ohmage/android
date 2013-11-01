@@ -66,15 +66,12 @@
     <style name="CardContainer">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:paddingLeft">@dimen/card_border_left_padding</item>
-        <item name="android:paddingTop">@dimen/card_border_top_padding</item>
-        <item name="android:paddingRight">@dimen/card_border_right_padding</item>
-        <item name="android:paddingBottom">@dimen/card_border_bottom_padding</item>
         <item name="android:layout_marginLeft">@dimen/activity_horizontal_margin</item>
         <item name="android:layout_marginRight">@dimen/activity_horizontal_margin</item>
         <item name="android:layout_marginTop">@dimen/activity_vertical_margin</item>
         <item name="android:layout_marginBottom">@dimen/activity_vertical_margin</item>
-        <item name="android:background">@drawable/bg_tacos</item>
+        <item name="android:background">@drawable/card_white</item>
+        <item name="android:padding">16dp</item>
     </style>
 
     <!-- Styles for create account screen -->
@@ -82,7 +79,6 @@
         <item name="android:layout_gravity">center_horizontal</item>
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:padding">16dp</item>
     </style>
 
     <style name="Signup" />

@@ -49,10 +49,10 @@
     <string name="action_sign_in_short">Sign In</string>
     <string name="error_invalid_credentials">Invalid E\u2011mail or password, please try again.</string>
     <string name="error_invalid_email_address">Invalid E\u2011mail Address</string>
-    <string name="streams">Streams</string>
     <string name="title_account_not_activated">Account Not Activated</string>
     <string name="message_account_not_activated">Your account has not been activated. You won\'t be able to sync your data with the server until you activate your account by clicking the link in the registration E\u2011mail sent by ohmage.</string>
     <string name="account_not_activated">Activate your account by clicking the link in the E-mail from ohmage</string>
     <string name="ok">Ok</string>
-
+    <string name="action_search">Search</string>
+    <string name="loading">Loading…</string>
 </resources>

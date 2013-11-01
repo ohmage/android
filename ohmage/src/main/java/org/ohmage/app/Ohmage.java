@@ -47,6 +47,13 @@ public class Ohmage extends Application {
     private static Ohmage self;
 
     /**
+     * Get max available VM memory, exceeding this amount will throw an
+     * OutOfMemory exception. Stored in kilobytes as LruCache takes an
+     * int in its constructor.
+     */
+    public static final int MAX_MEMORY = (int) (Runtime.getRuntime().maxMemory() / 1024);
+
+    /**
      * The object graph used by dagger for this application
      */
     private ObjectGraph applicationGraph;

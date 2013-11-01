@@ -41,6 +41,7 @@ import org.ohmage.auth.AuthUtil;
 import org.ohmage.auth.AuthenticatorActivity;
 import org.ohmage.dagger.InjectedActionBarActivity;
 import org.ohmage.fragments.HomeFragment;
+import org.ohmage.fragments.OhmletsFragment;
 import org.ohmage.streams.StreamContract;
 import org.ohmage.tasks.LogoutTaskFragment;
 
@@ -146,7 +147,7 @@ public class MainActivity extends InjectedActionBarActivity
             startActivity(new Intent(this, AuthenticatorActivity.class));
             finish();
             return;
-        }
+    }
 
         getContentResolver().requestSync(accounts[0], StreamContract.CONTENT_AUTHORITY,
                 new Bundle());
@@ -165,26 +166,33 @@ public class MainActivity extends InjectedActionBarActivity
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        setFragment(position);
-    }
+            setFragment(position);
+        }
 
     private void setFragment(int position) {
-        // Create a new fragment and specify the planet to show based on position
-        Fragment fragment = new HomeFragment();
-
-        // Insert the fragment by replacing any existing fragment
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        fragmentManager.beginTransaction()
-                       .replace(R.id.content_frame, fragment)
-                       .commit();
+        // Set the fragment by the name
+        setFragment(mNavigationItems[position]);
 
         // Highlight the selected item, update the title, and close the drawer
         mDrawerList.setItemChecked(position, true);
-        if (position == 0)
+        if (position == 0) {
             setTitle(R.string.app_name);
-        else
+        } else {
             setTitle(mNavigationItems[position]);
+        }
         mDrawerLayout.closeDrawer(mDrawerList);
+    }
+
+    public void setFragment(String id) {
+        // Find the correct fragment to show
+        Fragment fragment = new HomeFragment();
+        if (getString(R.string.ohmlets).equals(id)) {
+            fragment = new OhmletsFragment();
+        }
+
+        // Insert the fragment by replacing any existing fragment
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        fragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit();
     }
 
     @Override
@@ -214,6 +222,23 @@ public class MainActivity extends InjectedActionBarActivity
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onBackPressed() {
+
+        // This is a workaround for this bug
+        // https://code.google.com/p/android/issues/detail?id=40323
+
+        // If the fragment exists and has some back-stack entry
+        Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.content_frame);
+        if (fragment != null && fragment.getChildFragmentManager().getBackStackEntryCount() > 0) {
+            // Get the fragment fragment manager - and pop the back stack
+            fragment.getChildFragmentManager().popBackStack();
+        } else {
+            // otherwise let super handle the back press
+            super.onBackPressed();
+        }
     }
 
     @Override

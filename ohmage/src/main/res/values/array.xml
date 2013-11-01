@@ -18,21 +18,28 @@
 
 <resources>
     <string-array name="navigation_items">
-        <item>Home</item>
-        <item>Projects</item>
-        <item>Streams</item>
-        <item>Analytics</item>
-        <item>Upload</item>
-        <item>Reminders</item>
-        <item>Profile</item>
+        <item>@string/home</item>
+        <item>@string/ohmlets</item>
+        <item>@string/streams</item>
+        <item>@string/analytics</item>
+        <item>@string/upload</item>
+        <item>@string/reminders</item>
+        <item>@string/profile</item>
     </string-array>
     <array name="navigation_icons">
         <item>@drawable/ic_home_surveys</item>
-        <item>@drawable/ic_home_projects</item>
+        <item>@drawable/ic_home_ohmlets</item>
         <item>@drawable/ic_home_streams</item>
         <item>@drawable/ic_home_history</item>
         <item>@drawable/ic_home_upload</item>
         <item>@drawable/ic_launcher</item>
         <item>@drawable/ic_home_profile</item>
     </array>
+    <string name="home">Home</string>
+    <string name="ohmlets">Ohmlets</string>
+    <string name="streams">Streams</string>
+    <string name="analytics">Analytics</string>
+    <string name="upload">Upload</string>
+    <string name="reminders">Reminders</string>
+    <string name="profile">Profile</string>
 </resources>
