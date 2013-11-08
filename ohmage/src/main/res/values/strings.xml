@@ -52,4 +52,5 @@
     <string name="action_sign_in_short">Sign In</string>
     <string name="error_invalid_credentials">Invalid username or password, please try again.</string>
     <string name="error_invalid_email_address">Invalid E\u2011mail Address</string>
+    <string name="streams">Streams</string>
 </resources>

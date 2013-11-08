@@ -31,6 +31,8 @@ import org.ohmage.auth.CreateAccountFragment;
 import org.ohmage.auth.SignInFragment;
 import org.ohmage.requests.AccessTokenRequest;
 import org.ohmage.requests.CreateUserRequest;
+import org.ohmage.requests.UploadStreamDataRequest;
+import org.ohmage.streams.StreamContentProvider;
 import org.ohmage.tasks.LogoutTaskFragment;
 
 import javax.inject.Singleton;
@@ -53,7 +55,9 @@ import static org.mockito.Mockito.mock;
                 SignInFragment.class,
                 AccessTokenRequest.class,
                 CreateUserRequest.class,
-                LogoutTaskFragment.class
+                LogoutTaskFragment.class,
+                UploadStreamDataRequest.class,
+                StreamContentProvider.class
         },
         complete = false,
         library = true,

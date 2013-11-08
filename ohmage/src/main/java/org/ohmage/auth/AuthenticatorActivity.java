@@ -49,6 +49,7 @@ import org.ohmage.dagger.PlusClientFragmentModule;
 import org.ohmage.models.AccessToken;
 import org.ohmage.requests.AccessTokenRequest;
 import org.ohmage.requests.OttoRequest;
+import org.ohmage.streams.StreamContract;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -397,6 +398,9 @@ public class AuthenticatorActivity extends AuthenticatorFragmentActivity impleme
 
         if (accounts.length == 0) {
             am.addAccountExplicitly(account, token.getRefreshToken(), null);
+
+            // Turn on automatic syncing for this account
+            getContentResolver().setSyncAutomatically(account, StreamContract.CONTENT_AUTHORITY, true);
         } else {
             am.setPassword(accounts[0], token.getRefreshToken());
         }

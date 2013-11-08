@@ -24,6 +24,8 @@
     <uses-permission android:name="android.permission.USE_CREDENTIALS" />
     <uses-permission android:name="android.permission.MANAGE_ACCOUNTS" />
     <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS" />
+    <uses-permission android:name="android.permission.READ_SYNC_SETTINGS" />
+    <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS" />
     <uses-permission android:name="android.permission.INTERNET" />
 
     <uses-sdk
@@ -59,6 +61,34 @@
                 android:name="android.accounts.AccountAuthenticator"
                 android:resource="@xml/authenticator" />
         </service>
+
+        <service
+            android:name="org.ohmage.sync.StreamSyncService"
+            android:exported="true"
+            android:process=":sync">
+            <intent-filter>
+                <action android:name="android.content.SyncAdapter" />
+            </intent-filter>
+            <meta-data
+                android:name="android.content.SyncAdapter"
+                android:resource="@xml/syncadapter_streams" />
+        </service>
+
+        <service
+            android:name="org.ohmage.services.StreamReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="org.ohmage.streams.ACTION_WRITE" />
+            </intent-filter>
+        </service>
+
+        <provider
+            android:name="org.ohmage.streams.StreamContentProvider"
+            android:label="@string/streams"
+            android:authorities="org.ohmage.streams"
+            android:exported="true"
+            android:syncable="true" />
     </application>
 
 </manifest>

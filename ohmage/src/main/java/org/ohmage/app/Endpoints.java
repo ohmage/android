@@ -45,4 +45,19 @@ public class Endpoints {
      * The API URL used to access ohmage users.
      */
     public static final String USERS = API_ROOT + "/users";
+
+    /**
+     * The API URL used to access streams.
+     */
+    public static final String STREAMS = API_ROOT + "/streams";
+
+    public static final class Stream {
+        public static final String stream(org.ohmage.models.Stream stream) {
+            return Endpoints.STREAMS + "/" + stream.id + "/" + stream.version;
+        }
+
+        public static final String data(org.ohmage.models.Stream stream) {
+            return stream(stream) + "/data";
+        }
+    }
 }
