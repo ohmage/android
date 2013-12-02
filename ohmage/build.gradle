@@ -15,6 +15,9 @@ repositories {
 dependencies {
     compile 'com.android.support:support-v4:13.0.+'
     compile 'com.android.support:appcompat-v7:18.0.+'
+    compile 'com.squareup.dagger:dagger:1.1+'
+    compile 'com.squareup.dagger:dagger-compiler:1.1+'
+    compile 'com.google.guava:guava:15.0'
 }
 
 android {
