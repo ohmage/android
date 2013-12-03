@@ -18,6 +18,7 @@ package org.ohmage.requests;
 
 import android.util.Log;
 
+import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.ServerError;
@@ -25,6 +26,8 @@ import com.android.volley.VolleyError;
 import com.squareup.otto.Bus;
 
 import org.ohmage.app.Ohmage;
+
+import java.util.Arrays;
 
 import javax.inject.Inject;
 
@@ -86,6 +89,21 @@ public abstract class OttoRequest<T> extends Request<T> {
         if (error.networkResponse != null && error.networkResponse.data != null) {
             Log.d(TAG, new String(error.networkResponse.data));
         }
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (other instanceof Request) {
+            Request request = (Request) other;
+            try {
+                return request.getUrl().equals(getUrl())
+                        && request.getMethod() == getMethod()
+                        && Arrays.equals(request.getBody(), getBody());
+            } catch (AuthFailureError authFailureError) {
+                authFailureError.printStackTrace();
+            }
+        }
+        return false;
     }
 
     public class NoAccountEvent {
