@@ -69,8 +69,8 @@ public class StreamContentProvider extends ContentProvider implements OnAccounts
         switch (sUriMatcher.match(uri)) {
 
             case MatcherTypes.STREAMS:
-                count = dbHelper.getWritableDatabase().delete(Tables.Streams,
-                        selection == null ? "1" : selection, selectionArgs);
+                count = dbHelper.getWritableDatabase().delete(Tables.Streams, selection,
+                        selectionArgs);
                 break;
             default:
                 throw new UnsupportedOperationException("insert(): Unknown URI: " + uri);
