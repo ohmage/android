@@ -17,7 +17,8 @@
 package org.ohmage.models;
 
 /**
- * Basic Stream class
+ * Basic Stream class. This class can hold a definition of a stream, and optionally the data and
+ * metadata associated with a single point.
  */
 public class Stream {
     public String id;
@@ -27,4 +28,12 @@ public class Stream {
     public String metaData;
 
     public String data;
+
+    public Stream(String id, String version) {
+        this.id = id;
+        this.version = version;
+    }
+
+    public Stream() {
+    }
 }

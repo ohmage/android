@@ -41,6 +41,7 @@ import org.ohmage.auth.AuthUtil;
 import org.ohmage.auth.AuthenticatorActivity;
 import org.ohmage.dagger.InjectedActionBarActivity;
 import org.ohmage.fragments.HomeFragment;
+import org.ohmage.streams.StreamContract;
 import org.ohmage.tasks.LogoutTaskFragment;
 
 import javax.inject.Inject;
@@ -143,6 +144,8 @@ public class MainActivity extends InjectedActionBarActivity implements AdapterVi
             finish();
             return;
         }
+
+        getContentResolver().requestSync(accounts[0], StreamContract.CONTENT_AUTHORITY, new Bundle());
     }
 
     public void onConfigurationChanged(Configuration newConfig) {

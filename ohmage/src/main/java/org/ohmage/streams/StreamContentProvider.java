@@ -49,7 +49,9 @@ public class StreamContentProvider extends ContentProvider implements OnAccounts
     private interface MatcherTypes {
         int STREAMS = 0;
 
-        int COUNTS = 1;
+        int STREAMS_ID = 1;
+
+        int COUNTS = 2;
     }
 
     private StreamDbHelper dbHelper;
@@ -59,6 +61,7 @@ public class StreamContentProvider extends ContentProvider implements OnAccounts
     {
         sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
         sUriMatcher.addURI(StreamContract.CONTENT_AUTHORITY, "streams", MatcherTypes.STREAMS);
+        sUriMatcher.addURI(StreamContract.CONTENT_AUTHORITY, "streams/*/*", MatcherTypes.STREAMS_ID);
         sUriMatcher.addURI(StreamContract.CONTENT_AUTHORITY, "counts", MatcherTypes.COUNTS);
     }
 
@@ -72,6 +75,8 @@ public class StreamContentProvider extends ContentProvider implements OnAccounts
                 count = dbHelper.getWritableDatabase().delete(Tables.Streams, selection,
                         selectionArgs);
                 break;
+            case MatcherTypes.COUNTS:
+
             default:
                 throw new UnsupportedOperationException("insert(): Unknown URI: " + uri);
         }

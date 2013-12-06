@@ -27,6 +27,8 @@ public class StreamDbHelper extends SQLiteOpenHelper {
 
     private static final int DB_VERSION = 1;
 
+    public static final String SQL_AND = " AND %s='%s'";
+
     public interface Tables {
         static final String Streams = "streams";
     }

@@ -23,6 +23,7 @@ import com.squareup.otto.Bus;
 
 import org.ohmage.app.MainActivity;
 import org.ohmage.app.MainActivityTest;
+import org.ohmage.app.OhmageService;
 import org.ohmage.auth.AuthHelper;
 import org.ohmage.auth.AuthenticateFragment;
 import org.ohmage.auth.Authenticator;
@@ -31,8 +32,9 @@ import org.ohmage.auth.CreateAccountFragment;
 import org.ohmage.auth.SignInFragment;
 import org.ohmage.requests.AccessTokenRequest;
 import org.ohmage.requests.CreateUserRequest;
-import org.ohmage.requests.UploadStreamDataRequest;
 import org.ohmage.streams.StreamContentProvider;
+import org.ohmage.sync.StreamSyncAdapter;
+import org.ohmage.sync.StreamSyncAdapterTest;
 import org.ohmage.tasks.LogoutTaskFragment;
 
 import javax.inject.Singleton;
@@ -47,6 +49,7 @@ import static org.mockito.Mockito.mock;
                 InjectedAndroidTestCase.class,
                 MainActivityTest.class,
                 AuthenticatorTest.class,
+                StreamSyncAdapterTest.class,
 
                 MainActivity.class,
                 AuthenticateFragment.class,
@@ -56,8 +59,8 @@ import static org.mockito.Mockito.mock;
                 AccessTokenRequest.class,
                 CreateUserRequest.class,
                 LogoutTaskFragment.class,
-                UploadStreamDataRequest.class,
-                StreamContentProvider.class
+                StreamContentProvider.class,
+                StreamSyncAdapter.class
         },
         complete = false,
         library = true,
@@ -79,5 +82,9 @@ public class OhmageTestModule {
 
     @Provides @Singleton AuthHelper provideAuthHelper() {
         return mock(AuthHelper.class);
+    }
+
+    @Provides @Singleton OhmageService provideOhmageService() {
+        return mock(OhmageService.class);
     }
 }
