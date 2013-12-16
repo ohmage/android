@@ -26,7 +26,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.ohmage.auth.AuthUtil;
 import org.ohmage.auth.AuthenticatorActivity;
-import org.ohmage.dagger.InjectedActivityInstrumentationTestCase;
+import org.ohmage.test.dagger.InjectedActivityInstrumentationTestCase;
 
 import javax.inject.Inject;
 

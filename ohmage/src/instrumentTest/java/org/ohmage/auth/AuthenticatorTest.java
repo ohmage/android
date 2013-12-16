@@ -31,7 +31,7 @@ import com.android.volley.VolleyError;
 import com.google.android.gms.auth.UserRecoverableAuthException;
 
 import org.mockito.stubbing.OngoingStubbing;
-import org.ohmage.dagger.InjectedAndroidTestCase;
+import org.ohmage.test.dagger.InjectedAndroidTestCase;
 import org.ohmage.models.AccessToken;
 import org.ohmage.requests.AccessTokenRequest;
 import org.ohmage.test.DeliverVolleyErrorToListener;

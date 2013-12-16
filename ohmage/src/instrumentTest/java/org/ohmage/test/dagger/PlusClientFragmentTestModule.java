@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.ohmage.dagger;
+package org.ohmage.test.dagger;
 
 import org.ohmage.auth.AuthenticatorActivity;
 import org.ohmage.auth.AuthenticatorActivityTest;

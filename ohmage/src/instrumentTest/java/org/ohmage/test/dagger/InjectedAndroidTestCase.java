@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package org.ohmage.dagger;
+package org.ohmage.test.dagger;
 
-import android.test.ActivityInstrumentationTestCase2;
+import android.test.AndroidTestCase;
 
 import org.ohmage.app.Ohmage;
+import org.ohmage.dagger.AndroidModule;
 
 import java.util.Arrays;
 import java.util.List;
@@ -28,14 +29,9 @@ import dagger.ObjectGraph;
 /**
  * Overrides the main application graph for testing, and injects mock objects into the test
  */
-public class InjectedActivityInstrumentationTestCase<T extends InjectedActionBarActivity> extends
-        ActivityInstrumentationTestCase2<T> {
+public class InjectedAndroidTestCase extends AndroidTestCase {
 
     protected ObjectGraph graph;
-
-    public InjectedActivityInstrumentationTestCase(Class<T> activityClass) {
-        super(activityClass);
-    }
 
     @Override
     public void setUp() throws Exception {
