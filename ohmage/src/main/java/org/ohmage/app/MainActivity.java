@@ -43,6 +43,7 @@ import org.ohmage.auth.AuthenticatorActivity;
 import org.ohmage.dagger.InjectedActionBarActivity;
 import org.ohmage.fragments.HomeFragment;
 import org.ohmage.fragments.OhmletsFragment;
+import org.ohmage.fragments.SurveysFragment;
 import org.ohmage.tasks.LogoutTaskFragment;
 
 import javax.inject.Inject;
@@ -191,6 +192,8 @@ public class MainActivity extends InjectedActionBarActivity
         Fragment fragment = new HomeFragment();
         if (getString(R.string.ohmlets).equals(id)) {
             fragment = new OhmletsFragment();
+        } else if (getString(R.string.surveys).equals(id)) {
+            fragment = new SurveysFragment();
         }
 
         // Insert the fragment by replacing any existing fragment

@@ -23,6 +23,7 @@ import org.ohmage.models.AccessToken;
 import org.ohmage.models.Ohmlet;
 import org.ohmage.models.Ohmlet.Member;
 import org.ohmage.models.Ohmlets;
+import org.ohmage.models.Surveys;
 import org.ohmage.models.User;
 import org.ohmage.sync.StreamWriterOutput;
 
@@ -90,6 +91,8 @@ public interface OhmageService {
     @DELETE("/ohmlets/{ohmletId}/people/{userId}")
     Response removeUserFromOhmlet(@Path("ohmletId") String ohmletId, @Path("userId") String userId)
             throws AuthenticationException;
+
+    @GET("/surveys") void getSurveys(Callback<Surveys> surveysCallback);
 
     @POST("/streams/{streamId}/{streamVersion}/data")
     Response uploadStreamData(@Path("streamId") String streamId,

@@ -21,6 +21,7 @@
         <item>@string/home</item>
         <item>@string/ohmlets</item>
         <item>@string/streams</item>
+        <item>@string/surveys</item>
         <item>@string/analytics</item>
         <item>@string/upload</item>
         <item>@string/reminders</item>
@@ -30,6 +31,7 @@
         <item>@drawable/ic_home_surveys</item>
         <item>@drawable/ic_home_ohmlets</item>
         <item>@drawable/ic_home_streams</item>
+        <item>@drawable/ic_home_surveys</item>
         <item>@drawable/ic_home_history</item>
         <item>@drawable/ic_home_upload</item>
         <item>@drawable/ic_launcher</item>
@@ -38,6 +40,7 @@
     <string name="home">Home</string>
     <string name="ohmlets">Ohmlets</string>
     <string name="streams">Streams</string>
+    <string name="surveys">Surveys</string>
     <string name="analytics">Analytics</string>
     <string name="upload">Upload</string>
     <string name="reminders">Reminders</string>
