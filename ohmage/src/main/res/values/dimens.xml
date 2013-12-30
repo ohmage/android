@@ -29,4 +29,5 @@
     <!-- Misc dimens -->
     <dimen name="progress_bottom_padding">60dp</dimen>
     <dimen name="gutter">8dp</dimen>
+    <dimen name="halfgutter">4dp</dimen>
 </resources>

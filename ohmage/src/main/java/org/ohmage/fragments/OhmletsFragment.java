@@ -62,9 +62,9 @@ public class OhmletsFragment extends OhmletsGridFragment {
             public void onClick(View v) {
                 ((SearchView) v).setIconified(true);
                 getActivity().getSupportFragmentManager().beginTransaction()
-                             .replace(getId(), new OhmletsSearchFragment())
-                             .addToBackStack(null)
-                             .commit();
+                        .replace(getId(), new OhmletsSearchFragment())
+                        .addToBackStack(null)
+                        .commit();
             }
         });
     }

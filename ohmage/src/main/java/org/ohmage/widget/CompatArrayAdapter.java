@@ -180,7 +180,7 @@ public class CompatArrayAdapter<T> extends ArrayAdapter<T> {
         super.setNotifyOnChange(false);
         clear();
         super.setNotifyOnChange(mNotifyOnChange);
-        if(collection != null)
+        if (collection != null)
             addAll(collection);
     }
 
@@ -193,7 +193,7 @@ public class CompatArrayAdapter<T> extends ArrayAdapter<T> {
         super.setNotifyOnChange(false);
         clear();
         super.setNotifyOnChange(mNotifyOnChange);
-        if(items != null)
+        if (items != null)
             addAll(items);
     }
 }

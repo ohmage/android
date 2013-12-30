@@ -21,6 +21,7 @@ import android.net.Uri;
 
 import org.ohmage.operators.ContentProviderSaver;
 import org.ohmage.operators.ContentProviderSaver.Savable;
+import org.ohmage.prompts.Prompt;
 import org.ohmage.provider.OhmageContract;
 
 import java.util.ArrayList;
@@ -34,7 +35,7 @@ public class Survey implements Savable {
     public long schemaVersion;
     public String name;
 
-    ArrayList<Object> surveyItems;
+    public ArrayList<Prompt> surveyItems;
 
     @Override public ContentValues toContentValues(ContentProviderSaver saver) {
         ContentValues values = new ContentValues();
@@ -42,7 +43,7 @@ public class Survey implements Savable {
         values.put(OhmageContract.Surveys.SURVEY_VERSION, schemaVersion);
         values.put(OhmageContract.Surveys.SURVEY_ITEMS, saver.gson().toJson(surveyItems));
         return values;
-}
+    }
 
     @Override public Uri getUrl() {
         return OhmageContract.Surveys.CONTENT_URI;

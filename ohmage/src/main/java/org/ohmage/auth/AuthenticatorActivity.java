@@ -342,7 +342,7 @@ public class AuthenticatorActivity extends AuthenticatorFragmentActivity impleme
         FragmentManager fm = getSupportFragmentManager();
         FragmentTransaction ft = fm.beginTransaction().detach(mAuthenticateFragment);
         ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-          .addToBackStack(TAG_INFO_WINDOW).attach(fragment).commit();
+                .addToBackStack(TAG_INFO_WINDOW).attach(fragment).commit();
     }
 
     /**
@@ -358,7 +358,7 @@ public class AuthenticatorActivity extends AuthenticatorFragmentActivity impleme
             FragmentManager fm = getSupportFragmentManager();
             FragmentTransaction ft = fm.beginTransaction().detach(mAuthenticateFragment);
             ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-              .addToBackStack(TAG_INFO_WINDOW).add(id, fragment, tag).commit();
+                    .addToBackStack(TAG_INFO_WINDOW).add(id, fragment, tag).commit();
         } else {
             showFragment(fragment);
         }
@@ -376,7 +376,7 @@ public class AuthenticatorActivity extends AuthenticatorFragmentActivity impleme
         FragmentManager fm = getSupportFragmentManager();
         Fragment fragment = fm.findFragmentByTag(tag);
         fm.beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-          .detach(fragment).attach(mAuthenticateFragment).addToBackStack(null).commit();
+                .detach(fragment).attach(mAuthenticateFragment).addToBackStack(null).commit();
     }
 
     /**
@@ -554,7 +554,7 @@ public class AuthenticatorActivity extends AuthenticatorFragmentActivity impleme
 
                 if (error.isNetworkError()) {
                     Toast.makeText(getBaseContext(), R.string.network_error, Toast.LENGTH_SHORT)
-                         .show();
+                            .show();
                 } else if (r != null && r.getStatus() == 401) {
                     Toast.makeText(getBaseContext(), R.string.error_invalid_credentials,
                             Toast.LENGTH_SHORT).show();
@@ -563,7 +563,7 @@ public class AuthenticatorActivity extends AuthenticatorFragmentActivity impleme
                     Toast.makeText(getBaseContext(), body, Toast.LENGTH_SHORT).show();
                 } else {
                     Toast.makeText(getBaseContext(), R.string.unknown_error, Toast.LENGTH_SHORT)
-                         .show();
+                            .show();
                 }
             }
         });

@@ -135,11 +135,11 @@ public class OhmageContentProvider extends ContentProvider {
                 break;
             case MatcherTypes.SURVEY_ID:
                 id = Surveys.getId(uri);
-                if(id != null) {
+                if (id != null) {
                     selection = Surveys.SURVEY_ID + "=?";
-                    selectionArgs = new String[] { id };
+                    selectionArgs = new String[]{id};
                     version = Surveys.getVersion(uri);
-                    if(version != null) {
+                    if (version != null) {
                         selection += " AND " + Surveys.SURVEY_VERSION + "=" + version;
                     }
                 }

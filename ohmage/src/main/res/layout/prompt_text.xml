@@ -16,16 +16,7 @@
   limitations under the License.
   -->
 
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/content"
-    style="@style/CardContainer">
-
-    <TextView
-        style="?android:textAppearanceMedium"
-        android:id="@+id/text"
-        android:lineSpacingMultiplier="1.2"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+<merge xmlns:android="http://schemas.android.com/apk/res/android">
 
     <EditText
         android:id="@+id/input"
@@ -33,6 +24,6 @@
         android:layout_height="wrap_content"
         android:gravity="bottom"
         android:layout_below="@id/text"
-        android:layout_alignParentBottom="true"/>
+        android:layout_alignParentBottom="true" />
 
-</RelativeLayout>
+</merge>

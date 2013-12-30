@@ -85,7 +85,7 @@ public class AuthUtil {
         Account[] accounts = am.getAccountsByType(ACCOUNT_TYPE);
         if (accounts.length > 0) {
             Ohmage.app().getContentResolver()
-                  .requestSync(accounts[0], OhmageContract.CONTENT_AUTHORITY, new Bundle());
+                    .requestSync(accounts[0], OhmageContract.CONTENT_AUTHORITY, new Bundle());
         }
     }
 }

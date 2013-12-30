@@ -6,6 +6,7 @@ buildscript {
         classpath 'com.android.tools.build:gradle:0.9.0'
     }
 }
+
 apply plugin: 'android'
 
 // Update the values in this file to sign the apk for release

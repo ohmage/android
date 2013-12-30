@@ -191,9 +191,9 @@ public class OhmageSyncAdapter extends AbstractThreadedSyncAdapter {
                     }).flatMap(new RefreshOhmlet()).cache();
             ohmlets.subscribe(new ContentProviderSaverObserver(true));
             ohmlets.flatMap(new SurveysFromOhmlet()).filter(new FilterUpToDateSurveys(provider))
-                   .flatMap(new RefreshSurvey()).subscribe(new ContentProviderSaverObserver(true));
+                    .flatMap(new RefreshSurvey()).subscribe(new ContentProviderSaverObserver(true));
             ohmlets.flatMap(new StreamsFromOhmlet()).filter(new FilterUpToDateStreams(provider))
-                   .flatMap(new RefreshStream()).subscribe(new ContentProviderSaverObserver(true));
+                    .flatMap(new RefreshStream()).subscribe(new ContentProviderSaverObserver(true));
 
             // TODO: clean up old ohmlets
 

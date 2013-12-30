@@ -38,6 +38,8 @@ import org.ohmage.app.OhmageAuthenticator;
 import org.ohmage.app.OhmageErrorHandler;
 import org.ohmage.app.OhmageService;
 import org.ohmage.app.OhmletActivity;
+import org.ohmage.app.SurveyActivity;
+import org.ohmage.app.SurveyActivity.SurveyPromptLoader;
 import org.ohmage.auth.AuthHelper;
 import org.ohmage.auth.AuthUtil;
 import org.ohmage.auth.AuthenticateFragment;
@@ -50,6 +52,9 @@ import org.ohmage.fragments.OhmletsGridFragment;
 import org.ohmage.fragments.OhmletsSearchFragment;
 import org.ohmage.fragments.SurveysFragment;
 import org.ohmage.operators.ContentProviderSaver;
+import org.ohmage.prompts.BasePrompt;
+import org.ohmage.prompts.Prompt;
+import org.ohmage.prompts.PromptFragment;
 import org.ohmage.provider.ContentProviderReader;
 import org.ohmage.provider.StreamContentProvider;
 import org.ohmage.sync.OhmageSyncAdapter;
@@ -93,7 +98,10 @@ import retrofit.converter.GsonConverter;
                 ContentProviderSaver.class,
                 ContentProviderReader.class,
                 SurveysFragment.class,
-                HomeFragment.class
+                HomeFragment.class,
+                SurveyActivity.class,
+                PromptFragment.class,
+                SurveyPromptLoader.class
         },
         complete = false,
         library = true
@@ -112,6 +120,7 @@ public class OhmageModule {
         Gson gson = new GsonBuilder()
                 .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
                 .registerTypeAdapterFactory(new LowercaseEnumTypeAdapterFactory())
+                .registerTypeAdapter(Prompt.class, new BasePrompt.PromptDeserializer())
                 .create();
         return gson;
     }

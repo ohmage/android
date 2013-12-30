@@ -265,7 +265,7 @@ public class OhmletActivity extends InjectedActionBarActivity {
                         ohmageService.getOhmlet(ohmletId).single().cache();
 
                 ohmletSupscription = AndroidObservable.fromFragment(this, ohmletObservable)
-                                                      .subscribe(this);
+                        .subscribe(this);
             }
         }
 
@@ -290,9 +290,9 @@ public class OhmletActivity extends InjectedActionBarActivity {
         @Override public Dialog onCreateDialog(Bundle savedInstanceState) {
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
             builder.setTitle("Join ohmlet?")
-                   .setMessage("Are you sure you want to join this ohmlet?")
-                   .setPositiveButton(R.string.join, this)
-                   .setNegativeButton(R.string.cancel, null);
+                    .setMessage("Are you sure you want to join this ohmlet?")
+                    .setPositiveButton(R.string.join, this)
+                    .setNegativeButton(R.string.cancel, null);
             return builder.create();
         }
 

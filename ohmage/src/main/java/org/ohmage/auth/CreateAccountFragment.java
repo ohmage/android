@@ -116,12 +116,12 @@ public class CreateAccountFragment extends TransitionFragment {
         mFullnameView.setText(mUser.fullName);
 
         view.findViewById(R.id.create_account_button)
-            .setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    attemptAccountCreate();
-                }
-            });
+                .setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        attemptAccountCreate();
+                    }
+                });
 
         setViewState(view);
 

@@ -28,6 +28,14 @@
     <string name="account_error">Unexpected Error. Try to login with a different account.</string>
     <string name="google_progress_message">Signing in to Google…</string>
     <string name="logging_out">Logging Out…</string>
+    <string name="cancel">Cancel</string>
+    <string name="show_choices">Show Choices</string>
+    <string name="take_image">Take Image</string>
+    <string name="record_video">Record Video</string>
+    <string name="launch">Launch</string>
+    <string name="audio_prompt_max_duration_reached">You have reached the maximum duration.</string>
+    <string name="audio_prompt_max_filesize_reached">You have reached the maximum filesize.</string>
+    <string name="media_unavailable_to_record_audio">Please insert an SD card before recording audio.</string>
     <string name="title_create_account">Create Account</string>
     <string name="prompt_email">E-mail</string>
     <string name="prompt_email_hint">Enter your E\u2011mail</string>
@@ -57,7 +65,6 @@
     <string name="loading">Loading…</string>
     <string name="title_activity_ohmlet">Ohmlet</string>
     <string name="hello_world">Hello world!</string>
-    <string name="cancel">Cancel</string>
     <string name="join">Join</string>
 
 </resources>

@@ -27,6 +27,8 @@ import org.ohmage.app.MainActivityTest;
 import org.ohmage.app.OhmageAuthenticator;
 import org.ohmage.app.OhmageService;
 import org.ohmage.app.OhmletActivity;
+import org.ohmage.app.SurveyActivity;
+import org.ohmage.app.SurveyActivity.SurveyPromptLoader;
 import org.ohmage.auth.AuthHelper;
 import org.ohmage.auth.AuthenticateFragment;
 import org.ohmage.auth.Authenticator;
@@ -40,6 +42,7 @@ import org.ohmage.fragments.OhmletsGridFragment;
 import org.ohmage.fragments.OhmletsSearchFragment;
 import org.ohmage.fragments.SurveysFragment;
 import org.ohmage.operators.ContentProviderSaver;
+import org.ohmage.prompts.PromptFragment;
 import org.ohmage.provider.ContentProviderReader;
 import org.ohmage.provider.StreamContentProvider;
 import org.ohmage.sync.OhmageSyncAdapter;
@@ -81,7 +84,10 @@ import static org.mockito.Mockito.mock;
                 ContentProviderSaver.class,
                 ContentProviderReader.class,
                 SurveysFragment.class,
-                HomeFragment.class
+                HomeFragment.class,
+                SurveyActivity.class,
+                PromptFragment.class,
+                SurveyPromptLoader.class
         },
         complete = false,
         library = true,

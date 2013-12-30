@@ -104,12 +104,12 @@ public class SignInFragment extends TransitionFragment {
         }
 
         view.findViewById(R.id.sign_in_email_button)
-            .setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    attemptSignIn();
-                }
-            });
+                .setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        attemptSignIn();
+                    }
+                });
 
         return view;
     }

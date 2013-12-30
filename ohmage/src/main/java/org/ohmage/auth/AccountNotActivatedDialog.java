@@ -41,8 +41,8 @@ public class AccountNotActivatedDialog extends ActionBarActivity {
         @Override public Dialog onCreateDialog(Bundle savedInstanceState) {
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
             builder.setTitle(R.string.title_account_not_activated)
-                   .setMessage(R.string.message_account_not_activated)
-                   .setPositiveButton(R.string.ok, null);
+                    .setMessage(R.string.message_account_not_activated)
+                    .setPositiveButton(R.string.ok, null);
             return builder.create();
         }
 

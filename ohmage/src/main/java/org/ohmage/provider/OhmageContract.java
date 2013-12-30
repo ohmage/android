@@ -76,7 +76,7 @@ public class OhmageContract {
     public static final class Ohmlets implements BaseColumns, OhmletColumns {
 
         public static final Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_OHMLETS)
-                                                              .build();
+                .build();
 
         public static final String CONTENT_TYPE =
                 "vnd.android.cursor.dir/vnd.ohmage.ohmlets";
@@ -116,7 +116,7 @@ public class OhmageContract {
     public static final class Surveys implements BaseColumns, SurveyColumns {
 
         public static final Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_SURVEYS)
-                                                              .build();
+                .build();
 
         public static final String CONTENT_ITEM_TYPE =
                 "vnd.android.cursor.item/vnd.ohmage.surveys.survey";
@@ -160,7 +160,7 @@ public class OhmageContract {
     public static final class Streams implements BaseColumns, StreamColumns {
 
         public static final Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_STREAMS)
-                                                              .build();
+                .build();
 
         public static final String CONTENT_ITEM_TYPE =
                 "vnd.android.cursor.dir/vnd.ohmage.streams.stream";

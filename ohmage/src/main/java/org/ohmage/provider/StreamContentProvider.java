@@ -169,8 +169,8 @@ public class StreamContentProvider extends ContentProvider implements OnAccounts
                 break;
             case MatcherTypes.STREAMS:
                 cursor = dbHelper.getReadableDatabase()
-                                 .query(Tables.StreamData, projection, selection,
-                                         selectionArgs, null, null, sortOrder);
+                        .query(Tables.StreamData, projection, selection,
+                                selectionArgs, null, null, sortOrder);
                 break;
             default:
                 throw new UnsupportedOperationException("query(): Unknown URI: " + uri);
