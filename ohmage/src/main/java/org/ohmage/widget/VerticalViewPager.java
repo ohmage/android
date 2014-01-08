@@ -1393,13 +1393,23 @@ public class VerticalViewPager extends ViewGroup {
 
                 final LayoutParams lp = (LayoutParams) child.getLayoutParams();
                 if (lp == null || !lp.isDecor) {
-                    final int heightSpec = MeasureSpec.makeMeasureSpec(
+                    int heightSpec = lp.height;
+                    if(lp.height != ViewGroup.LayoutParams.WRAP_CONTENT)
+                        heightSpec = MeasureSpec.makeMeasureSpec(
                             (int) (childHeightSize * lp.heightFactor), MeasureSpec.EXACTLY);
+
                     child.measure(mChildWidthMeasureSpec, heightSpec);
+
+                    if(lp.height == LayoutParams.WRAP_CONTENT) {
+                        lp.heightFactor = child.getMeasuredHeight() / new Float(measuredHeight);
+                        ItemInfo ii = infoForChild(child);
+                        if(ii != null)
+                            ii.heightFactor = lp.heightFactor;
                     }
                 }
             }
         }
+    }
 
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
