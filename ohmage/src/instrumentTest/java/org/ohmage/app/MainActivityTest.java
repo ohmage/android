@@ -30,14 +30,20 @@ import org.ohmage.test.dagger.InjectedActivityInstrumentationTestCase;
 
 import javax.inject.Inject;
 
+import static com.google.android.apps.common.testing.ui.espresso.Espresso.onData;
 import static com.google.android.apps.common.testing.ui.espresso.Espresso.onView;
 import static com.google.android.apps.common.testing.ui.espresso.Espresso.openActionBarOverflowOrOptionsMenu;
 import static com.google.android.apps.common.testing.ui.espresso.action.ViewActions.click;
 import static com.google.android.apps.common.testing.ui.espresso.assertion.ViewAssertions.matches;
-import static com.google.android.apps.common.testing.ui.espresso.matcher.ViewMatchers.isDisplayed;
+import static com.google.android.apps.common.testing.ui.espresso.contrib.DrawerActions.closeDrawer;
+import static com.google.android.apps.common.testing.ui.espresso.contrib.DrawerActions.openDrawer;
+import static com.google.android.apps.common.testing.ui.espresso.contrib.DrawerMatchers.isClosed;
+import static com.google.android.apps.common.testing.ui.espresso.contrib.DrawerMatchers.isOpen;
 import static com.google.android.apps.common.testing.ui.espresso.matcher.ViewMatchers.withId;
 import static com.google.android.apps.common.testing.ui.espresso.matcher.ViewMatchers.withText;
-import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
@@ -54,6 +60,8 @@ public class MainActivityTest extends InjectedActivityInstrumentationTestCase<Ma
 
     Account fakeAccount = new Account("username", AuthUtil.ACCOUNT_TYPE);
 
+    private String[] navigationItems;
+
     public MainActivityTest() {
         super(MainActivity.class);
     }
@@ -61,29 +69,56 @@ public class MainActivityTest extends InjectedActivityInstrumentationTestCase<Ma
     @Override
     public void setUp() throws Exception {
         super.setUp();
+
+        navigationItems = Ohmage.app().getResources().getStringArray(R.array.navigation_items);
     }
 
-    public void test_initialState_DrawerIsClosed() {
+    public void testDrawer_initialState_DrawerIsClosed() {
         startActivityWithAccount();
 
-        onView(withId(R.id.left_drawer)).check(matches(not(isDisplayed())));
+        onView(withId(R.id.drawer_layout)).check(matches(isClosed()));
     }
 
-    public void test_clickingTheOhmageIcon_DrawerOpens() {
+    public void testDrawer_clickingTheOhmageIcon_DrawerOpens() {
         startActivityWithAccount();
 
         onView(withId(android.R.id.home)).perform(click());
 
-        onView(withId(R.id.left_drawer)).check(matches(isDisplayed()));
+        onView(withId(R.id.drawer_layout)).check(matches(isOpen()));
     }
 
-    public void test_accountDoesNotExist_RedirectsToAuthenticatorActivity() throws Exception {
+    public void testDrawer_openAndClose_opensAndClosesDrawer() {
+        startActivityWithAccount();
+
+        openDrawer(R.id.drawer_layout);
+
+        // The drawer should now be open.
+        onView(withId(R.id.drawer_layout)).check(matches(isOpen()));
+
+        closeDrawer(R.id.drawer_layout);
+
+        // Drawer should be closed again.
+        onView(withId(R.id.drawer_layout)).check(matches(isClosed()));
+    }
+
+    public void testDrawer_openAndClickItem_closesDrawer() {
+        startActivityWithAccount();
+        openDrawer(R.id.drawer_layout);
+        int rowIndex = 2;
+        String rowContents = navigationItems[rowIndex];
+
+        onData(allOf(is(instanceOf(String.class)), is(rowContents))).perform(click());
+
+        onView(withId(R.id.drawer_layout)).check(matches(isClosed()));
+    }
+
+    public void testStartActivity_accountDoesNotExist_RedirectsToAuthenticatorActivity() throws Exception {
         startActivityWithoutAccount();
 
         assertActivityCreated(this, AuthenticatorActivity.class);
     }
 
-    public void test_clickingMenuSignOut_removesAccount() throws Exception {
+    public void testMenu_clickingSignOut_removesAccount() throws Exception {
         startActivityWithAccount();
 
         openActionBarOverflowOrOptionsMenu(getInstrumentation().getTargetContext());
@@ -93,7 +128,7 @@ public class MainActivityTest extends InjectedActivityInstrumentationTestCase<Ma
                 eq(fakeAccount), any(AccountManagerCallback.class), any(Handler.class));
     }
 
-    public void test_clickingMenuSignOut_RedirectsToAuthenticatorActivity() throws Exception{
+    public void testMenu_clickingSignOut_RedirectsToAuthenticatorActivity() throws Exception {
         startActivityWithAccount();
         // Call the callback to simulate account removal finished
         when(fakeAccountManager.removeAccount(eq(fakeAccount), any(AccountManagerCallback.class),

@@ -48,21 +48,25 @@ import static com.google.android.apps.common.testing.ui.espresso.Espresso.onView
 import static com.google.android.apps.common.testing.ui.espresso.action.ViewActions.click;
 import static com.google.android.apps.common.testing.ui.espresso.action.ViewActions.scrollTo;
 import static com.google.android.apps.common.testing.ui.espresso.action.ViewActions.typeText;
+import static com.google.android.apps.common.testing.ui.espresso.assertion.ViewAssertions.doesNotExist;
 import static com.google.android.apps.common.testing.ui.espresso.assertion.ViewAssertions.matches;
+import static com.google.android.apps.common.testing.ui.espresso.matcher.RootMatchers.withDecorView;
 import static com.google.android.apps.common.testing.ui.espresso.matcher.ViewMatchers.isClickable;
 import static com.google.android.apps.common.testing.ui.espresso.matcher.ViewMatchers.isDisplayed;
 import static com.google.android.apps.common.testing.ui.espresso.matcher.ViewMatchers.withId;
+import static com.google.android.apps.common.testing.ui.espresso.matcher.ViewMatchers.withText;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.ohmage.test.OhmageViewMatchers.hasError;
 
 /**
  * Functional Tests for the {@link org.ohmage.auth.AuthenticatorActivity}
- * TODO: Test that the error messages are shown. As of now this is a limitation of Espresso.
- * TODO: details here: https://code.google.com/p/android-test-kit/issues/detail?id=7
  */
 @LargeTest
 public class AuthenticatorActivityTest extends InjectedActivityInstrumentationTestCase<AuthenticatorActivity> {
@@ -188,6 +192,26 @@ public class AuthenticatorActivityTest extends InjectedActivityInstrumentationTe
         verify(fakeRequestQueue, never()).add(new AccessTokenRequest(fakeUsername, fakePassword));
     }
 
+    public void testSignInWithOhmage_noUsername_showsErrorMessage() {
+        onView(withId(R.id.sign_in_ohmage_button)).perform(click());
+
+        onView(withId(R.id.password)).perform(scrollTo(), typeText(fakePassword));
+        onView(withId(R.id.sign_in_ohmage_button)).perform(click());
+
+        onView(withText(R.string.error_field_required))
+                .inRoot(withDecorView(not(is(getActivity().getWindow().getDecorView()))))
+                .check(matches(isDisplayed()));
+    }
+
+    public void testSignInWithOhmage_noUsername_usernameFieldHasError() {
+        onView(withId(R.id.sign_in_ohmage_button)).perform(click());
+
+        onView(withId(R.id.password)).perform(scrollTo(), typeText(fakePassword));
+        onView(withId(R.id.sign_in_ohmage_button)).perform(click());
+
+        onView(withId(R.id.username)).check(matches(hasError(R.string.error_field_required)));
+    }
+
     public void testSignInWithOhmage_noPassword_doesNotPerformNetworkRequest() {
         onView(withId(R.id.sign_in_ohmage_button)).perform(click());
 
@@ -195,6 +219,26 @@ public class AuthenticatorActivityTest extends InjectedActivityInstrumentationTe
         onView(withId(R.id.sign_in_ohmage_button)).perform(click());
 
         verify(fakeRequestQueue, never()).add(new AccessTokenRequest(fakeUsername, fakePassword));
+    }
+
+    public void testSignInWithOhmage_noPassword_showsErrorMessage() {
+        onView(withId(R.id.sign_in_ohmage_button)).perform(click());
+
+        onView(withId(R.id.username)).perform(scrollTo(), typeText(fakeUsername));
+        onView(withId(R.id.sign_in_ohmage_button)).perform(click());
+
+        onView(withText(R.string.error_field_required))
+                .inRoot(withDecorView(not(is(getActivity().getWindow().getDecorView()))))
+                .check(matches(isDisplayed()));
+    }
+
+    public void testSignInWithOhmage_noPassword_passwordFieldHasError() {
+        onView(withId(R.id.sign_in_ohmage_button)).perform(click());
+
+        onView(withId(R.id.username)).perform(scrollTo(), typeText(fakeUsername));
+        onView(withId(R.id.sign_in_ohmage_button)).perform(click());
+
+        onView(withId(R.id.password)).check(matches(hasError(R.string.error_field_required)));
     }
 
     public void testClicking_createAccountButton_showsSignInFragment() {
@@ -229,6 +273,32 @@ public class AuthenticatorActivityTest extends InjectedActivityInstrumentationTe
                 new CreateUserRequest(AuthUtil.GrantType.CLIENT_CREDENTIALS, fakePassword, fakeUser));
     }
 
+    public void testCreateAccount_invalidEmail_showsErrorMessage() {
+        onView(withId(R.id.create_account_button)).perform(click());
+
+        onView(withId(R.id.username)).perform(scrollTo(), typeText(fakeUsername));
+        onView(withId(R.id.password)).perform(scrollTo(), typeText(fakePassword));
+        onView(withId(R.id.fullname)).perform(scrollTo(), typeText(fakeFullname));
+        onView(withId(R.id.email)).perform(scrollTo(), typeText("blah"));
+        onView(withId(R.id.create_account_button)).perform(scrollTo(), click());
+
+        onView(withText(R.string.error_invalid_email_address))
+                .inRoot(withDecorView(not(is(getActivity().getWindow().getDecorView()))))
+                .check(matches(isDisplayed()));
+    }
+
+    public void testCreateAccount_invalidEmail_emailFieldHasError() {
+        onView(withId(R.id.create_account_button)).perform(click());
+
+        onView(withId(R.id.username)).perform(scrollTo(), typeText(fakeUsername));
+        onView(withId(R.id.password)).perform(scrollTo(), typeText(fakePassword));
+        onView(withId(R.id.fullname)).perform(scrollTo(), typeText(fakeFullname));
+        onView(withId(R.id.email)).perform(scrollTo(), typeText("blah"));
+        onView(withId(R.id.create_account_button)).perform(scrollTo(), click());
+
+        onView(withId(R.id.email)).check(matches(hasError(R.string.error_invalid_email_address)));
+    }
+
     public void testCreateAccount_noEmail_doesNotPerformNetworkRequest() {
         onView(withId(R.id.create_account_button)).perform(click());
 
@@ -239,6 +309,30 @@ public class AuthenticatorActivityTest extends InjectedActivityInstrumentationTe
 
         verify(fakeRequestQueue, never()).add(
                 new CreateUserRequest(AuthUtil.GrantType.CLIENT_CREDENTIALS, fakePassword, fakeUser));
+    }
+
+    public void testCreateAccount_noEmail_showsErrorMessage() {
+        onView(withId(R.id.create_account_button)).perform(click());
+
+        onView(withId(R.id.username)).perform(scrollTo(), typeText(fakeUsername));
+        onView(withId(R.id.password)).perform(scrollTo(), typeText(fakePassword));
+        onView(withId(R.id.fullname)).perform(scrollTo(), typeText(fakeFullname));
+        onView(withId(R.id.create_account_button)).perform(scrollTo(), click());
+
+        onView(withText(R.string.error_field_required))
+                .inRoot(withDecorView(not(is(getActivity().getWindow().getDecorView()))))
+                .check(matches(isDisplayed()));
+    }
+
+    public void testCreateAccount_noEmail_emailFieldHasError() {
+        onView(withId(R.id.create_account_button)).perform(click());
+
+        onView(withId(R.id.username)).perform(scrollTo(), typeText(fakeUsername));
+        onView(withId(R.id.password)).perform(scrollTo(), typeText(fakePassword));
+        onView(withId(R.id.fullname)).perform(scrollTo(), typeText(fakeFullname));
+        onView(withId(R.id.create_account_button)).perform(scrollTo(), click());
+
+        onView(withId(R.id.email)).check(matches(hasError(R.string.error_field_required)));
     }
 
     public void testCreateAccount_noPassword_doesNotPerformNetworkRequest() {
@@ -253,6 +347,30 @@ public class AuthenticatorActivityTest extends InjectedActivityInstrumentationTe
                 new CreateUserRequest(AuthUtil.GrantType.CLIENT_CREDENTIALS, fakePassword, fakeUser));
     }
 
+    public void testCreateAccount_noPassword_showsErrorMessage() {
+        onView(withId(R.id.create_account_button)).perform(click());
+
+        onView(withId(R.id.username)).perform(scrollTo(), typeText(fakeUsername));
+        onView(withId(R.id.fullname)).perform(scrollTo(), typeText(fakeFullname));
+        onView(withId(R.id.email)).perform(scrollTo(), typeText(fakeEmail));
+        onView(withId(R.id.create_account_button)).perform(scrollTo(), click());
+
+        onView(withText(R.string.error_field_required))
+                .inRoot(withDecorView(not(is(getActivity().getWindow().getDecorView()))))
+                .check(matches(isDisplayed()));
+    }
+
+    public void testCreateAccount_noPassword_passwordFieldHasError() {
+        onView(withId(R.id.create_account_button)).perform(click());
+
+        onView(withId(R.id.username)).perform(scrollTo(), typeText(fakeUsername));
+        onView(withId(R.id.fullname)).perform(scrollTo(), typeText(fakeFullname));
+        onView(withId(R.id.email)).perform(scrollTo(), typeText(fakeEmail));
+        onView(withId(R.id.create_account_button)).perform(scrollTo(), click());
+
+        onView(withId(R.id.password)).check(matches(hasError(R.string.error_field_required)));
+    }
+
     public void testCreateAccount_noUsername_doesNotPerformNetworkRequest() {
         onView(withId(R.id.create_account_button)).perform(click());
 
@@ -265,7 +383,31 @@ public class AuthenticatorActivityTest extends InjectedActivityInstrumentationTe
                 new CreateUserRequest(AuthUtil.GrantType.CLIENT_CREDENTIALS, fakePassword, fakeUser));
     }
 
-    public void testCreateAccount_noFullname_startsCreateAccountRequest() {
+    public void testCreateAccount_noUsername_showsErrorMessage() {
+        onView(withId(R.id.create_account_button)).perform(click());
+
+        onView(withId(R.id.password)).perform(scrollTo(), typeText(fakePassword));
+        onView(withId(R.id.fullname)).perform(scrollTo(), typeText(fakeFullname));
+        onView(withId(R.id.email)).perform(scrollTo(), typeText(fakeEmail));
+        onView(withId(R.id.create_account_button)).perform(scrollTo(), click());
+
+        onView(withText(R.string.error_field_required))
+                .inRoot(withDecorView(not(is(getActivity().getWindow().getDecorView()))))
+                .check(matches(isDisplayed()));
+    }
+
+    public void testCreateAccount_noUsername_usernameFieldHasError() {
+        onView(withId(R.id.create_account_button)).perform(click());
+
+        onView(withId(R.id.password)).perform(scrollTo(), typeText(fakePassword));
+        onView(withId(R.id.fullname)).perform(scrollTo(), typeText(fakeFullname));
+        onView(withId(R.id.email)).perform(scrollTo(), typeText(fakeEmail));
+        onView(withId(R.id.create_account_button)).perform(scrollTo(), click());
+
+        onView(withId(R.id.username)).check(matches(hasError(R.string.error_field_required)));
+    }
+
+    public void testCreateAccount_noFullName_startsCreateAccountRequest() {
         onView(withId(R.id.create_account_button)).perform(click());
         User fakeUser = new User();
         fakeUser.fullName = "";
@@ -279,6 +421,18 @@ public class AuthenticatorActivityTest extends InjectedActivityInstrumentationTe
 
         verify(fakeRequestQueue).add(
                 new CreateUserRequest(AuthUtil.GrantType.CLIENT_CREDENTIALS, fakePassword, fakeUser));
+    }
+
+    public void testCreateAccount_noFullName_fullNameFieldDoesNotHaveError() {
+        onView(withId(R.id.create_account_button)).perform(click());
+
+        onView(withId(R.id.username)).perform(scrollTo(), typeText(fakeUsername));
+        onView(withId(R.id.password)).perform(scrollTo(), typeText(fakePassword));
+        onView(withId(R.id.email)).perform(scrollTo(), typeText(fakeEmail));
+        onView(withId(R.id.create_account_button)).perform(scrollTo(), click());
+
+        // The view disappears once the create_account_button is clicked if there are no errors
+        onView(withId(R.id.fullname)).check(doesNotExist());
     }
 
     public void testClicking_signInWithGoogleButton_startsConnectOnPlusClient() throws Exception {
