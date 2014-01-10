@@ -1,6 +1,5 @@
 <component name="CopyrightManager">
   <settings default="ohmage">
-    <module2copyright />
     <LanguageOptions name="JAVA" />
     <LanguageOptions name="XML">
       <option name="fileTypeOverride" value="3" />
