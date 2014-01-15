@@ -2133,28 +2133,25 @@ public class VerticalViewPager extends ViewGroup {
                 (overScrollMode == ViewCompat.OVER_SCROLL_IF_CONTENT_SCROLLS &&
                         mAdapter != null && mAdapter.getCount() > 1)) {
             if (!mTopEdge.isFinished()) {
-                final int height = getHeight();
+                final int restoreCount = canvas.save();
                 final int width = getWidth() - getPaddingLeft() - getPaddingRight();
+                final int height = getHeight();
 
+                canvas.translate(0, mFirstOffset * height);
                 mTopEdge.setSize(width, height);
-
                 needsInvalidate |= mTopEdge.draw(canvas);
+                canvas.restoreToCount(restoreCount);
             }
             if (!mBottomEdge.isFinished()) {
-                // TODO: fix me!
-                final int height = getHeight();
+                final int restoreCount = canvas.save();
                 final int width = getWidth() - getPaddingLeft() - getPaddingRight();
+                final int height = getHeight();
 
-//                canvas.rotate(90);
-//                canvas.rotate(180);
-//                canvas.translate(-getPaddingTop(), -(mLastOffset + 1) * width);
-//                canvas.translate(-(mLastOffset + 1) * height, -getPaddingRight());
-
+                canvas.rotate(180);
+                canvas.translate(-width, -(mLastOffset + 1) * height);
                 mBottomEdge.setSize(width, height);
-//                mBottomEdge.setSize(height, width);
-
                 needsInvalidate |= mBottomEdge.draw(canvas);
-//                canvas.restoreToCount(restoreCount);
+                canvas.restoreToCount(restoreCount);
             }
         } else {
             mTopEdge.finish();
