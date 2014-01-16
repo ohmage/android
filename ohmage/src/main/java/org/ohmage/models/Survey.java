@@ -42,7 +42,7 @@ public class Survey implements Savable {
         values.put(OhmageContract.Surveys.SURVEY_VERSION, schemaVersion);
         values.put(OhmageContract.Surveys.SURVEY_ITEMS, saver.gson().toJson(surveyItems));
         return values;
-    }
+}
 
     @Override public Uri getUrl() {
         return OhmageContract.Surveys.CONTENT_URI;

@@ -16,7 +16,11 @@
   limitations under the License.
   -->
 
-<fragment xmlns:android="http://schemas.android.com/apk/res/android"
+<org.ohmage.widget.VerticalViewPager
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/pager"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:name="org.ohmage.fragments.PromptFragment" />
+    android:scrollbarStyle="outsideOverlay"
+    android:padding="@dimen/gutter"
+    android:clipToPadding="false" />
