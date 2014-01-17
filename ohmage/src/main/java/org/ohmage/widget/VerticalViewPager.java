@@ -878,7 +878,6 @@ public class VerticalViewPager extends ViewGroup {
                 final View child = getChildAt(i);
                 final LayoutParams lp = (LayoutParams) child.getLayoutParams();
                 if (!lp.isDecor) {
-                    lp.widthFactor = 0.f;
                     lp.heightFactor = 0.f;
                 }
             }
@@ -1540,7 +1539,7 @@ public class VerticalViewPager extends ViewGroup {
                         // Do it now that we know what we're working with.
                         lp.needsMeasure = false;
                         final int widthSpec = MeasureSpec.makeMeasureSpec(
-                                (int) ((width - paddingLeft - paddingRight) * lp.widthFactor),
+                                (int) ((width - paddingLeft - paddingRight) * lp.heightFactor),
                                 MeasureSpec.EXACTLY);
                         final int heightSpec = MeasureSpec.makeMeasureSpec(
                                 (int) (height - paddingTop - paddingBottom),
@@ -2764,7 +2763,6 @@ public class VerticalViewPager extends ViewGroup {
         /**
          * Width as a 0-1 multiplier of the measured pager width
          */
-        float widthFactor = 0.f;
         float heightFactor = 0f;
 
         /**
