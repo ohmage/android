@@ -16,11 +16,26 @@
   limitations under the License.
   -->
 
-<org.ohmage.widget.VerticalViewPager
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/pager"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:scrollbarStyle="outsideOverlay"
-    android:padding="@dimen/gutter"
-    android:clipToPadding="false" />
+    android:layout_height="match_parent">
+
+    <org.ohmage.widget.PromptViewPager
+        android:id="@+id/pager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scrollbarStyle="outsideOverlay"
+        android:padding="@dimen/gutter"
+        android:clipToPadding="false" />
+
+    <com.viewpagerindicator.CirclePageIndicator
+        android:id="@+id/titles"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_gravity="center_vertical|right"
+        android:padding="1dp"
+        android:orientation="vertical"
+        app:strokeWidth="2dp" />
+
+</FrameLayout>

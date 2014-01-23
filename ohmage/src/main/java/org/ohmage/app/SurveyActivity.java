@@ -37,6 +37,7 @@ import android.widget.Button;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.viewpagerindicator.CirclePageIndicator;
 
 import org.ohmage.dagger.InjectedActionBarActivity;
 import org.ohmage.prompts.AnswerablePrompt;
@@ -77,6 +78,8 @@ public class SurveyActivity extends InjectedActionBarActivity
      */
     private PromptFragmentAdapter mPagerAdapter;
 
+    private CirclePageIndicator indicator;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -85,6 +88,9 @@ public class SurveyActivity extends InjectedActionBarActivity
         // Instantiate a ViewPager and a PagerAdapter.
         mPager = (PromptViewPager) findViewById(R.id.pager);
         mPager.setPageMargin(getResources().getDimensionPixelSize(R.dimen.gutter));
+
+        //Bind the title indicator to the adapter
+        indicator = (CirclePageIndicator) findViewById(R.id.titles);
 
         getSupportLoaderManager().initLoader(0, null, this);
     }
@@ -109,6 +115,7 @@ public class SurveyActivity extends InjectedActionBarActivity
         if (mPagerAdapter == null) {
             mPagerAdapter = new PromptFragmentAdapter(getSupportFragmentManager(), data);
             mPager.setAdapter(mPagerAdapter);
+            indicator.setViewPager(mPager);
         }
     }
 
@@ -118,7 +125,7 @@ public class SurveyActivity extends InjectedActionBarActivity
 
     public void submit() {
         mPagerAdapter.buildResponse();
-    }
+        }
 
     public class PromptFragmentAdapter extends FragmentStatePagerAdapter implements
             OnSkipStateChanged {
@@ -252,7 +259,6 @@ public class SurveyActivity extends InjectedActionBarActivity
                     Log.d(TAG, prompt.getId() + "=" + prompt.value);
                 }
             }
-
         }
     }
 

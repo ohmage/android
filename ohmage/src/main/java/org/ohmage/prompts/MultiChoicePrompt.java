@@ -25,9 +25,6 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.view.View;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.ohmage.app.R;
 
 import java.util.ArrayList;
@@ -51,17 +48,6 @@ public class MultiChoicePrompt<T> extends ChoicePrompt<ArrayList<T>> {
     @Override
     public Fragment getFragment() {
         return MultiChoicePromptFragment.getInstance(this);
-    }
-
-    @Override
-    public void addAnswer(JSONObject data, JSONObject extras) throws JSONException {
-        if(value != null) {
-            JSONArray array = new JSONArray();
-            for(T object : (List<T>)value) {
-                array.put(object);
-            }
-            data.put(surveyItemId, array);
-        }
     }
 
     public List<T> getNewList() {
