@@ -384,19 +384,23 @@ public class AuthenticatorActivity extends AuthenticatorFragmentActivity impleme
      */
     @Subscribe
     public void onAccessToken(AccessToken token) {
+        createAccount(token.getEmail(), token.getRefreshToken(), token.getAccessToken());
+    }
+
+    public void createAccount(String email, String password, String token) {
         // If no accounts exist, we create a new account
         Account[] accounts = am.getAccountsByType(AuthUtil.ACCOUNT_TYPE);
         Account account = accounts.length != 0 ? accounts[0] :
-                new Account(token.getEmail(), AuthUtil.ACCOUNT_TYPE);
+                new Account(email, AuthUtil.ACCOUNT_TYPE);
 
         if (accounts.length == 0) {
-            am.addAccountExplicitly(account, token.getRefreshToken(), null);
+            am.addAccountExplicitly(account, password, null);
 
             // Turn on automatic syncing for this account
             getContentResolver()
                     .setSyncAutomatically(account, StreamContract.CONTENT_AUTHORITY, true);
         } else {
-            am.setPassword(accounts[0], token.getRefreshToken());
+            am.setPassword(accounts[0], password);
         }
 
         if (mPlusClientFragment.getClient() != null &&
@@ -404,13 +408,13 @@ public class AuthenticatorActivity extends AuthenticatorFragmentActivity impleme
             String googleAccountName = mPlusClientFragment.getClient().getAccountName();
             am.setUserData(account, Authenticator.USER_DATA_GOOGLE_ACCOUNT, googleAccountName);
         }
-        am.setAuthToken(account, AuthUtil.AUTHTOKEN_TYPE, token.getAccessToken());
+        am.setAuthToken(account, AuthUtil.AUTHTOKEN_TYPE, token);
 
         final Intent intent = new Intent();
-        intent.putExtra(AccountManager.KEY_ACCOUNT_NAME, token.getEmail());
+        intent.putExtra(AccountManager.KEY_ACCOUNT_NAME, email);
         intent.putExtra(AccountManager.KEY_ACCOUNT_TYPE, AuthUtil.ACCOUNT_TYPE);
-        intent.putExtra(AccountManager.KEY_AUTHTOKEN, token.getAccessToken());
-        intent.putExtra(AccountManager.KEY_PASSWORD, token.getRefreshToken());
+        intent.putExtra(AccountManager.KEY_AUTHTOKEN, token);
+        intent.putExtra(AccountManager.KEY_PASSWORD, password);
         setAccountAuthenticatorResult(intent.getExtras());
         setResult(RESULT_OK, intent);
         finish();

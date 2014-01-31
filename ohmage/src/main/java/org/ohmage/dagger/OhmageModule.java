@@ -36,7 +36,6 @@ import org.ohmage.auth.Authenticator;
 import org.ohmage.auth.CreateAccountFragment;
 import org.ohmage.auth.SignInFragment;
 import org.ohmage.requests.AccessTokenRequest;
-import org.ohmage.requests.CreateUserRequest;
 import org.ohmage.streams.StreamContentProvider;
 import org.ohmage.sync.StreamSyncAdapter;
 import org.ohmage.tasks.LogoutTaskFragment;
@@ -60,7 +59,6 @@ import retrofit.client.OkClient;
                 CreateAccountFragment.class,
                 SignInFragment.class,
                 AccessTokenRequest.class,
-                CreateUserRequest.class,
                 LogoutTaskFragment.class,
                 StreamContentProvider.class,
                 StreamSyncAdapter.class
@@ -100,6 +98,7 @@ public class OhmageModule {
         RestAdapter restAdapter = new RestAdapter.Builder()
                 .setExecutors(executor, executor)
                 .setClient(new OkClient(okHttpClient))
+                .setLogLevel(RestAdapter.LogLevel.BASIC)
                 .setErrorHandler(new OhmageErrorHandler())
                 .setServer(Endpoints.API_ROOT)
                 .build();

@@ -17,21 +17,31 @@
 package org.ohmage.app;
 
 import org.apache.http.auth.AuthenticationException;
+import org.ohmage.auth.AuthUtil;
+import org.ohmage.models.User;
 import org.ohmage.sync.StreamWriterOutput;
 
+import retrofit.Callback;
 import retrofit.client.Response;
 import retrofit.http.Body;
 import retrofit.http.Header;
 import retrofit.http.POST;
 import retrofit.http.Path;
+import retrofit.http.Query;
 
 /**
  * Created by cketcham on 12/9/13.
  */
 public interface OhmageService {
-    @POST("/streams/{id}/{version}/data")
-    Response uploadStreamData(@Header("Authorization") String token, @Path("id") String streamId,
-            @Path("version") String streamVersion,
-            @Body StreamWriterOutput data)
-            throws AuthenticationException;
+
+    @POST("/people") void createUser(@Query("provider") AuthUtil.GrantType grantType,
+            @Query("access_token") String accessToken, @Body User user, Callback<User> callback);
+
+    @POST("/people")
+    void createUser(@Query("password") String password, @Body User user, Callback<User> callback);
+
+    @POST("/streams/{streamId}/{streamVersion}/data")
+    Response uploadStreamData(@Header("Authorization") String token,
+            @Path("streamId") String streamId, @Path("streamVersion") String streamVersion,
+            @Body StreamWriterOutput data) throws AuthenticationException;
 }

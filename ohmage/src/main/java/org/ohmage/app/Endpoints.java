@@ -40,10 +40,4 @@ public class Endpoints {
      * The API URL used to get an access_token from ohmage.
      */
     public static final String ACCESS_TOKEN = API_ROOT + "/auth_token";
-
-    /**
-     * The API URL used to access ohmage users.
-     */
-    public static final String USERS = API_ROOT + "/users";
-
 }

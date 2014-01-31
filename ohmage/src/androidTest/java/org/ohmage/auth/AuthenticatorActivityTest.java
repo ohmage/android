@@ -27,13 +27,15 @@ import com.android.volley.RequestQueue;
 import com.android.volley.ServerError;
 import com.google.android.gms.plus.PlusClient;
 
+import org.mockito.ArgumentMatcher;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.ohmage.app.OhmageService;
 import org.ohmage.app.R;
+import org.ohmage.auth.AuthUtil.GrantType;
 import org.ohmage.models.AccessToken;
 import org.ohmage.models.User;
 import org.ohmage.requests.AccessTokenRequest;
-import org.ohmage.requests.CreateUserRequest;
 import org.ohmage.test.DeliverVolleyErrorToBus;
 import org.ohmage.test.DeliverVolleyResultToBus;
 import org.ohmage.test.dagger.InjectedActivityInstrumentationTestCase;
@@ -43,6 +45,10 @@ import java.util.Arrays;
 import java.util.List;
 
 import javax.inject.Inject;
+
+import retrofit.Callback;
+import retrofit.RetrofitError;
+import retrofit.client.Response;
 
 import static com.google.android.apps.common.testing.ui.espresso.Espresso.onView;
 import static com.google.android.apps.common.testing.ui.espresso.action.ViewActions.click;
@@ -57,7 +63,11 @@ import static com.google.android.apps.common.testing.ui.espresso.matcher.ViewMat
 import static com.google.android.apps.common.testing.ui.espresso.matcher.ViewMatchers.withText;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.argThat;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -75,6 +85,7 @@ public class AuthenticatorActivityTest
     @Inject AuthHelper fakeAuthHelper;
     @Inject AccountManager fakeAccountManager;
     @Inject RequestQueue fakeRequestQueue;
+    @Inject OhmageService fakeOhmageService;
     @Inject PlusClientFragment fakePlusClientFragment;
 
     private static final String fakeGoogleEmail = "fake@gmail.com";
@@ -92,6 +103,15 @@ public class AuthenticatorActivityTest
     private static final NetworkResponse fakeNetworkResponse =
             new NetworkResponse("Horrible Error".getBytes());
     private static final ServerError fakeServerError = new ServerError(fakeNetworkResponse);
+    private Callback<User> fakeCallback = new Callback<User>() {
+        @Override public void success(User user, Response response) {
+
+        }
+
+        @Override public void failure(RetrofitError error) {
+
+        }
+    };
 
     public AuthenticatorActivityTest() {
         super(AuthenticatorActivity.class);
@@ -238,7 +258,7 @@ public class AuthenticatorActivityTest
         onView(withId(R.id.sign_in_ohmage_frame)).check(matches(isDisplayed()));
     }
 
-    public void testCreateAccount_validInputs_startsCreateAccountRequest() {
+    public void testCreateAccount_validInputs_startsCreateAccountRequestForUser() {
         onView(withId(R.id.create_account_button)).perform(click());
 
         onView(withId(R.id.fullname)).perform(scrollTo(), typeText(fakeFullname));
@@ -246,10 +266,13 @@ public class AuthenticatorActivityTest
         onView(withId(R.id.password)).perform(scrollTo(), typeText(fakePassword));
         onView(withId(R.id.create_account_button)).perform(scrollTo(), click());
 
-        verify(fakeRequestQueue).add(
-                new CreateUserRequest(AuthUtil.GrantType.CLIENT_CREDENTIALS, fakePassword,
-                        fakeUser));
+        verify(fakeOhmageService).createUser(eq(fakePassword), argThat(new ArgumentMatcher<User>() {
+            @Override public boolean matches(Object argument) {
+                User arg = (User) argument;
+                return fakeUser.email.equals(arg.email) && fakeUser.fullName.equals(arg.fullName);
             }
+        }), any(Callback.class));
+    }
 
     public void testCreateAccount_invalidEmail_doesNotPerformNetworkRequest() {
         onView(withId(R.id.create_account_button)).perform(click());
@@ -259,9 +282,9 @@ public class AuthenticatorActivityTest
         onView(withId(R.id.password)).perform(scrollTo(), typeText(fakePassword));
         onView(withId(R.id.create_account_button)).perform(scrollTo(), click());
 
-        verify(fakeRequestQueue, never()).add(
-                new CreateUserRequest(AuthUtil.GrantType.CLIENT_CREDENTIALS, fakePassword,
-                        fakeUser));
+        verify(fakeOhmageService, never())
+                .createUser(any(GrantType.class), anyString(), any(User.class),
+                        any(Callback.class));
     }
 
     public void testCreateAccount_invalidEmail_showsErrorMessage() {
@@ -295,9 +318,9 @@ public class AuthenticatorActivityTest
         onView(withId(R.id.password)).perform(scrollTo(), typeText(fakePassword));
         onView(withId(R.id.create_account_button)).perform(scrollTo(), click());
 
-        verify(fakeRequestQueue, never()).add(
-                new CreateUserRequest(AuthUtil.GrantType.CLIENT_CREDENTIALS, fakePassword,
-                        fakeUser));
+        verify(fakeOhmageService, never())
+                .createUser(any(GrantType.class), anyString(), any(User.class),
+                        any(Callback.class));
     }
 
     public void testCreateAccount_noEmail_showsErrorMessage() {
@@ -329,9 +352,8 @@ public class AuthenticatorActivityTest
         onView(withId(R.id.email)).perform(scrollTo(), typeText(fakeEmail));
         onView(withId(R.id.create_account_button)).perform(scrollTo(), click());
 
-        verify(fakeRequestQueue, never()).add(
-                new CreateUserRequest(AuthUtil.GrantType.CLIENT_CREDENTIALS, fakePassword,
-                        fakeUser));
+        verify(fakeOhmageService, never())
+                .createUser(anyString(), any(User.class), any(Callback.class));
     }
 
     public void testCreateAccount_noPassword_showsErrorMessage() {
@@ -358,17 +380,23 @@ public class AuthenticatorActivityTest
 
     public void testCreateAccount_noFullName_startsCreateAccountRequest() {
         onView(withId(R.id.create_account_button)).perform(click());
-        User fakeUser = new User();
+        final User fakeUser = new User();
         fakeUser.email = fakeEmail;
 
         onView(withId(R.id.email)).perform(scrollTo(), typeText(fakeEmail));
         onView(withId(R.id.password)).perform(scrollTo(), typeText(fakePassword));
         onView(withId(R.id.create_account_button)).perform(scrollTo(), click());
 
-        verify(fakeRequestQueue).add(
-                new CreateUserRequest(AuthUtil.GrantType.CLIENT_CREDENTIALS, fakePassword,
-                        fakeUser));
+        verify(fakeOhmageService).createUser(eq(fakePassword), argThat(new ArgumentMatcher<User>() {
+            @Override public boolean matches(Object argument) {
+                User arg = (User) argument;
+                // Check that email and full name are the same as our fake user
+                return fakeUser.email.equals(arg.email) &&
+                       (fakeUser.fullName == null ? arg.fullName == null :
+                               fakeUser.fullName.equals(arg.fullName));
             }
+        }), any(Callback.class));
+    }
 
     public void testCreateAccount_noFullName_fullNameFieldDoesNotHaveError() {
         onView(withId(R.id.create_account_button)).perform(click());

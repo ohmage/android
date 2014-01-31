@@ -31,7 +31,6 @@ import org.ohmage.auth.AuthenticatorTest;
 import org.ohmage.auth.CreateAccountFragment;
 import org.ohmage.auth.SignInFragment;
 import org.ohmage.requests.AccessTokenRequest;
-import org.ohmage.requests.CreateUserRequest;
 import org.ohmage.streams.StreamContentProvider;
 import org.ohmage.sync.StreamSyncAdapter;
 import org.ohmage.sync.StreamSyncAdapterTest;
@@ -57,7 +56,6 @@ import static org.mockito.Mockito.mock;
                 CreateAccountFragment.class,
                 SignInFragment.class,
                 AccessTokenRequest.class,
-                CreateUserRequest.class,
                 LogoutTaskFragment.class,
                 StreamContentProvider.class,
                 StreamSyncAdapter.class

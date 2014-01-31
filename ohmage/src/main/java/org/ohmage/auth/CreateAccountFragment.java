@@ -29,15 +29,18 @@ import android.widget.TextView;
 
 import com.android.volley.RequestQueue;
 import com.squareup.otto.Bus;
-import com.squareup.otto.Subscribe;
 
+import org.ohmage.app.OhmageService;
 import org.ohmage.app.R;
 import org.ohmage.fragments.TransitionFragment;
 import org.ohmage.models.User;
 import org.ohmage.requests.AccessTokenRequest;
-import org.ohmage.requests.CreateUserRequest;
 
 import javax.inject.Inject;
+
+import retrofit.Callback;
+import retrofit.RetrofitError;
+import retrofit.client.Response;
 
 /**
  * Activity which gets details for account creation from the user
@@ -45,6 +48,8 @@ import javax.inject.Inject;
 public class CreateAccountFragment extends TransitionFragment {
 
     private static final String TAG = CreateAccountFragment.class.getSimpleName();
+
+    @Inject OhmageService ohmageService;
 
     @Inject RequestQueue requestQueue;
     @Inject Bus bus;
@@ -217,8 +222,33 @@ public class CreateAccountFragment extends TransitionFragment {
      *
      * @param token
      */
-    private void createAccount(String token) {
-        requestQueue.add(new CreateUserRequest(mGrantType, token, mUser));
+    private void createAccount(final String token) {
+        if (mGrantType == AuthUtil.GrantType.CLIENT_CREDENTIALS) {
+            ohmageService.createUser(token, mUser, new Callback<User>() {
+                @Override public void success(User user, Response response) {
+                    ((AuthenticatorActivity) getActivity()).createAccount(user.email, null, null);
+                }
+
+                @Override public void failure(RetrofitError error) {
+
+                }
+            });
+        } else {
+            ohmageService.createUser(mGrantType, token, mUser, new Callback<User>() {
+                @Override public void success(User user, Response response) {
+                    mCallbacks.fetchToken(new UseToken() {
+                        @Override
+                        public void useToken(String token) {
+                            requestQueue.add(new AccessTokenRequest(mGrantType, token));
+                        }
+                    });
+                }
+
+                @Override public void failure(RetrofitError error) {
+                    //TODO: handle errors here
+                }
+            });
+        }
     }
 
     /**
@@ -238,26 +268,6 @@ public class CreateAccountFragment extends TransitionFragment {
      */
     private boolean showOhmageAccountPrompts() {
         return mGrantType == AuthUtil.GrantType.CLIENT_CREDENTIALS;
-    }
-
-    /**
-     * This function is called when the {@link org.ohmage.requests.CreateUserRequest} finishes
-     * successfully
-     *
-     * @param user
-     */
-    @Subscribe
-    public void onUserCreatedRequest(User user) {
-        if (mGrantType == AuthUtil.GrantType.CLIENT_CREDENTIALS) {
-            requestQueue.add(new AccessTokenRequest(user.email, mPassword));
-        } else {
-            mCallbacks.fetchToken(new UseToken() {
-                @Override
-                public void useToken(String token) {
-                    requestQueue.add(new AccessTokenRequest(mGrantType, token));
-                }
-            });
-        }
     }
 
     /**
