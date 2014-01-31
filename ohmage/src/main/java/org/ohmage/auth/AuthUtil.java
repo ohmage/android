@@ -65,7 +65,7 @@ public class AuthUtil {
             this.type = type;
         }
 
-        public String getName() {
+        public String toString() {
             return type;
         }
     }

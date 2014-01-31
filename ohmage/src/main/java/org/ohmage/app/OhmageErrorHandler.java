@@ -16,14 +16,11 @@
 
 package org.ohmage.app;
 
-import android.util.Log;
-
 import org.apache.http.auth.AuthenticationException;
 
 import retrofit.ErrorHandler;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
-import retrofit.mime.TypedByteArray;
 
 /**
  * Created by cketcham on 12/9/13.
@@ -33,16 +30,13 @@ public class OhmageErrorHandler implements ErrorHandler {
     private static final String TAG = OhmageErrorHandler.class.getSimpleName();
 
     @Override public Throwable handleError(RetrofitError cause) {
-        Response r = cause.getResponse();
 
-        if (r != null && r.getBody() instanceof TypedByteArray) {
-            String body = new String(((TypedByteArray) r.getBody()).getBytes());
-            Log.e(TAG, r.getStatus() + ": " + body);
-        }
+        Response r = cause.getResponse();
 
         if (r != null && r.getStatus() == 401) {
             return new AuthenticationException("Error authenticating with ohmage", cause);
         }
+
         return cause;
     }
 }

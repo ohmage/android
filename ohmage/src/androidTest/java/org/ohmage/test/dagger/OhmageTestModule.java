@@ -17,9 +17,9 @@
 package org.ohmage.test.dagger;
 
 import android.accounts.AccountManager;
+import android.content.Context;
 
-import com.android.volley.RequestQueue;
-import com.squareup.otto.Bus;
+import com.google.gson.Gson;
 
 import org.ohmage.app.MainActivity;
 import org.ohmage.app.MainActivityTest;
@@ -30,7 +30,7 @@ import org.ohmage.auth.Authenticator;
 import org.ohmage.auth.AuthenticatorTest;
 import org.ohmage.auth.CreateAccountFragment;
 import org.ohmage.auth.SignInFragment;
-import org.ohmage.requests.AccessTokenRequest;
+import org.ohmage.dagger.ForApplication;
 import org.ohmage.streams.StreamContentProvider;
 import org.ohmage.sync.StreamSyncAdapter;
 import org.ohmage.sync.StreamSyncAdapterTest;
@@ -55,7 +55,6 @@ import static org.mockito.Mockito.mock;
                 Authenticator.class,
                 CreateAccountFragment.class,
                 SignInFragment.class,
-                AccessTokenRequest.class,
                 LogoutTaskFragment.class,
                 StreamContentProvider.class,
                 StreamSyncAdapter.class
@@ -66,20 +65,19 @@ import static org.mockito.Mockito.mock;
 )
 public class OhmageTestModule {
 
-    @Provides @Singleton RequestQueue provideRequestQueue() {
-        return mock(RequestQueue.class);
-    }
-
-    @Provides @Singleton Bus provideBus() {
-        return new Bus();
-    }
-
-    @Provides @Singleton AccountManager provideAccountManager() {
+    @Provides @Singleton AccountManager provideAccountManager(@ForApplication Context context) {
         return mock(AccountManager.class);
     }
 
     @Provides @Singleton AuthHelper provideAuthHelper() {
         return mock(AuthHelper.class);
+    }
+
+    @Provides @Singleton Gson provideGson() {
+//        Gson gson = new GsonBuilder()
+//                .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+//                .create();
+        return mock(Gson.class);
     }
 
     @Provides @Singleton OhmageService provideOhmageService() {

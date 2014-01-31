@@ -20,19 +20,19 @@ package org.ohmage.models;
  * Holds data from an accessToken request
  */
 public class AccessToken {
-    String accessToken;
+    public String accessToken;
 
-    String refreshToken;
+    public String refreshToken;
 
-    String email;
+    public String userId;
 
     public AccessToken() {
     }
 
-    public AccessToken(String token, String refresh, String email) {
+    public AccessToken(String token, String refresh, String userId) {
         accessToken = token;
         refreshToken = refresh;
-        email = email;
+        this.userId = userId;
     }
 
     public String getRefreshToken() {
@@ -43,7 +43,7 @@ public class AccessToken {
         return accessToken;
     }
 
-    public String getEmail() {
-        return email;
+    public String getUserId() {
+        return userId;
     }
 }

@@ -28,44 +28,40 @@ import android.support.v4.app.FragmentTransaction;
 import android.text.TextUtils;
 import android.widget.Toast;
 
-import com.android.volley.AuthFailureError;
-import com.android.volley.NetworkError;
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.ServerError;
-import com.android.volley.VolleyError;
 import com.google.android.gms.auth.GoogleAuthException;
 import com.google.android.gms.auth.GoogleAuthUtil;
 import com.google.android.gms.auth.GooglePlayServicesAvailabilityException;
 import com.google.android.gms.auth.UserRecoverableAuthException;
 import com.google.android.gms.plus.PlusClient;
 import com.google.android.gms.plus.model.people.Person;
-import com.squareup.otto.Bus;
-import com.squareup.otto.Subscribe;
 
 import org.ohmage.app.MainActivity;
+import org.ohmage.app.OhmageService;
 import org.ohmage.app.R;
 import org.ohmage.dagger.PlusClientFragmentModule;
 import org.ohmage.models.AccessToken;
-import org.ohmage.requests.AccessTokenRequest;
-import org.ohmage.requests.OttoRequest;
+import org.ohmage.models.User;
 import org.ohmage.streams.StreamContract;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import javax.inject.Inject;
+
+import retrofit.RetrofitError;
+import retrofit.client.Response;
+import retrofit.mime.TypedByteArray;
 
 public class AuthenticatorActivity extends AuthenticatorFragmentActivity implements
         PlusClientFragment.OnSignInListener, CreateAccountFragment.Callbacks,
         AuthenticateFragment.Callbacks, SignInFragment.Callbacks {
 
     @Inject AuthHelper auth;
+    @Inject OhmageService ohmageService;
     @Inject AccountManager am;
-    @Inject RequestQueue requestQueue;
     @Inject PlusClientFragment mPlusClientFragment;
-    @Inject Bus bus;
 
     public static final int REQUEST_CODE_PLUS_CLIENT_FRAGMENT = 0;
     private static final String TAG_ERROR_DIALOG = "error_dialog";
@@ -75,6 +71,9 @@ public class AuthenticatorActivity extends AuthenticatorFragmentActivity impleme
     public static final String EXTRA_HANDLE_USER_RECOVERABLE_ERROR = "extra_handle_error";
 
     private AuthenticateFragment mAuthenticateFragment;
+
+    private ArrayList<OhmageService.CancelableCallback> mNetworkCallbacks =
+            new ArrayList<OhmageService.CancelableCallback>();
 
     /**
      * We need to listen to the back stack so we know if we should cancel network requests,
@@ -99,12 +98,9 @@ public class AuthenticatorActivity extends AuthenticatorFragmentActivity impleme
                         // When we pop back to the info entry, we should cancel all network operations
                         // TODO: only cancel the network operations we started using a tag
                         if (TAG_INFO_WINDOW.equals(entry.getName())) {
-                            requestQueue.cancelAll(new RequestQueue.RequestFilter() {
-                                @Override
-                                public boolean apply(Request<?> request) {
-                                    return true;
-                                }
-                            });
+                            for (OhmageService.CancelableCallback callback : mNetworkCallbacks) {
+                                callback.cancel();
+                            }
                         }
                     }
                 }
@@ -172,7 +168,6 @@ public class AuthenticatorActivity extends AuthenticatorFragmentActivity impleme
     @Override
     protected void onResume() {
         super.onResume();
-        bus.register(this);
 
         FragmentManager fm = getSupportFragmentManager();
         fm.addOnBackStackChangedListener(cancelRequests);
@@ -181,7 +176,6 @@ public class AuthenticatorActivity extends AuthenticatorFragmentActivity impleme
     @Override
     protected void onPause() {
         super.onPause();
-        bus.unregister(this);
 
         FragmentManager fm = getSupportFragmentManager();
         fm.removeOnBackStackChangedListener(cancelRequests);
@@ -366,29 +360,74 @@ public class AuthenticatorActivity extends AuthenticatorFragmentActivity impleme
      * @param plusClient
      */
     private void startLogin(PlusClient plusClient) {
-        new GoogleAccessTokenTask(plusClient.getAccountName(), new GoogleAccessTokenCallback() {
+        final String email = plusClient.getAccountName();
+        new GoogleAccessTokenTask(email, new GoogleAccessTokenCallback() {
             @Override
             public void onGoogleAccessTokenReceived(String token) {
                 // Now that we have a google accessToken, we can make a request to get one from ohmage
-                requestQueue.add(new AccessTokenRequest(
-                        AuthUtil.GrantType.GOOGLE_OAUTH2, token));
+                OhmageService.CancelableCallback<AccessToken> callback =
+                        new OhmageService.CancelableCallback<AccessToken>() {
+                            @Override
+                            public void success(AccessToken accessToken, Response response) {
+                                if (!isCancelled())
+                                    createAccount(email, accessToken);
+                            }
+
+                            @Override public void failure(RetrofitError error) {
+                                if (isCancelled())
+                                    return;
+
+                                if (error.getResponse().getStatus() == 409) {
+                                    Person person =
+                                            mPlusClientFragment.getClient().getCurrentPerson();
+                                    String fullName = null;
+                                    if (person != null)
+                                        fullName = person.getDisplayName();
+                                    showCreateAccountFragment(AuthUtil.GrantType.GOOGLE_OAUTH2,
+                                            fullName);
+                                } else {
+                                    onRetrofitError(error);
+                                }
+                            }
+                        };
+                ohmageService.getAccessToken(AuthUtil.GrantType.GOOGLE_OAUTH2, token, callback);
             }
         }).execute();
     }
 
-    /**
-     * This function is called when the {@link org.ohmage.requests.AccessTokenRequest} finishes
-     * successfully
-     *
-     * @param token
-     */
-    @Subscribe
-    public void onAccessToken(AccessToken token) {
-        createAccount(token.getEmail(), token.getRefreshToken(), token.getAccessToken());
+    public void createAccount(String email, AccessToken token) {
+        // Add the account or find an existing account
+        Account account = addOrFindAccount(email, token.getRefreshToken());
+
+        if (mPlusClientFragment.getClient() != null &&
+            mPlusClientFragment.getClient().isConnected()) {
+            String googleAccountName = mPlusClientFragment.getClient().getAccountName();
+            am.setUserData(account, Authenticator.USER_DATA_GOOGLE_ACCOUNT, googleAccountName);
+        }
+
+        am.setUserData(account, Authenticator.USE_PASSWORD, String.valueOf(false));
+        am.setUserData(account, Authenticator.USER_ID, token.getUserId());
+        am.setAuthToken(account, AuthUtil.AUTHTOKEN_TYPE, token.getAccessToken());
+
+        finishAccountAdd(email, token.getAccessToken(), token.getRefreshToken());
     }
 
-    public void createAccount(String email, String password, String token) {
-        // If no accounts exist, we create a new account
+    public void createAccount(User user, String password) {
+        // Add the account or find an existing account
+        Account account = addOrFindAccount(user.email, password);
+
+        // Since we are adding the user with the password this account has not been activated
+        am.setUserData(account, Authenticator.USE_PASSWORD, String.valueOf(true));
+
+        // Determine the userId for this user if we can
+        if (user.registration != null) {
+            am.setUserData(account, Authenticator.USER_ID, user.registration.userId);
+        }
+
+        finishAccountAdd(user.email, null, password);
+    }
+
+    private Account addOrFindAccount(String email, String password) {
         Account[] accounts = am.getAccountsByType(AuthUtil.ACCOUNT_TYPE);
         Account account = accounts.length != 0 ? accounts[0] :
                 new Account(email, AuthUtil.ACCOUNT_TYPE);
@@ -402,18 +441,15 @@ public class AuthenticatorActivity extends AuthenticatorFragmentActivity impleme
         } else {
             am.setPassword(accounts[0], password);
         }
+        return account;
+    }
 
-        if (mPlusClientFragment.getClient() != null &&
-            mPlusClientFragment.getClient().isConnected()) {
-            String googleAccountName = mPlusClientFragment.getClient().getAccountName();
-            am.setUserData(account, Authenticator.USER_DATA_GOOGLE_ACCOUNT, googleAccountName);
-        }
-        am.setAuthToken(account, AuthUtil.AUTHTOKEN_TYPE, token);
-
+    private void finishAccountAdd(String accountName, String authToken, String password) {
         final Intent intent = new Intent();
-        intent.putExtra(AccountManager.KEY_ACCOUNT_NAME, email);
+        intent.putExtra(AccountManager.KEY_ACCOUNT_NAME, accountName);
         intent.putExtra(AccountManager.KEY_ACCOUNT_TYPE, AuthUtil.ACCOUNT_TYPE);
-        intent.putExtra(AccountManager.KEY_AUTHTOKEN, token);
+        if (authToken != null)
+            intent.putExtra(AccountManager.KEY_AUTHTOKEN, authToken);
         intent.putExtra(AccountManager.KEY_PASSWORD, password);
         setAccountAuthenticatorResult(intent.getExtras());
         setResult(RESULT_OK, intent);
@@ -424,46 +460,40 @@ public class AuthenticatorActivity extends AuthenticatorFragmentActivity impleme
     }
 
     /**
-     * This function is called if no account exists on the server for a network call
-     *
-     * @param event
-     */
-    @Subscribe
-    public void onNoAccountEvent(OttoRequest.NoAccountEvent event) {
-        Person person = mPlusClientFragment.getClient().getCurrentPerson();
-        String fullName = null;
-        if (person != null)
-            fullName = person.getDisplayName();
-        showCreateAccountFragment(AuthUtil.GrantType.GOOGLE_OAUTH2, fullName);
-    }
-
-    /**
-     * This function is called if there is an error while making a {@link com.android.volley.Request}
+     * This function should be called on a retrofit error
      *
      * @param error
      */
-    @Subscribe
-    public void onVolleyErrorEvent(VolleyError error) {
+    public void onRetrofitError(final RetrofitError error) {
+
         // If there is a network error, we should pop back to the last info window if there was one
         getSupportFragmentManager().popBackStack(TAG_INFO_WINDOW, 0);
 
-        // If there is nothing on the back stack to pop we should immediately stop showing progress
-        if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
-            showProgress(false);
-        }
 
-        // Show a toast with information about the error
-        if (error instanceof NetworkError) {
-            Toast.makeText(getBaseContext(), R.string.network_error, Toast.LENGTH_SHORT).show();
-        } else if (error instanceof ServerError) {
-            Toast.makeText(getBaseContext(), new String(error.networkResponse.data),
-                    Toast.LENGTH_SHORT).show();
-        } else if (error instanceof AuthFailureError) {
-            Toast.makeText(getBaseContext(), R.string.error_invalid_credentials, Toast.LENGTH_SHORT)
-                 .show();
-        } else {
-            Toast.makeText(getBaseContext(), R.string.unknown_error, Toast.LENGTH_SHORT).show();
-        }
+        // If there is nothing on the back stack to pop we should immediately stop showing progress
+        runOnUiThread(new Runnable() {
+            @Override public void run() {
+                if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
+                    showProgress(false);
+                }
+
+                Response r = error.getResponse();
+
+                if (error.isNetworkError()) {
+                    Toast.makeText(getBaseContext(), R.string.network_error, Toast.LENGTH_SHORT)
+                         .show();
+                } else if (r != null && r.getStatus() == 401) {
+                    Toast.makeText(getBaseContext(), R.string.error_invalid_credentials,
+                            Toast.LENGTH_SHORT).show();
+                } else if (r != null && r.getBody() instanceof TypedByteArray) {
+                    String body = new String(((TypedByteArray) r.getBody()).getBytes());
+                    Toast.makeText(getBaseContext(), body, Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(getBaseContext(), R.string.unknown_error, Toast.LENGTH_SHORT)
+                         .show();
+                }
+            }
+        });
     }
 
     public static interface GoogleAccessTokenCallback {

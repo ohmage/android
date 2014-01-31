@@ -19,23 +19,21 @@ package org.ohmage.dagger;
 import android.accounts.AccountManager;
 import android.content.Context;
 
-import com.android.volley.RequestQueue;
-import com.android.volley.toolbox.Volley;
+import com.google.gson.FieldNamingPolicy;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.squareup.okhttp.HttpResponseCache;
 import com.squareup.okhttp.OkHttpClient;
-import com.squareup.otto.Bus;
 
-import org.ohmage.app.Endpoints;
 import org.ohmage.app.MainActivity;
+import org.ohmage.app.Ohmage;
 import org.ohmage.app.OhmageErrorHandler;
 import org.ohmage.app.OhmageService;
-import org.ohmage.app.OkHttpStack;
 import org.ohmage.auth.AuthHelper;
 import org.ohmage.auth.AuthenticateFragment;
 import org.ohmage.auth.Authenticator;
 import org.ohmage.auth.CreateAccountFragment;
 import org.ohmage.auth.SignInFragment;
-import org.ohmage.requests.AccessTokenRequest;
 import org.ohmage.streams.StreamContentProvider;
 import org.ohmage.sync.StreamSyncAdapter;
 import org.ohmage.tasks.LogoutTaskFragment;
@@ -50,6 +48,7 @@ import dagger.Module;
 import dagger.Provides;
 import retrofit.RestAdapter;
 import retrofit.client.OkClient;
+import retrofit.converter.GsonConverter;
 
 @Module(
         injects = {
@@ -58,7 +57,6 @@ import retrofit.client.OkClient;
                 Authenticator.class,
                 CreateAccountFragment.class,
                 SignInFragment.class,
-                AccessTokenRequest.class,
                 LogoutTaskFragment.class,
                 StreamContentProvider.class,
                 StreamSyncAdapter.class
@@ -68,14 +66,6 @@ import retrofit.client.OkClient;
 )
 public class OhmageModule {
 
-    @Provides @Singleton RequestQueue provideRequestQueue(@ForApplication Context context) {
-        return Volley.newRequestQueue(context, new OkHttpStack());
-    }
-
-    @Provides @Singleton Bus provideBus() {
-        return new Bus();
-    }
-
     @Provides @Singleton AccountManager provideAccountManager(@ForApplication Context context) {
         return AccountManager.get(context);
     }
@@ -84,7 +74,14 @@ public class OhmageModule {
         return new AuthHelper(context);
     }
 
-    @Provides OhmageService provideOhmageService(@ForApplication Context context) {
+    @Provides @Singleton Gson provideGson() {
+        Gson gson = new GsonBuilder()
+                .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+                .create();
+        return gson;
+    }
+
+    @Provides OhmageService provideOhmageService(@ForApplication Context context, Gson gson) {
         // Create an HTTP client that uses a cache on the file system.
         OkHttpClient okHttpClient = new OkHttpClient();
         try {
@@ -97,10 +94,11 @@ public class OhmageModule {
         Executor executor = Executors.newCachedThreadPool();
         RestAdapter restAdapter = new RestAdapter.Builder()
                 .setExecutors(executor, executor)
+                .setConverter(new GsonConverter(gson))
                 .setClient(new OkClient(okHttpClient))
-                .setLogLevel(RestAdapter.LogLevel.BASIC)
+                .setLogLevel(RestAdapter.LogLevel.FULL)
                 .setErrorHandler(new OhmageErrorHandler())
-                .setServer(Endpoints.API_ROOT)
+                .setServer(Ohmage.API_ROOT)
                 .build();
         return restAdapter.create(OhmageService.class);
 

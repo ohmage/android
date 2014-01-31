@@ -23,21 +23,20 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 
-import com.android.volley.AuthFailureError;
-import com.android.volley.NoConnectionError;
-import com.android.volley.RequestQueue;
-import com.android.volley.ServerError;
-import com.android.volley.VolleyError;
 import com.google.android.gms.auth.UserRecoverableAuthException;
 
+import org.apache.http.auth.AuthenticationException;
 import org.mockito.stubbing.OngoingStubbing;
+import org.ohmage.app.OhmageService;
+import org.ohmage.auth.AuthUtil.GrantType;
 import org.ohmage.models.AccessToken;
-import org.ohmage.requests.AccessTokenRequest;
-import org.ohmage.test.DeliverVolleyErrorToListener;
-import org.ohmage.test.DeliverVolleyResultToListener;
 import org.ohmage.test.dagger.InjectedAndroidTestCase;
 
+import java.io.IOException;
+
 import javax.inject.Inject;
+
+import retrofit.RetrofitError;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -52,7 +51,7 @@ public class AuthenticatorTest extends InjectedAndroidTestCase {
 
     @Inject AuthHelper fakeAuthHelper;
     @Inject AccountManager fakeAccountManager;
-    @Inject RequestQueue fakeRequestQueue;
+    @Inject OhmageService fakeOhmageService;
 
     private Authenticator mAuthenticator;
     private Context fakeContext;
@@ -62,6 +61,9 @@ public class AuthenticatorTest extends InjectedAndroidTestCase {
     private static final String refreshToken = "refresh";
     private AccessToken token;
     private static final String stubGoogleToken = "google_token";
+    private static final IOException ioe = new IOException();
+    private static final RetrofitError networkError = RetrofitError.networkError("", ioe);
+    private static final RetrofitError serverError = RetrofitError.networkError("", ioe);
 
     @Override
     public void setUp() throws Exception {
@@ -89,20 +91,20 @@ public class AuthenticatorTest extends InjectedAndroidTestCase {
     public void testGetAuthToken_whenNotCached_usesRefreshToken() throws Exception {
         setAuthTokenCached(false);
         setAccountRefreshToken();
-        setAccessTokenResult(new AccessTokenRequest(refreshToken), null);
+        setAccessTokenSuccess(refreshToken);
 
         mAuthenticator.getAuthToken(null, fakeAccount, AuthUtil.AUTHTOKEN_TYPE, null);
 
         // Get the refresh password
         verify(fakeAccountManager).getPassword(fakeAccount);
         // Use the refresh password to get new tokens
-        verify(fakeRequestQueue).add(new AccessTokenRequest(refreshToken));
+        verify(fakeOhmageService).getAccessToken(refreshToken);
     }
 
     public void testGetAuthToken_whenNotCached_savesNewRefreshToken() throws Exception {
         setAuthTokenCached(false);
         setAccountRefreshToken();
-        setAccessTokenResult(new AccessTokenRequest(refreshToken), null);
+        setAccessTokenSuccess(refreshToken);
 
         mAuthenticator.getAuthToken(null, fakeAccount, AuthUtil.AUTHTOKEN_TYPE, null);
 
@@ -113,7 +115,7 @@ public class AuthenticatorTest extends InjectedAndroidTestCase {
     public void testGetAuthToken_whenUsingRefreshToken_returnsToken() throws Exception {
         setAuthTokenCached(false);
         setAccountRefreshToken();
-        setAccessTokenResult(new AccessTokenRequest(refreshToken), null);
+        setAccessTokenSuccess(refreshToken);
 
         Bundle bundle = mAuthenticator.getAuthToken(null, fakeAccount,
                 AuthUtil.AUTHTOKEN_TYPE, null);
@@ -124,7 +126,7 @@ public class AuthenticatorTest extends InjectedAndroidTestCase {
             throws Exception {
         setAuthTokenCached(false);
         setAccountRefreshToken();
-        setAccessTokenResult(new AccessTokenRequest(refreshToken), new NoConnectionError());
+        setAccessTokenFailure(refreshToken, networkError);
 
         try {
             mAuthenticator.getAuthToken(null, fakeAccount, AuthUtil.AUTHTOKEN_TYPE, null);
@@ -138,7 +140,7 @@ public class AuthenticatorTest extends InjectedAndroidTestCase {
             throws Exception {
         setAuthTokenCached(false);
         setAccountRefreshToken();
-        setAccessTokenResult(new AccessTokenRequest(refreshToken), new ServerError());
+        setAccessTokenFailure(refreshToken, serverError);
 
         try {
             mAuthenticator.getAuthToken(null, fakeAccount, AuthUtil.AUTHTOKEN_TYPE, null);
@@ -151,7 +153,7 @@ public class AuthenticatorTest extends InjectedAndroidTestCase {
     public void testGetAuthToken_authErrorUsingRefreshToken_notifiesUser() throws Exception {
         setAuthTokenCached(false);
         setAccountRefreshToken();
-        setAccessTokenResult(new AccessTokenRequest(refreshToken), new AuthFailureError());
+        setAccessTokenFailure(refreshToken, new AuthenticationException(""));
 
         Bundle data = mAuthenticator.getAuthToken(null, fakeAccount, AuthUtil.AUTHTOKEN_TYPE, null);
 
@@ -162,12 +164,10 @@ public class AuthenticatorTest extends InjectedAndroidTestCase {
             throws Exception {
         setAuthTokenCached(false);
         setAccountRefreshToken();
-        setAccessTokenResult(new AccessTokenRequest(refreshToken), new AuthFailureError());
+        when(fakeOhmageService.getAccessToken(refreshToken))
+                .thenThrow(new AuthenticationException("")).thenReturn(token);
         setHasGoogleAccount(true);
         setGetGoogleAuthTokenResult(null);
-        setAccessTokenResult(
-                new AccessTokenRequest(AuthUtil.GrantType.GOOGLE_OAUTH2, stubGoogleToken),
-                null);
 
         mAuthenticator.getAuthToken(null, fakeAccount, AuthUtil.AUTHTOKEN_TYPE, null);
 
@@ -179,7 +179,7 @@ public class AuthenticatorTest extends InjectedAndroidTestCase {
             throws Exception {
         setAuthTokenCached(false);
         setAccountRefreshToken();
-        setAccessTokenResult(new AccessTokenRequest(refreshToken), new AuthFailureError());
+        setAccessTokenFailure(refreshToken, new AuthenticationException(""));
         setHasGoogleAccount(true);
         UserRecoverableAuthException fakeException = new UserRecoverableAuthException("msg",
                 new Intent());
@@ -198,12 +198,10 @@ public class AuthenticatorTest extends InjectedAndroidTestCase {
     public void testGetAuthToken_whenAuthWithGoogle_returnsToken() throws Exception {
         setAuthTokenCached(false);
         setAccountRefreshToken();
-        setAccessTokenResult(new AccessTokenRequest(refreshToken), new AuthFailureError());
+        setAccessTokenFailure(refreshToken, new AuthenticationException(""));
         setHasGoogleAccount(true);
         setGetGoogleAuthTokenResult(null);
-        setAccessTokenResult(
-                new AccessTokenRequest(AuthUtil.GrantType.GOOGLE_OAUTH2, stubGoogleToken),
-                null);
+        setAccessTokenSuccess(AuthUtil.GrantType.GOOGLE_OAUTH2, stubGoogleToken);
 
         Bundle data = mAuthenticator.getAuthToken(null, fakeAccount, AuthUtil.AUTHTOKEN_TYPE, null);
 
@@ -214,12 +212,10 @@ public class AuthenticatorTest extends InjectedAndroidTestCase {
             throws Exception {
         setAuthTokenCached(false);
         setAccountRefreshToken();
-        setAccessTokenResult(new AccessTokenRequest(refreshToken), new AuthFailureError());
+        setAccessTokenFailure(refreshToken, new AuthenticationException(""));
         setHasGoogleAccount(true);
         setGetGoogleAuthTokenResult(null);
-        setAccessTokenResult(
-                new AccessTokenRequest(AuthUtil.GrantType.GOOGLE_OAUTH2, stubGoogleToken),
-                new NoConnectionError());
+        setAccessTokenFailure(AuthUtil.GrantType.GOOGLE_OAUTH2, stubGoogleToken, networkError);
 
         try {
             mAuthenticator.getAuthToken(null, fakeAccount, AuthUtil.AUTHTOKEN_TYPE, null);
@@ -229,19 +225,21 @@ public class AuthenticatorTest extends InjectedAndroidTestCase {
         }
     }
 
-    public void testGetAuthToken_serverErrorWhenAuthWithGoogle_notifiesUser() throws Exception {
+    public void testGetAuthToken_serverErrorWhenAuthWithGoogleToken_throwsNetworkException()
+            throws Exception {
         setAuthTokenCached(false);
         setAccountRefreshToken();
-        setAccessTokenResult(new AccessTokenRequest(refreshToken), new AuthFailureError());
+        setAccessTokenFailure(refreshToken, new AuthenticationException(""));
         setHasGoogleAccount(true);
         setGetGoogleAuthTokenResult(null);
-        setAccessTokenResult(
-                new AccessTokenRequest(AuthUtil.GrantType.GOOGLE_OAUTH2, stubGoogleToken),
-                new ServerError());
+        setAccessTokenFailure(AuthUtil.GrantType.GOOGLE_OAUTH2, stubGoogleToken, serverError);
 
-        Bundle data = mAuthenticator.getAuthToken(null, fakeAccount, AuthUtil.AUTHTOKEN_TYPE, null);
-
-        verifyNotifyUserBundle(data);
+        try {
+            mAuthenticator.getAuthToken(null, fakeAccount, AuthUtil.AUTHTOKEN_TYPE, null);
+            fail("No Exception Thrown");
+        } catch (Exception e) {
+            assertTrue(e instanceof NetworkErrorException);
+        }
     }
 
     private void setAuthTokenCached(boolean cached) {
@@ -253,12 +251,37 @@ public class AuthenticatorTest extends InjectedAndroidTestCase {
         when(fakeAccountManager.getPassword(fakeAccount)).thenReturn(refreshToken);
     }
 
-    private void setAccessTokenResult(AccessTokenRequest mockAccessTokenRequest,
-            VolleyError error) {
-        when(fakeRequestQueue.add(mockAccessTokenRequest)).then(
-                (error == null) ?
-                        new DeliverVolleyResultToListener(token) :
-                        new DeliverVolleyErrorToListener(error));
+    private void setAccessTokenSuccess(String refreshToken) throws Exception {
+        setAccessTokenResult(refreshToken, null);
+    }
+
+    private void setAccessTokenFailure(String refreshToken, Throwable error) throws Exception {
+        setAccessTokenResult(refreshToken, error);
+    }
+
+    private void setAccessTokenResult(String refreshToken, Throwable error) throws Exception {
+        OngoingStubbing<AccessToken> when = when(fakeOhmageService.getAccessToken(refreshToken));
+        if (error == null)
+            when.thenReturn(token);
+        else
+            when.thenThrow(error);
+    }
+
+    private void setAccessTokenSuccess(GrantType type, String token) throws Exception {
+        setAccessTokenResult(type, token, null);
+    }
+
+    private void setAccessTokenFailure(GrantType type, String token, Throwable error)
+            throws Exception {
+        setAccessTokenResult(type, token, error);
+    }
+
+    private void setAccessTokenResult(GrantType type, String t, Throwable error) throws Exception {
+        OngoingStubbing<AccessToken> when = when(fakeOhmageService.getAccessToken(type, t));
+        if (error == null)
+            when.thenReturn(token);
+        else
+            when.thenThrow(error);
     }
 
     private void setHasGoogleAccount(boolean hasAccount) {

@@ -27,13 +27,15 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.android.volley.RequestQueue;
-
+import org.ohmage.app.OhmageService;
 import org.ohmage.app.R;
 import org.ohmage.fragments.TransitionFragment;
-import org.ohmage.requests.AccessTokenRequest;
+import org.ohmage.models.AccessToken;
 
 import javax.inject.Inject;
+
+import retrofit.RetrofitError;
+import retrofit.client.Response;
 
 /**
  * Activity which attempts to log the user in with their email and password
@@ -42,7 +44,7 @@ public class SignInFragment extends TransitionFragment {
 
     private static final String TAG = SignInFragment.class.getSimpleName();
 
-    @Inject RequestQueue requestQueue;
+    @Inject OhmageService ohmageService;
 
     // UI references.
     private EditText mEmailView;
@@ -121,7 +123,7 @@ public class SignInFragment extends TransitionFragment {
         mEmailView.setError(null);
 
         String password = mPasswordView.getText().toString();
-        String email = mEmailView.getText().toString();
+        final String email = mEmailView.getText().toString();
 
         boolean cancel = false;
         View focusView = null;
@@ -149,7 +151,18 @@ public class SignInFragment extends TransitionFragment {
             }
 
             // Actually make the request to get the access token
-            requestQueue.add(new AccessTokenRequest(email, password));
+            ohmageService.getAccessToken(email, password,
+                    new OhmageService.CancelableCallback<AccessToken>() {
+                        @Override
+                        public void success(AccessToken accessToken, Response response) {
+                            ((AuthenticatorActivity) getActivity())
+                                    .createAccount(email, accessToken);
+                        }
+
+                        @Override public void failure(RetrofitError error) {
+                            ((AuthenticatorActivity) getActivity()).onRetrofitError(error);
+                        }
+                    });
         }
     }
 

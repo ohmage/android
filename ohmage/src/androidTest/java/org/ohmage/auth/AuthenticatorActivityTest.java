@@ -20,34 +20,30 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.test.suitebuilder.annotation.LargeTest;
 
-import com.android.volley.AuthFailureError;
-import com.android.volley.NetworkError;
-import com.android.volley.NetworkResponse;
-import com.android.volley.RequestQueue;
-import com.android.volley.ServerError;
 import com.google.android.gms.plus.PlusClient;
 
+import org.apache.http.auth.AuthenticationException;
 import org.mockito.ArgumentMatcher;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.ohmage.app.OhmageService;
+import org.ohmage.app.OhmageService.CancelableCallback;
 import org.ohmage.app.R;
 import org.ohmage.auth.AuthUtil.GrantType;
 import org.ohmage.models.AccessToken;
 import org.ohmage.models.User;
-import org.ohmage.requests.AccessTokenRequest;
-import org.ohmage.test.DeliverVolleyErrorToBus;
-import org.ohmage.test.DeliverVolleyResultToBus;
 import org.ohmage.test.dagger.InjectedActivityInstrumentationTestCase;
 import org.ohmage.test.dagger.PlusClientFragmentTestModule;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import javax.inject.Inject;
 
-import retrofit.Callback;
 import retrofit.RetrofitError;
+import retrofit.client.Header;
 import retrofit.client.Response;
 
 import static com.google.android.apps.common.testing.ui.espresso.Espresso.onView;
@@ -84,7 +80,6 @@ public class AuthenticatorActivityTest
 
     @Inject AuthHelper fakeAuthHelper;
     @Inject AccountManager fakeAccountManager;
-    @Inject RequestQueue fakeRequestQueue;
     @Inject OhmageService fakeOhmageService;
     @Inject PlusClientFragment fakePlusClientFragment;
 
@@ -100,10 +95,7 @@ public class AuthenticatorActivityTest
         fakeUser.fullName = fakeFullname;
     }
 
-    private static final NetworkResponse fakeNetworkResponse =
-            new NetworkResponse("Horrible Error".getBytes());
-    private static final ServerError fakeServerError = new ServerError(fakeNetworkResponse);
-    private Callback<User> fakeCallback = new Callback<User>() {
+    private CancelableCallback<User> fakeCallback = new CancelableCallback<User>() {
         @Override public void success(User user, Response response) {
 
         }
@@ -149,12 +141,23 @@ public class AuthenticatorActivityTest
         onView(withId(R.id.password)).perform(scrollTo(), typeText(fakePassword));
         onView(withId(R.id.sign_in_email_button)).perform(click());
 
-        verify(fakeRequestQueue).add(new AccessTokenRequest(fakeEmail, fakePassword));
+        verify(fakeOhmageService).getAccessToken(eq(fakeEmail), eq(fakePassword),
+                any(CancelableCallback.class));
     }
 
-    public void testSignInWithOhmage_invalidAccount_showsSignInWithOhmage() {
-        when(fakeRequestQueue.add(new AccessTokenRequest(fakeEmail, fakePassword))).then(
-                new DeliverVolleyErrorToBus(new AuthFailureError()));
+    public void testSignInWithOhmage_invalidAccount_showsSignInWithOhmage() throws Exception {
+        when(fakeOhmageService.getAccessToken(fakeEmail, fakePassword))
+                .thenThrow(new AuthenticationException());
+        final Response fakeResponse = new Response(401, "", new ArrayList<Header>() {
+        }, null);
+        doAnswer(new Answer() {
+            @Override public Object answer(InvocationOnMock invocation) throws Throwable {
+                ((CancelableCallback) invocation.getArguments()[2]).failure(
+                        RetrofitError.httpError("", fakeResponse, null, null));
+                return null;
+            }
+        }).when(fakeOhmageService).getAccessToken(eq(fakeEmail), eq(fakePassword),
+                any(CancelableCallback.class));
         onView(withId(R.id.sign_in_email_button)).perform(click());
 
         onView(withId(R.id.email)).perform(scrollTo(), typeText(fakeEmail));
@@ -166,9 +169,15 @@ public class AuthenticatorActivityTest
         onView(withId(R.id.sign_in_email_button)).check(matches(isDisplayed()));
     }
 
-    public void testSignInWithOhmage_serverError_showsSignInWithOhmage() {
-        when(fakeRequestQueue.add(new AccessTokenRequest(fakeEmail, fakePassword))).then(
-                new DeliverVolleyErrorToBus(fakeServerError));
+    public void testSignInWithOhmage_serverError_showsSignInWithOhmage() throws Exception {
+        doAnswer(new Answer() {
+            @Override public Object answer(InvocationOnMock invocation) throws Throwable {
+                ((CancelableCallback) invocation.getArguments()[2]).failure(RetrofitError
+                        .unexpectedError("url", new IOException()));
+                return null;
+            }
+        }).when(fakeOhmageService).getAccessToken(eq(fakeEmail), eq(fakePassword),
+                any(CancelableCallback.class));
         onView(withId(R.id.sign_in_email_button)).perform(click());
 
         onView(withId(R.id.email)).perform(scrollTo(), typeText(fakeEmail));
@@ -180,9 +189,15 @@ public class AuthenticatorActivityTest
         onView(withId(R.id.sign_in_email_button)).check(matches(isDisplayed()));
     }
 
-    public void testSignInWithOhmage_noNetwork_showsSignInWithOhmage() {
-        when(fakeRequestQueue.add(new AccessTokenRequest(fakeEmail, fakePassword))).then(
-                new DeliverVolleyErrorToBus(new NetworkError()));
+    public void testSignInWithOhmage_noNetwork_showsSignInWithOhmage() throws Exception {
+        doAnswer(new Answer() {
+            @Override public Object answer(InvocationOnMock invocation) throws Throwable {
+                ((CancelableCallback) invocation.getArguments()[2]).failure(RetrofitError
+                        .networkError("url", new IOException()));
+                return null;
+            }
+        }).when(fakeOhmageService).getAccessToken(eq(fakeEmail), eq(fakePassword),
+                any(CancelableCallback.class));
         onView(withId(R.id.sign_in_email_button)).perform(click());
 
         onView(withId(R.id.email)).perform(scrollTo(), typeText(fakeEmail));
@@ -194,13 +209,13 @@ public class AuthenticatorActivityTest
         onView(withId(R.id.sign_in_email_button)).check(matches(isDisplayed()));
     }
 
-    public void testSignInWithOhmage_noEmail_doesNotPerformNetworkRequest() {
+    public void testSignInWithOhmage_noEmail_doesNotPerformNetworkRequest() throws Exception {
         onView(withId(R.id.sign_in_email_button)).perform(click());
 
         onView(withId(R.id.password)).perform(scrollTo(), typeText(fakePassword));
         onView(withId(R.id.sign_in_email_button)).perform(click());
 
-        verify(fakeRequestQueue, never()).add(new AccessTokenRequest(fakeEmail, fakePassword));
+        verify(fakeOhmageService, never()).getAccessToken(anyString(), anyString());
     }
 
     public void testSignInWithOhmage_noEmail_showsErrorMessage() {
@@ -223,13 +238,13 @@ public class AuthenticatorActivityTest
         onView(withId(R.id.email)).check(matches(hasError(R.string.error_field_required)));
     }
 
-    public void testSignInWithOhmage_noPassword_doesNotPerformNetworkRequest() {
+    public void testSignInWithOhmage_noPassword_doesNotPerformNetworkRequest() throws Exception {
         onView(withId(R.id.sign_in_email_button)).perform(click());
 
         onView(withId(R.id.email)).perform(scrollTo(), typeText(fakeEmail));
         onView(withId(R.id.sign_in_email_button)).perform(click());
 
-        verify(fakeRequestQueue, never()).add(new AccessTokenRequest(fakeEmail, fakePassword));
+        verify(fakeOhmageService, never()).getAccessToken(anyString(), anyString());
     }
 
     public void testSignInWithOhmage_noPassword_showsErrorMessage() {
@@ -271,7 +286,7 @@ public class AuthenticatorActivityTest
                 User arg = (User) argument;
                 return fakeUser.email.equals(arg.email) && fakeUser.fullName.equals(arg.fullName);
             }
-        }), any(Callback.class));
+        }), any(CancelableCallback.class));
     }
 
     public void testCreateAccount_invalidEmail_doesNotPerformNetworkRequest() {
@@ -284,7 +299,7 @@ public class AuthenticatorActivityTest
 
         verify(fakeOhmageService, never())
                 .createUser(any(GrantType.class), anyString(), any(User.class),
-                        any(Callback.class));
+                        any(CancelableCallback.class));
     }
 
     public void testCreateAccount_invalidEmail_showsErrorMessage() {
@@ -320,7 +335,7 @@ public class AuthenticatorActivityTest
 
         verify(fakeOhmageService, never())
                 .createUser(any(GrantType.class), anyString(), any(User.class),
-                        any(Callback.class));
+                        any(CancelableCallback.class));
     }
 
     public void testCreateAccount_noEmail_showsErrorMessage() {
@@ -353,7 +368,7 @@ public class AuthenticatorActivityTest
         onView(withId(R.id.create_account_button)).perform(scrollTo(), click());
 
         verify(fakeOhmageService, never())
-                .createUser(anyString(), any(User.class), any(Callback.class));
+                .createUser(anyString(), any(User.class), any(CancelableCallback.class));
     }
 
     public void testCreateAccount_noPassword_showsErrorMessage() {
@@ -395,7 +410,7 @@ public class AuthenticatorActivityTest
                        (fakeUser.fullName == null ? arg.fullName == null :
                                fakeUser.fullName.equals(arg.fullName));
             }
-        }), any(Callback.class));
+        }), any(CancelableCallback.class));
     }
 
     public void testCreateAccount_noFullName_fullNameFieldDoesNotHaveError() {
@@ -429,21 +444,26 @@ public class AuthenticatorActivityTest
 
         onView(withId(R.id.sign_in_google_button)).perform(click());
 
-        verify(fakeRequestQueue).add(
-                new AccessTokenRequest(AuthUtil.GrantType.GOOGLE_OAUTH2, fakeGoogleToken));
+        verify(fakeOhmageService).getAccessToken(eq(AuthUtil.GrantType.GOOGLE_OAUTH2),
+                eq(fakeGoogleToken), any(CancelableCallback.class));
     }
 
     public void testAuthTokenReceived_validAccessToken_createsOhmageAccount() throws Throwable {
         final AccessToken fakeAccessToken = new AccessToken("token", "refresh", "user");
         setPlusClientFragmentSuccessfullyConnects();
         when(fakeAuthHelper.googleAuthGetToken(fakeGoogleEmail)).thenReturn(fakeGoogleToken);
-        when(fakeRequestQueue
-                .add(new AccessTokenRequest(AuthUtil.GrantType.GOOGLE_OAUTH2, fakeGoogleToken)))
-                .then(new DeliverVolleyResultToBus(fakeAccessToken));
+        // For some reason the argument captor messes up the next test so I'm doing this
+        doAnswer(new Answer() {
+            @Override public Object answer(InvocationOnMock invocation) throws Throwable {
+                ((CancelableCallback) invocation.getArguments()[2]).success(fakeAccessToken, null);
+                return null;
+            }
+        }).when(fakeOhmageService).getAccessToken(eq(AuthUtil.GrantType.GOOGLE_OAUTH2),
+                eq(fakeGoogleToken), any(CancelableCallback.class));
 
         onView(withId(R.id.sign_in_google_button)).perform(click());
 
-        Account account = new Account("user", AuthUtil.ACCOUNT_TYPE);
+        Account account = new Account(fakeGoogleEmail, AuthUtil.ACCOUNT_TYPE);
         verify(fakeAccountManager).addAccountExplicitly(account, "refresh", null);
         verify(fakeAccountManager).setAuthToken(account, AuthUtil.AUTHTOKEN_TYPE, "token");
     }

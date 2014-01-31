@@ -6,11 +6,7 @@ This is the repository for the ohmage Android application.
 DEPENDENCIES
 ------------
 
-All dependencies are handled by maven through the gradle build system. You only need to add volley
-to your local maven repo to get everything working as is described in this [gist]. *Note:* you will
-need to add the `provided` scope to the android dependency the way they describe in the comments.
-You can use the pom created by [sealskej] if you also want the sources and javadoc in your local
-maven repo.
+All dependencies are handled by maven through the gradle build system.
 
 
 HOW TO BUILD THE PROJECT

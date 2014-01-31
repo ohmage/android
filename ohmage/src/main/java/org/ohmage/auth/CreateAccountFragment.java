@@ -27,18 +27,14 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.android.volley.RequestQueue;
-import com.squareup.otto.Bus;
-
 import org.ohmage.app.OhmageService;
 import org.ohmage.app.R;
 import org.ohmage.fragments.TransitionFragment;
+import org.ohmage.models.AccessToken;
 import org.ohmage.models.User;
-import org.ohmage.requests.AccessTokenRequest;
 
 import javax.inject.Inject;
 
-import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 
@@ -50,9 +46,6 @@ public class CreateAccountFragment extends TransitionFragment {
     private static final String TAG = CreateAccountFragment.class.getSimpleName();
 
     @Inject OhmageService ohmageService;
-
-    @Inject RequestQueue requestQueue;
-    @Inject Bus bus;
 
     // UI references.
     private EditText mFullnameView;
@@ -83,7 +76,6 @@ public class CreateAccountFragment extends TransitionFragment {
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        bus.register(this);
         mCallbacks = (Callbacks) activity;
     }
 
@@ -96,7 +88,6 @@ public class CreateAccountFragment extends TransitionFragment {
     @Override
     public void onDetach() {
         super.onDetach();
-        bus.unregister(this);
         mCallbacks = null;
     }
 
@@ -224,30 +215,44 @@ public class CreateAccountFragment extends TransitionFragment {
      */
     private void createAccount(final String token) {
         if (mGrantType == AuthUtil.GrantType.CLIENT_CREDENTIALS) {
-            ohmageService.createUser(token, mUser, new Callback<User>() {
+            ohmageService.createUser(token, mUser, new OhmageService.CancelableCallback<User>() {
                 @Override public void success(User user, Response response) {
-                    ((AuthenticatorActivity) getActivity()).createAccount(user.email, null, null);
+                    ((AuthenticatorActivity) getActivity()).createAccount(user, token);
                 }
 
                 @Override public void failure(RetrofitError error) {
-
+                    ((AuthenticatorActivity) getActivity()).onRetrofitError(error);
                 }
             });
         } else {
-            ohmageService.createUser(mGrantType, token, mUser, new Callback<User>() {
-                @Override public void success(User user, Response response) {
-                    mCallbacks.fetchToken(new UseToken() {
-                        @Override
-                        public void useToken(String token) {
-                            requestQueue.add(new AccessTokenRequest(mGrantType, token));
+            ohmageService.createUser(mGrantType, token, mUser,
+                    new OhmageService.CancelableCallback<User>() {
+                        @Override public void success(final User user, Response response) {
+                            mCallbacks.fetchToken(new UseToken() {
+                                @Override
+                                public void useToken(String token) {
+                                    ohmageService.getAccessToken(mGrantType, token,
+                                            new OhmageService.CancelableCallback<AccessToken>() {
+                                                @Override
+                                                public void success(AccessToken accessToken,
+                                                        Response response) {
+                                                    ((AuthenticatorActivity) getActivity())
+                                                            .createAccount(user.email, accessToken);
+                                                }
+
+                                                @Override public void failure(RetrofitError error) {
+                                                    ((AuthenticatorActivity) getActivity())
+                                                            .onRetrofitError(error);
+                                                }
+                                            });
+                                }
+                            });
+                        }
+
+                        @Override public void failure(RetrofitError error) {
+                            ((AuthenticatorActivity) getActivity()).onRetrofitError(error);
                         }
                     });
-                }
-
-                @Override public void failure(RetrofitError error) {
-                    //TODO: handle errors here
-                }
-            });
         }
     }
 

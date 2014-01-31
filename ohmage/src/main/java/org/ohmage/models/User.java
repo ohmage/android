@@ -16,6 +16,9 @@
 
 package org.ohmage.models;
 
+import java.util.ArrayList;
+import java.util.Date;
+
 /**
  * Basic User class
  */
@@ -23,4 +26,32 @@ public class User {
     public String email;
 
     public String fullName;
+
+    public ArrayList<OhmageAuthProvider> providers;
+
+    public OhmageRegistration registration;
+
+    public Date activationTimestamp;
+
+    public static class OhmageRegistration {
+        public String userId;
+
+        public String email;
+
+        public String activationId;
+
+        public String activationTimestamp;
+    }
+
+    public static class OhmageAuthProvider {
+        public String userId;
+
+        public String email;
+
+        public String providerId;
+    }
+
+    // ohmlets
+    // streams
+    // surveys
 }

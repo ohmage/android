@@ -32,6 +32,16 @@ import dagger.ObjectGraph;
 public class Ohmage extends Application {
 
     /**
+     * The protocol and hostname used to access the ohmage service.
+     */
+    public static final String API_HOST = "https://dev.ohmage.org";
+
+    /**
+     * The URL root used to access the ohmage API.
+     */
+    public static final String API_ROOT = API_HOST + "/ohmage";
+
+    /**
      * Static reference to self
      */
     private static Ohmage self;

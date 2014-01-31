@@ -26,38 +26,46 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 
-import com.android.volley.AuthFailureError;
-import com.android.volley.NoConnectionError;
-import com.android.volley.RequestQueue;
-import com.android.volley.toolbox.RequestFuture;
 import com.google.android.gms.auth.GoogleAuthException;
 import com.google.android.gms.auth.UserRecoverableAuthException;
 
+import org.apache.http.auth.AuthenticationException;
 import org.ohmage.app.Ohmage;
+import org.ohmage.app.OhmageService;
 import org.ohmage.app.R;
 import org.ohmage.models.AccessToken;
-import org.ohmage.requests.AccessTokenRequest;
 
 import java.io.IOException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import javax.inject.Inject;
+
+import retrofit.RetrofitError;
 
 /**
  * This class is an implementation of AbstractAccountAuthenticator for
  * authenticating ohmage accounts
  */
 public class Authenticator extends AbstractAccountAuthenticator {
+
     @Inject AccountManager am;
-    @Inject RequestQueue requestQueue;
+    @Inject OhmageService ohmageService;
     @Inject AuthHelper authHelper;
 
     /**
      * This is the google email of an account that can be used for authentication
      */
     public static final String USER_DATA_GOOGLE_ACCOUNT = "user_data_google_account";
+
+    /**
+     * This is set when the password for the account is the users actual password rather than
+     * a refreshToken. This happens if the user has not verified their account yet.
+     */
+    public static final String USE_PASSWORD = "use_password";
+
+    /**
+     * The user id for the account as provided by the server.
+     */
+    public static final String USER_ID = "user_id";
 
     // Authentication Service context
     private final Context mContext;
@@ -110,38 +118,36 @@ public class Authenticator extends AbstractAccountAuthenticator {
 
         if (TextUtils.isEmpty(authToken)) {
             final String refreshToken = am.getPassword(account);
+
             if (refreshToken != null) {
 
-                RequestFuture<AccessToken> future = RequestFuture.newFuture();
-                AccessTokenRequest request = new AccessTokenRequest(refreshToken);
-                request.setResponseListener(future);
-                request.setErrorListener(future);
-                future.setRequest(request);
-                requestQueue.add(request);
-
                 try {
-                    token = future.get(1, TimeUnit.MINUTES);
-                } catch (TimeoutException e) {
-                    throw new NetworkErrorException();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } catch (ExecutionException e) {
-                    if (e.getCause() instanceof AuthFailureError) {
-                        // This will happen if the refresh token was already used, or it was
-                        // invalidated or something
-
-                        // We can try getting the token from google
-                        String googleAccount = am.getUserData(account, USER_DATA_GOOGLE_ACCOUNT);
-                        if (googleAccount != null) {
-                            try {
-                                token = getTokenFromGoogle(googleAccount);
-                            } catch (UserRecoverableAuthException e1) {
-                                userRecoverableAuthException = e1;
-                            }
+                    // If the account credentials have not gone to the server yet we saved the
+                    // password for the user
+                    if (Boolean.parseBoolean(am.getUserData(account, USE_PASSWORD))) {
+                        token = ohmageService.getAccessToken(account.name, refreshToken);
+                        if (token != null) {
+                            am.setUserData(account, Authenticator.USE_PASSWORD,
+                                    String.valueOf(false));
                         }
                     } else {
-                        throw new NetworkErrorException();
+                        token = ohmageService.getAccessToken(refreshToken);
                     }
+                } catch (AuthenticationException e) {
+                    // This will happen if the refresh token was already used, or it was
+                    // invalidated or something
+
+                    // We can try getting the token from google
+                    String googleAccount = am.getUserData(account, USER_DATA_GOOGLE_ACCOUNT);
+                    if (googleAccount != null) {
+                        try {
+                            token = getTokenFromGoogle(googleAccount);
+                        } catch (UserRecoverableAuthException e1) {
+                            userRecoverableAuthException = e1;
+                        }
+                    }
+                } catch (RetrofitError e) {
+                    throw new NetworkErrorException();
                 }
             }
         }
@@ -179,29 +185,22 @@ public class Authenticator extends AbstractAccountAuthenticator {
 
         try {
             String googleAccessToken = authHelper.googleAuthGetToken(googleAccount);
+            return ohmageService
+                    .getAccessToken(AuthUtil.GrantType.GOOGLE_OAUTH2, googleAccessToken);
 
-            RequestFuture<AccessToken> future = RequestFuture.newFuture();
-            AccessTokenRequest request = new AccessTokenRequest(AuthUtil.GrantType.GOOGLE_OAUTH2,
-                    googleAccessToken);
-            request.setResponseListener(future);
-            request.setErrorListener(future);
-            future.setRequest(request);
-            requestQueue.add(request);
-
-            return future.get();
         } catch (UserRecoverableAuthException userAuthEx) {
             throw userAuthEx;
         } catch (GoogleAuthException authEx) {
             // We can't really deal with this.. hopefully it doesn't happen
-        } catch (InterruptedException e2) {
-            // We tried.. Lets just show the authenticator activity
-            // TODO: not sure what to do here...
-        } catch (ExecutionException e) {
-            if (e.getCause() instanceof NoConnectionError) {
+        } catch (RetrofitError e) {
+            if (e.isNetworkError()) {
                 throw new NetworkErrorException();
             }
+            //TODO: what should we catch for retrofit exceptions?
         } catch (IOException transientEx) {
             throw new NetworkErrorException();
+        } catch (AuthenticationException e) {
+            //TODO: what should we do if the token is invalid?
         }
         return null;
     }
