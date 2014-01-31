@@ -24,15 +24,15 @@ public class AccessToken {
 
     String refreshToken;
 
-    String username;
+    String email;
 
     public AccessToken() {
     }
 
-    public AccessToken(String token, String refresh, String user) {
+    public AccessToken(String token, String refresh, String email) {
         accessToken = token;
         refreshToken = refresh;
-        username = user;
+        email = email;
     }
 
     public String getRefreshToken() {
@@ -43,7 +43,7 @@ public class AccessToken {
         return accessToken;
     }
 
-    public String getUsername() {
-        return username;
+    public String getEmail() {
+        return email;
     }
 }

@@ -38,47 +38,6 @@
             android:textStyle="bold"
             android:paddingBottom="16dp" />
 
-        <LinearLayout
-            android:id="@+id/ohmage_account_prompts"
-            android:layout_height="wrap_content"
-            android:layout_width="match_parent"
-            android:orientation="vertical"
-            android:layout_marginBottom="16dp">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/prompt_username"
-                style="@style/Signup.H3"
-                android:layout_marginTop="16dp" />
-
-            <EditText
-                android:id="@+id/username"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="@string/prompt_username_hint"
-                android:imeActionLabel="@string/action_create_short"
-                android:imeActionId="@+id/create_account"
-                android:inputType="textPersonName"
-                style="@style/Signup.Input"
-                android:imeOptions="actionUnspecified" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/prompt_password"
-                style="@style/Signup.H3"
-                android:layout_marginTop="16dp" />
-
-            <EditText
-                android:id="@+id/password"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="textPassword"
-                style="@style/Signup.Input"
-                android:hint="@string/create_password_hint" />
-        </LinearLayout>
-
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -93,19 +52,46 @@
             style="@style/Signup.Input"
             android:hint="@string/prompt_fullname_hint" />
 
-        <TextView
-            android:layout_width="match_parent"
+        <LinearLayout
+            android:id="@+id/ohmage_account_prompts"
             android:layout_height="wrap_content"
-            android:text="@string/prompt_email"
-            style="@style/Signup.H3" />
+            android:layout_width="match_parent"
+            android:orientation="vertical"
+            android:layout_marginBottom="16dp">
 
-        <EditText
-            android:id="@+id/email"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="textEmailAddress"
-            style="@style/Signup.Input"
-            android:hint="@string/prompt_email_hint" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/prompt_email"
+                style="@style/Signup.H3"
+                android:layout_marginTop="16dp" />
+
+            <EditText
+                android:id="@+id/email"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/prompt_email_hint"
+                android:inputType="textEmailAddress"
+                style="@style/Signup.Input" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/prompt_password"
+                style="@style/Signup.H3"
+                android:layout_marginTop="16dp" />
+
+            <EditText
+                android:id="@+id/password"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textPassword"
+                style="@style/Signup.Input"
+                android:hint="@string/create_password_hint"
+                android:imeActionLabel="@string/action_create_short"
+                android:imeActionId="@+id/create_account"
+                android:imeOptions="actionUnspecified" />
+        </LinearLayout>
 
         <Button
             android:id="@+id/create_account_button"

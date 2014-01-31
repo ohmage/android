@@ -85,7 +85,7 @@ public class AuthenticateFragment extends TransitionFragment implements View.OnC
 
         Button createAccount = (Button) view.findViewById(R.id.create_account_button);
         createAccount.setOnClickListener(this);
-        Button signInEmail = (Button) view.findViewById(R.id.sign_in_ohmage_button);
+        Button signInEmail = (Button) view.findViewById(R.id.sign_in_email_button);
         signInEmail.setOnClickListener(this);
 
         mAuthLoadingView = view.findViewById(R.id.authenticate_loading);
@@ -194,7 +194,7 @@ public class AuthenticateFragment extends TransitionFragment implements View.OnC
             case R.id.create_account_button:
                 mCallbacks.onCreateAccountClick();
                 break;
-            case R.id.sign_in_ohmage_button:
+            case R.id.sign_in_email_button:
                 mCallbacks.onEmailSignInClick();
                 break;
         }

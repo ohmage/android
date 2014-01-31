@@ -46,10 +46,10 @@ public class AccessTokenRequest extends GsonRequest<AccessToken> {
         mParams.put("access_token", accessToken);
     }
 
-    public AccessTokenRequest(String username, String password) {
+    public AccessTokenRequest(String email, String password) {
         super(Endpoints.ACCESS_TOKEN, AccessToken.class, null);
 
-        mParams.put("username", username);
+        mParams.put("email", email);
         mParams.put("password", password);
     }
 

@@ -36,7 +36,7 @@ import org.ohmage.requests.AccessTokenRequest;
 import javax.inject.Inject;
 
 /**
- * Activity which attempts to log the user in with their username and password
+ * Activity which attempts to log the user in with their email and password
  */
 public class SignInFragment extends TransitionFragment {
 
@@ -45,7 +45,7 @@ public class SignInFragment extends TransitionFragment {
     @Inject RequestQueue requestQueue;
 
     // UI references.
-    private EditText mUsernameView;
+    private EditText mEmailView;
     private EditText mPasswordView;
 
     /**
@@ -53,7 +53,7 @@ public class SignInFragment extends TransitionFragment {
      */
     private Callbacks mCallbacks;
 
-    private String mUsername;
+    private String mEmail;
 
     public SignInFragment() {
         setDefaultAnimation(R.anim.slide_in_top, R.anim.slide_out_top);
@@ -79,11 +79,11 @@ public class SignInFragment extends TransitionFragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState) {
+                             Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_sign_in_ohmage, container, false);
 
         // Set up the login form.
-        mUsernameView = (EditText) view.findViewById(R.id.username);
+        mEmailView = (EditText) view.findViewById(R.id.email);
         mPasswordView = (EditText) view.findViewById(R.id.password);
         mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -96,18 +96,18 @@ public class SignInFragment extends TransitionFragment {
             }
         });
 
-        if (!TextUtils.isEmpty(mUsername)) {
-            mUsernameView.setText(mUsername);
-            mUsernameView.setEnabled(false);
+        if (!TextUtils.isEmpty(mEmail)) {
+            mEmailView.setText(mEmail);
+            mEmailView.setEnabled(false);
         }
 
-        view.findViewById(R.id.sign_in_ohmage_button)
+        view.findViewById(R.id.sign_in_email_button)
             .setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    attemptSignIn();
-                }
-            });
+            @Override
+            public void onClick(View view) {
+                attemptSignIn();
+            }
+        });
 
         return view;
     }
@@ -118,18 +118,18 @@ public class SignInFragment extends TransitionFragment {
      */
     public void attemptSignIn() {
 
-        mUsernameView.setError(null);
+        mEmailView.setError(null);
 
         String password = mPasswordView.getText().toString();
-        String username = mUsernameView.getText().toString();
+        String email = mEmailView.getText().toString();
 
         boolean cancel = false;
         View focusView = null;
 
-        // Check for a valid username.
-        if (TextUtils.isEmpty(username)) {
-            mUsernameView.setError(getString(R.string.error_field_required));
-            focusView = mUsernameView;
+        // Check for a valid email.
+        if (TextUtils.isEmpty(email)) {
+            mEmailView.setError(getString(R.string.error_field_required));
+            focusView = mEmailView;
             cancel = true;
         } else if (TextUtils.isEmpty(password)) {
             mPasswordView.setError(getString(R.string.error_field_required));
@@ -149,12 +149,12 @@ public class SignInFragment extends TransitionFragment {
             }
 
             // Actually make the request to get the access token
-            requestQueue.add(new AccessTokenRequest(username, password));
+            requestQueue.add(new AccessTokenRequest(email, password));
         }
     }
 
-    public void setUsername(String username) {
-        this.mUsername = username;
+    public void setEmail(String email) {
+        this.mEmail = email;
     }
 
     public static interface Callbacks {

@@ -157,7 +157,7 @@ public class AuthenticatorActivity extends AuthenticatorFragmentActivity impleme
             if (signInEmailFragment == null) {
                 signInEmailFragment = new SignInFragment();
             }
-            signInEmailFragment.setUsername(accounts[0].name);
+            signInEmailFragment.setEmail(accounts[0].name);
 
             if (!signInEmailFragment.isAdded()) {
                 FragmentTransaction ft = fm.beginTransaction().detach(mAuthenticateFragment);
@@ -387,7 +387,7 @@ public class AuthenticatorActivity extends AuthenticatorFragmentActivity impleme
         // If no accounts exist, we create a new account
         Account[] accounts = am.getAccountsByType(AuthUtil.ACCOUNT_TYPE);
         Account account = accounts.length != 0 ? accounts[0] :
-                new Account(token.getUsername(), AuthUtil.ACCOUNT_TYPE);
+                new Account(token.getEmail(), AuthUtil.ACCOUNT_TYPE);
 
         if (accounts.length == 0) {
             am.addAccountExplicitly(account, token.getRefreshToken(), null);
@@ -407,7 +407,7 @@ public class AuthenticatorActivity extends AuthenticatorFragmentActivity impleme
         am.setAuthToken(account, AuthUtil.AUTHTOKEN_TYPE, token.getAccessToken());
 
         final Intent intent = new Intent();
-        intent.putExtra(AccountManager.KEY_ACCOUNT_NAME, token.getUsername());
+        intent.putExtra(AccountManager.KEY_ACCOUNT_NAME, token.getEmail());
         intent.putExtra(AccountManager.KEY_ACCOUNT_TYPE, AuthUtil.ACCOUNT_TYPE);
         intent.putExtra(AccountManager.KEY_AUTHTOKEN, token.getAccessToken());
         intent.putExtra(AccountManager.KEY_PASSWORD, token.getRefreshToken());
@@ -481,7 +481,11 @@ public class AuthenticatorActivity extends AuthenticatorFragmentActivity impleme
         }
 
         public void onPreExecute() {
-            showProgress(true);
+            runOnUiThread(new Runnable() {
+                @Override public void run() {
+                    showProgress(true);
+                }
+            });
         }
 
         @Override

@@ -32,7 +32,7 @@
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:textColor="@color/ohmage_dark_blue"
-            android:text="@string/sign_in_with_ohmage"
+            android:text="@string/sign_in_with_email"
             android:gravity="center"
             android:fontFamily="sans-serif-light"
             android:textStyle="bold"
@@ -41,16 +41,16 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/prompt_username"
+            android:text="@string/prompt_email"
             style="@style/Signup.H3" />
 
         <EditText
-            android:id="@+id/username"
+            android:id="@+id/email"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="textPersonName"
+            android:inputType="textEmailAddress"
             style="@style/Signup.Input"
-            android:hint="@string/prompt_username_hint" />
+            android:hint="@string/prompt_email_hint" />
 
         <TextView
             android:layout_width="match_parent"
@@ -71,7 +71,7 @@
             android:imeOptions="actionUnspecified" />
 
         <Button
-            android:id="@+id/sign_in_ohmage_button"
+            android:id="@+id/sign_in_email_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"

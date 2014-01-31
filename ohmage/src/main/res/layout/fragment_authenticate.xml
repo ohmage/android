@@ -61,14 +61,14 @@
                 android:layout_height="wrap_content">
 
                 <Button
-                    android:id="@+id/sign_in_ohmage_button"
+                    android:id="@+id/sign_in_email_button"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:background="@drawable/email_signin_btn"
                     android:textAppearance="?android:attr/textAppearanceSmall"
                     android:textStyle="bold"
                     android:textColor="@color/common_signin_btn_text_light"
-                    android:text="@string/sign_in_with_ohmage"
+                    android:text="@string/sign_in_with_email"
                     android:layout_weight="1" />
 
                 <Button

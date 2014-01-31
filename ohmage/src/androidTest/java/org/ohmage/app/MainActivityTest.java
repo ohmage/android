@@ -58,7 +58,7 @@ public class MainActivityTest extends InjectedActivityInstrumentationTestCase<Ma
 
     @Inject AccountManager fakeAccountManager;
 
-    Account fakeAccount = new Account("username", AuthUtil.ACCOUNT_TYPE);
+    Account fakeAccount = new Account("user@blah.com", AuthUtil.ACCOUNT_TYPE);
 
     private String[] navigationItems;
 

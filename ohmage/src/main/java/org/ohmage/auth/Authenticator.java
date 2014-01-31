@@ -100,7 +100,7 @@ public class Authenticator extends AbstractAccountAuthenticator {
             String authTokenType, Bundle loginOptions)
             throws NetworkErrorException {
 
-        // Extract the username and refresh_token from the Account Manager, and ask
+        // Extract the email and refresh_token from the Account Manager, and ask
         // the server for a new refresh_token.
         String authToken = am.peekAuthToken(account, authTokenType);
 

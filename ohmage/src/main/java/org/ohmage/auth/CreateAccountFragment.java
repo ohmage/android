@@ -51,7 +51,6 @@ public class CreateAccountFragment extends TransitionFragment {
 
     // UI references.
     private EditText mFullnameView;
-    private EditText mUsernameView;
     private EditText mEmailView;
     private EditText mPasswordView;
 
@@ -98,16 +97,14 @@ public class CreateAccountFragment extends TransitionFragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState) {
+                             Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_create_account, container, false);
 
         // Set up the login form.
+        mFullnameView = (EditText) view.findViewById(R.id.fullname);
         mEmailView = (EditText) view.findViewById(R.id.email);
         mPasswordView = (EditText) view.findViewById(R.id.password);
-        mFullnameView = (EditText) view.findViewById(R.id.fullname);
-
-        mUsernameView = (EditText) view.findViewById(R.id.username);
-        mUsernameView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+        mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
                 if (id == R.id.create_account || id == EditorInfo.IME_NULL) {
@@ -122,11 +119,11 @@ public class CreateAccountFragment extends TransitionFragment {
 
         view.findViewById(R.id.create_account_button)
             .setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    attemptAccountCreate();
-                }
-            });
+            @Override
+            public void onClick(View view) {
+                attemptAccountCreate();
+            }
+        });
 
         setViewState(view);
 
@@ -154,36 +151,27 @@ public class CreateAccountFragment extends TransitionFragment {
      */
     public void attemptAccountCreate() {
 
-        mUsernameView.setError(null);
+        mEmailView.setError(null);
 
         String fullName = mFullnameView.getText().toString();
-        String username = mUsernameView.getText().toString();
         mPassword = mPasswordView.getText().toString();
         String email = mEmailView.getText().toString();
 
         boolean cancel = false;
         View focusView = null;
 
-        // Check for a valid username.
-        if (TextUtils.isEmpty(username)) {
-            mUsernameView.setError(getString(R.string.error_field_required));
-            focusView = mUsernameView;
-            cancel = true;
-        } else if (username.length() < 4) {
-            mUsernameView.setError(getString(R.string.error_invalid_username));
-            focusView = mUsernameView;
-            cancel = true;
-        } else if (showOhmageAccountPrompts() && TextUtils.isEmpty(mPassword)) {
-            mPasswordView.setError(getString(R.string.error_field_required));
-            focusView = mPasswordView;
-            cancel = true;
-        } else if (showOhmageAccountPrompts() && TextUtils.isEmpty(email)) {
+        // Check for a valid email.
+        if (showOhmageAccountPrompts() && TextUtils.isEmpty(email)) {
             mEmailView.setError(getString(R.string.error_field_required));
             focusView = mEmailView;
             cancel = true;
         } else if (showOhmageAccountPrompts() && !isValidEmail(email)) {
             mEmailView.setError(getString(R.string.error_invalid_email_address));
             focusView = mEmailView;
+            cancel = true;
+        } else if (showOhmageAccountPrompts() && TextUtils.isEmpty(mPassword)) {
+            mPasswordView.setError(getString(R.string.error_field_required));
+            focusView = mPasswordView;
             cancel = true;
         }
 
@@ -192,9 +180,8 @@ public class CreateAccountFragment extends TransitionFragment {
             // form field with an error.
             focusView.requestFocus();
         } else {
-            mUser.fullName = fullName;
-            mUser.username = username;
-            mUser.email = email;
+            mUser.fullName = TextUtils.isEmpty(fullName) ? null : fullName;
+            mUser.email = TextUtils.isEmpty(email) ? null : email;
 
             // First notify the activity that the account is being created
             if (mCallbacks != null) {
@@ -262,7 +249,7 @@ public class CreateAccountFragment extends TransitionFragment {
     @Subscribe
     public void onUserCreatedRequest(User user) {
         if (mGrantType == AuthUtil.GrantType.CLIENT_CREDENTIALS) {
-            requestQueue.add(new AccessTokenRequest(user.username, mPassword));
+            requestQueue.add(new AccessTokenRequest(user.email, mPassword));
         } else {
             mCallbacks.fetchToken(new UseToken() {
                 @Override

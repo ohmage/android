@@ -82,13 +82,11 @@ public class AuthenticatorActivityTest
     private static final String fakeEmail = "fake@email.com";
     private static final String fakePassword = "password";
     private static final String fakeFullname = "Full Name";
-    private static final String fakeUsername = "username";
     private static final User fakeUser = new User();
 
     {
         fakeUser.email = fakeEmail;
         fakeUser.fullName = fakeFullname;
-        fakeUser.username = fakeUsername;
     }
 
     private static final NetworkResponse fakeNetworkResponse =
@@ -111,7 +109,7 @@ public class AuthenticatorActivityTest
         onView(withId(R.id.sign_in_google_button))
                 .check(matches(isDisplayed()));
 
-        onView(withId(R.id.sign_in_ohmage_button))
+        onView(withId(R.id.sign_in_email_button))
                 .check(matches(isDisplayed())).check(matches(isClickable()));
 
         onView(withId(R.id.create_account_button))
@@ -119,106 +117,106 @@ public class AuthenticatorActivityTest
     }
 
     public void testClicking_signInOhmageButton_showsSignInFragment() {
-        onView(withId(R.id.sign_in_ohmage_button)).perform(click());
+        onView(withId(R.id.sign_in_email_button)).perform(click());
 
         onView(withId(R.id.sign_in_ohmage_frame)).check(matches(isDisplayed()));
     }
 
     public void testSignInWithOhmage_validAccount_getsAccessToken() {
-        onView(withId(R.id.sign_in_ohmage_button)).perform(click());
+        onView(withId(R.id.sign_in_email_button)).perform(click());
 
-        onView(withId(R.id.username)).perform(scrollTo(), typeText(fakeUsername));
+        onView(withId(R.id.email)).perform(scrollTo(), typeText(fakeEmail));
         onView(withId(R.id.password)).perform(scrollTo(), typeText(fakePassword));
-        onView(withId(R.id.sign_in_ohmage_button)).perform(click());
+        onView(withId(R.id.sign_in_email_button)).perform(click());
 
-        verify(fakeRequestQueue).add(new AccessTokenRequest(fakeUsername, fakePassword));
+        verify(fakeRequestQueue).add(new AccessTokenRequest(fakeEmail, fakePassword));
     }
 
     public void testSignInWithOhmage_invalidAccount_showsSignInWithOhmage() {
-        when(fakeRequestQueue.add(new AccessTokenRequest(fakeUsername, fakePassword))).then(
+        when(fakeRequestQueue.add(new AccessTokenRequest(fakeEmail, fakePassword))).then(
                 new DeliverVolleyErrorToBus(new AuthFailureError()));
-        onView(withId(R.id.sign_in_ohmage_button)).perform(click());
+        onView(withId(R.id.sign_in_email_button)).perform(click());
 
-        onView(withId(R.id.username)).perform(scrollTo(), typeText(fakeUsername));
+        onView(withId(R.id.email)).perform(scrollTo(), typeText(fakeEmail));
         onView(withId(R.id.password)).perform(scrollTo(), typeText(fakePassword));
-        onView(withId(R.id.sign_in_ohmage_button)).perform(click());
+        onView(withId(R.id.sign_in_email_button)).perform(click());
 
-        onView(withId(R.id.username)).check(matches(isDisplayed()));
+        onView(withId(R.id.email)).check(matches(isDisplayed()));
         onView(withId(R.id.password)).check(matches(isDisplayed()));
-        onView(withId(R.id.sign_in_ohmage_button)).check(matches(isDisplayed()));
+        onView(withId(R.id.sign_in_email_button)).check(matches(isDisplayed()));
     }
 
     public void testSignInWithOhmage_serverError_showsSignInWithOhmage() {
-        when(fakeRequestQueue.add(new AccessTokenRequest(fakeUsername, fakePassword))).then(
+        when(fakeRequestQueue.add(new AccessTokenRequest(fakeEmail, fakePassword))).then(
                 new DeliverVolleyErrorToBus(fakeServerError));
-        onView(withId(R.id.sign_in_ohmage_button)).perform(click());
+        onView(withId(R.id.sign_in_email_button)).perform(click());
 
-        onView(withId(R.id.username)).perform(scrollTo(), typeText(fakeUsername));
+        onView(withId(R.id.email)).perform(scrollTo(), typeText(fakeEmail));
         onView(withId(R.id.password)).perform(scrollTo(), typeText(fakePassword));
-        onView(withId(R.id.sign_in_ohmage_button)).perform(click());
+        onView(withId(R.id.sign_in_email_button)).perform(click());
 
-        onView(withId(R.id.username)).check(matches(isDisplayed()));
+        onView(withId(R.id.email)).check(matches(isDisplayed()));
         onView(withId(R.id.password)).check(matches(isDisplayed()));
-        onView(withId(R.id.sign_in_ohmage_button)).check(matches(isDisplayed()));
+        onView(withId(R.id.sign_in_email_button)).check(matches(isDisplayed()));
     }
 
     public void testSignInWithOhmage_noNetwork_showsSignInWithOhmage() {
-        when(fakeRequestQueue.add(new AccessTokenRequest(fakeUsername, fakePassword))).then(
+        when(fakeRequestQueue.add(new AccessTokenRequest(fakeEmail, fakePassword))).then(
                 new DeliverVolleyErrorToBus(new NetworkError()));
-        onView(withId(R.id.sign_in_ohmage_button)).perform(click());
+        onView(withId(R.id.sign_in_email_button)).perform(click());
 
-        onView(withId(R.id.username)).perform(scrollTo(), typeText(fakeUsername));
+        onView(withId(R.id.email)).perform(scrollTo(), typeText(fakeEmail));
         onView(withId(R.id.password)).perform(scrollTo(), typeText(fakePassword));
-        onView(withId(R.id.sign_in_ohmage_button)).perform(click());
+        onView(withId(R.id.sign_in_email_button)).perform(click());
 
-        onView(withId(R.id.username)).check(matches(isDisplayed()));
+        onView(withId(R.id.email)).check(matches(isDisplayed()));
         onView(withId(R.id.password)).check(matches(isDisplayed()));
-        onView(withId(R.id.sign_in_ohmage_button)).check(matches(isDisplayed()));
+        onView(withId(R.id.sign_in_email_button)).check(matches(isDisplayed()));
     }
 
-    public void testSignInWithOhmage_noUsername_doesNotPerformNetworkRequest() {
-        onView(withId(R.id.sign_in_ohmage_button)).perform(click());
+    public void testSignInWithOhmage_noEmail_doesNotPerformNetworkRequest() {
+        onView(withId(R.id.sign_in_email_button)).perform(click());
 
         onView(withId(R.id.password)).perform(scrollTo(), typeText(fakePassword));
-        onView(withId(R.id.sign_in_ohmage_button)).perform(click());
+        onView(withId(R.id.sign_in_email_button)).perform(click());
 
-        verify(fakeRequestQueue, never()).add(new AccessTokenRequest(fakeUsername, fakePassword));
+        verify(fakeRequestQueue, never()).add(new AccessTokenRequest(fakeEmail, fakePassword));
     }
 
-    public void testSignInWithOhmage_noUsername_showsErrorMessage() {
-        onView(withId(R.id.sign_in_ohmage_button)).perform(click());
+    public void testSignInWithOhmage_noEmail_showsErrorMessage() {
+        onView(withId(R.id.sign_in_email_button)).perform(click());
 
         onView(withId(R.id.password)).perform(scrollTo(), typeText(fakePassword));
-        onView(withId(R.id.sign_in_ohmage_button)).perform(click());
+        onView(withId(R.id.sign_in_email_button)).perform(click());
 
         onView(withText(R.string.error_field_required))
                 .inRoot(withDecorView(not(is(getActivity().getWindow().getDecorView()))))
                 .check(matches(isDisplayed()));
     }
 
-    public void testSignInWithOhmage_noUsername_usernameFieldHasError() {
-        onView(withId(R.id.sign_in_ohmage_button)).perform(click());
+    public void testSignInWithOhmage_noEmail_emailFieldHasError() {
+        onView(withId(R.id.sign_in_email_button)).perform(click());
 
         onView(withId(R.id.password)).perform(scrollTo(), typeText(fakePassword));
-        onView(withId(R.id.sign_in_ohmage_button)).perform(click());
+        onView(withId(R.id.sign_in_email_button)).perform(click());
 
-        onView(withId(R.id.username)).check(matches(hasError(R.string.error_field_required)));
+        onView(withId(R.id.email)).check(matches(hasError(R.string.error_field_required)));
     }
 
     public void testSignInWithOhmage_noPassword_doesNotPerformNetworkRequest() {
-        onView(withId(R.id.sign_in_ohmage_button)).perform(click());
+        onView(withId(R.id.sign_in_email_button)).perform(click());
 
-        onView(withId(R.id.username)).perform(scrollTo(), typeText(fakeUsername));
-        onView(withId(R.id.sign_in_ohmage_button)).perform(click());
+        onView(withId(R.id.email)).perform(scrollTo(), typeText(fakeEmail));
+        onView(withId(R.id.sign_in_email_button)).perform(click());
 
-        verify(fakeRequestQueue, never()).add(new AccessTokenRequest(fakeUsername, fakePassword));
+        verify(fakeRequestQueue, never()).add(new AccessTokenRequest(fakeEmail, fakePassword));
     }
 
     public void testSignInWithOhmage_noPassword_showsErrorMessage() {
-        onView(withId(R.id.sign_in_ohmage_button)).perform(click());
+        onView(withId(R.id.sign_in_email_button)).perform(click());
 
-        onView(withId(R.id.username)).perform(scrollTo(), typeText(fakeUsername));
-        onView(withId(R.id.sign_in_ohmage_button)).perform(click());
+        onView(withId(R.id.email)).perform(scrollTo(), typeText(fakeEmail));
+        onView(withId(R.id.sign_in_email_button)).perform(click());
 
         onView(withText(R.string.error_field_required))
                 .inRoot(withDecorView(not(is(getActivity().getWindow().getDecorView()))))
@@ -226,10 +224,10 @@ public class AuthenticatorActivityTest
     }
 
     public void testSignInWithOhmage_noPassword_passwordFieldHasError() {
-        onView(withId(R.id.sign_in_ohmage_button)).perform(click());
+        onView(withId(R.id.sign_in_email_button)).perform(click());
 
-        onView(withId(R.id.username)).perform(scrollTo(), typeText(fakeUsername));
-        onView(withId(R.id.sign_in_ohmage_button)).perform(click());
+        onView(withId(R.id.email)).perform(scrollTo(), typeText(fakeEmail));
+        onView(withId(R.id.sign_in_email_button)).perform(click());
 
         onView(withId(R.id.password)).check(matches(hasError(R.string.error_field_required)));
     }
@@ -243,24 +241,22 @@ public class AuthenticatorActivityTest
     public void testCreateAccount_validInputs_startsCreateAccountRequest() {
         onView(withId(R.id.create_account_button)).perform(click());
 
-        onView(withId(R.id.username)).perform(scrollTo(), typeText(fakeUsername));
-        onView(withId(R.id.password)).perform(scrollTo(), typeText(fakePassword));
         onView(withId(R.id.fullname)).perform(scrollTo(), typeText(fakeFullname));
         onView(withId(R.id.email)).perform(scrollTo(), typeText(fakeEmail));
+        onView(withId(R.id.password)).perform(scrollTo(), typeText(fakePassword));
         onView(withId(R.id.create_account_button)).perform(scrollTo(), click());
 
         verify(fakeRequestQueue).add(
                 new CreateUserRequest(AuthUtil.GrantType.CLIENT_CREDENTIALS, fakePassword,
                         fakeUser));
-    }
+            }
 
     public void testCreateAccount_invalidEmail_doesNotPerformNetworkRequest() {
         onView(withId(R.id.create_account_button)).perform(click());
 
-        onView(withId(R.id.username)).perform(scrollTo(), typeText(fakeUsername));
-        onView(withId(R.id.password)).perform(scrollTo(), typeText(fakePassword));
         onView(withId(R.id.fullname)).perform(scrollTo(), typeText(fakeFullname));
         onView(withId(R.id.email)).perform(scrollTo(), typeText("blah"));
+        onView(withId(R.id.password)).perform(scrollTo(), typeText(fakePassword));
         onView(withId(R.id.create_account_button)).perform(scrollTo(), click());
 
         verify(fakeRequestQueue, never()).add(
@@ -271,10 +267,9 @@ public class AuthenticatorActivityTest
     public void testCreateAccount_invalidEmail_showsErrorMessage() {
         onView(withId(R.id.create_account_button)).perform(click());
 
-        onView(withId(R.id.username)).perform(scrollTo(), typeText(fakeUsername));
-        onView(withId(R.id.password)).perform(scrollTo(), typeText(fakePassword));
         onView(withId(R.id.fullname)).perform(scrollTo(), typeText(fakeFullname));
         onView(withId(R.id.email)).perform(scrollTo(), typeText("blah"));
+        onView(withId(R.id.password)).perform(scrollTo(), typeText(fakePassword));
         onView(withId(R.id.create_account_button)).perform(scrollTo(), click());
 
         onView(withText(R.string.error_invalid_email_address))
@@ -285,10 +280,9 @@ public class AuthenticatorActivityTest
     public void testCreateAccount_invalidEmail_emailFieldHasError() {
         onView(withId(R.id.create_account_button)).perform(click());
 
-        onView(withId(R.id.username)).perform(scrollTo(), typeText(fakeUsername));
-        onView(withId(R.id.password)).perform(scrollTo(), typeText(fakePassword));
         onView(withId(R.id.fullname)).perform(scrollTo(), typeText(fakeFullname));
         onView(withId(R.id.email)).perform(scrollTo(), typeText("blah"));
+        onView(withId(R.id.password)).perform(scrollTo(), typeText(fakePassword));
         onView(withId(R.id.create_account_button)).perform(scrollTo(), click());
 
         onView(withId(R.id.email)).check(matches(hasError(R.string.error_invalid_email_address)));
@@ -297,9 +291,8 @@ public class AuthenticatorActivityTest
     public void testCreateAccount_noEmail_doesNotPerformNetworkRequest() {
         onView(withId(R.id.create_account_button)).perform(click());
 
-        onView(withId(R.id.username)).perform(scrollTo(), typeText(fakeUsername));
-        onView(withId(R.id.password)).perform(scrollTo(), typeText(fakePassword));
         onView(withId(R.id.fullname)).perform(scrollTo(), typeText(fakeFullname));
+        onView(withId(R.id.password)).perform(scrollTo(), typeText(fakePassword));
         onView(withId(R.id.create_account_button)).perform(scrollTo(), click());
 
         verify(fakeRequestQueue, never()).add(
@@ -310,9 +303,8 @@ public class AuthenticatorActivityTest
     public void testCreateAccount_noEmail_showsErrorMessage() {
         onView(withId(R.id.create_account_button)).perform(click());
 
-        onView(withId(R.id.username)).perform(scrollTo(), typeText(fakeUsername));
-        onView(withId(R.id.password)).perform(scrollTo(), typeText(fakePassword));
         onView(withId(R.id.fullname)).perform(scrollTo(), typeText(fakeFullname));
+        onView(withId(R.id.password)).perform(scrollTo(), typeText(fakePassword));
         onView(withId(R.id.create_account_button)).perform(scrollTo(), click());
 
         onView(withText(R.string.error_field_required))
@@ -323,9 +315,8 @@ public class AuthenticatorActivityTest
     public void testCreateAccount_noEmail_emailFieldHasError() {
         onView(withId(R.id.create_account_button)).perform(click());
 
-        onView(withId(R.id.username)).perform(scrollTo(), typeText(fakeUsername));
-        onView(withId(R.id.password)).perform(scrollTo(), typeText(fakePassword));
         onView(withId(R.id.fullname)).perform(scrollTo(), typeText(fakeFullname));
+        onView(withId(R.id.password)).perform(scrollTo(), typeText(fakePassword));
         onView(withId(R.id.create_account_button)).perform(scrollTo(), click());
 
         onView(withId(R.id.email)).check(matches(hasError(R.string.error_field_required)));
@@ -334,7 +325,6 @@ public class AuthenticatorActivityTest
     public void testCreateAccount_noPassword_doesNotPerformNetworkRequest() {
         onView(withId(R.id.create_account_button)).perform(click());
 
-        onView(withId(R.id.username)).perform(scrollTo(), typeText(fakeUsername));
         onView(withId(R.id.fullname)).perform(scrollTo(), typeText(fakeFullname));
         onView(withId(R.id.email)).perform(scrollTo(), typeText(fakeEmail));
         onView(withId(R.id.create_account_button)).perform(scrollTo(), click());
@@ -347,7 +337,6 @@ public class AuthenticatorActivityTest
     public void testCreateAccount_noPassword_showsErrorMessage() {
         onView(withId(R.id.create_account_button)).perform(click());
 
-        onView(withId(R.id.username)).perform(scrollTo(), typeText(fakeUsername));
         onView(withId(R.id.fullname)).perform(scrollTo(), typeText(fakeFullname));
         onView(withId(R.id.email)).perform(scrollTo(), typeText(fakeEmail));
         onView(withId(R.id.create_account_button)).perform(scrollTo(), click());
@@ -360,7 +349,6 @@ public class AuthenticatorActivityTest
     public void testCreateAccount_noPassword_passwordFieldHasError() {
         onView(withId(R.id.create_account_button)).perform(click());
 
-        onView(withId(R.id.username)).perform(scrollTo(), typeText(fakeUsername));
         onView(withId(R.id.fullname)).perform(scrollTo(), typeText(fakeFullname));
         onView(withId(R.id.email)).perform(scrollTo(), typeText(fakeEmail));
         onView(withId(R.id.create_account_button)).perform(scrollTo(), click());
@@ -368,66 +356,25 @@ public class AuthenticatorActivityTest
         onView(withId(R.id.password)).check(matches(hasError(R.string.error_field_required)));
     }
 
-    public void testCreateAccount_noUsername_doesNotPerformNetworkRequest() {
-        onView(withId(R.id.create_account_button)).perform(click());
-
-        onView(withId(R.id.password)).perform(scrollTo(), typeText(fakePassword));
-        onView(withId(R.id.fullname)).perform(scrollTo(), typeText(fakeFullname));
-        onView(withId(R.id.email)).perform(scrollTo(), typeText(fakeEmail));
-        onView(withId(R.id.create_account_button)).perform(scrollTo(), click());
-
-        verify(fakeRequestQueue, never()).add(
-                new CreateUserRequest(AuthUtil.GrantType.CLIENT_CREDENTIALS, fakePassword,
-                        fakeUser));
-    }
-
-    public void testCreateAccount_noUsername_showsErrorMessage() {
-        onView(withId(R.id.create_account_button)).perform(click());
-
-        onView(withId(R.id.password)).perform(scrollTo(), typeText(fakePassword));
-        onView(withId(R.id.fullname)).perform(scrollTo(), typeText(fakeFullname));
-        onView(withId(R.id.email)).perform(scrollTo(), typeText(fakeEmail));
-        onView(withId(R.id.create_account_button)).perform(scrollTo(), click());
-
-        onView(withText(R.string.error_field_required))
-                .inRoot(withDecorView(not(is(getActivity().getWindow().getDecorView()))))
-                .check(matches(isDisplayed()));
-    }
-
-    public void testCreateAccount_noUsername_usernameFieldHasError() {
-        onView(withId(R.id.create_account_button)).perform(click());
-
-        onView(withId(R.id.password)).perform(scrollTo(), typeText(fakePassword));
-        onView(withId(R.id.fullname)).perform(scrollTo(), typeText(fakeFullname));
-        onView(withId(R.id.email)).perform(scrollTo(), typeText(fakeEmail));
-        onView(withId(R.id.create_account_button)).perform(scrollTo(), click());
-
-        onView(withId(R.id.username)).check(matches(hasError(R.string.error_field_required)));
-    }
-
     public void testCreateAccount_noFullName_startsCreateAccountRequest() {
         onView(withId(R.id.create_account_button)).perform(click());
         User fakeUser = new User();
-        fakeUser.fullName = "";
-        fakeUser.username = fakeUsername;
         fakeUser.email = fakeEmail;
 
-        onView(withId(R.id.username)).perform(scrollTo(), typeText(fakeUsername));
-        onView(withId(R.id.password)).perform(scrollTo(), typeText(fakePassword));
         onView(withId(R.id.email)).perform(scrollTo(), typeText(fakeEmail));
+        onView(withId(R.id.password)).perform(scrollTo(), typeText(fakePassword));
         onView(withId(R.id.create_account_button)).perform(scrollTo(), click());
 
         verify(fakeRequestQueue).add(
                 new CreateUserRequest(AuthUtil.GrantType.CLIENT_CREDENTIALS, fakePassword,
                         fakeUser));
-    }
+            }
 
     public void testCreateAccount_noFullName_fullNameFieldDoesNotHaveError() {
         onView(withId(R.id.create_account_button)).perform(click());
 
-        onView(withId(R.id.username)).perform(scrollTo(), typeText(fakeUsername));
-        onView(withId(R.id.password)).perform(scrollTo(), typeText(fakePassword));
         onView(withId(R.id.email)).perform(scrollTo(), typeText(fakeEmail));
+        onView(withId(R.id.password)).perform(scrollTo(), typeText(fakePassword));
         onView(withId(R.id.create_account_button)).perform(scrollTo(), click());
 
         // The view disappears once the create_account_button is clicked if there are no errors
