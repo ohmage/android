@@ -26,8 +26,8 @@
     <string name="action_sign_out">Sign Out</string>
     <string name="network_error">Network Error. Try again later.</string>
     <string name="account_error">Unexpected Error. Try to login with a different account.</string>
-    <string name="google_progress_message">Signing in to Google&#8230;</string>
-    <string name="logging_out">Logging Out&#8230;</string>
+    <string name="google_progress_message">Signing in to Google…</string>
+    <string name="logging_out">Logging Out…</string>
     <string name="title_create_account">Create Account</string>
     <string name="prompt_email">E-mail</string>
     <string name="prompt_email_hint">Enter your E\u2011mail</string>
