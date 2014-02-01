@@ -147,7 +147,17 @@ public class Authenticator extends AbstractAccountAuthenticator {
                         }
                     }
                 } catch (RetrofitError e) {
-                    throw new NetworkErrorException();
+                    if (e.getResponse() != null && e.getResponse().getStatus() == 409) {
+                        // The user hasn't activated their account by clicking the link
+                        final Bundle bundle = new Bundle();
+                        bundle.putString(AccountManager.KEY_AUTH_FAILED_MESSAGE,
+                                Ohmage.app().getString(R.string.account_not_activated));
+                        bundle.putParcelable(AccountManager.KEY_INTENT, new Intent(mContext,
+                                AccountNotActivatedDialog.class));
+                        return bundle;
+                    } else {
+                        throw new NetworkErrorException();
+                    }
                 }
             }
         }
@@ -184,9 +194,8 @@ public class Authenticator extends AbstractAccountAuthenticator {
         // We can check for a google account to automatically update the refresh token
 
         try {
-            String googleAccessToken = authHelper.googleAuthGetToken(googleAccount);
-            return ohmageService
-                    .getAccessToken(AuthUtil.GrantType.GOOGLE_OAUTH2, googleAccessToken);
+            String googleToken = authHelper.googleAuthGetToken(googleAccount);
+            return ohmageService.getAccessToken(AuthUtil.GrantType.GOOGLE_OAUTH2, googleToken);
 
         } catch (UserRecoverableAuthException userAuthEx) {
             throw userAuthEx;

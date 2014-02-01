@@ -88,6 +88,10 @@
             android:exported="true"
             android:syncable="true" />
 
+        <activity
+            android:name="org.ohmage.auth.AccountNotActivatedDialog"
+            android:theme="@style/Theme.AppCompat.Light.Translucent.NoTitleBar" />
+
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
