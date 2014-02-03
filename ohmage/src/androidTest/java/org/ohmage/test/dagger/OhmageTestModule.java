@@ -23,6 +23,7 @@ import com.google.gson.Gson;
 
 import org.ohmage.app.MainActivity;
 import org.ohmage.app.MainActivityTest;
+import org.ohmage.app.OhmageAuthenticator;
 import org.ohmage.app.OhmageService;
 import org.ohmage.auth.AuthHelper;
 import org.ohmage.auth.AuthenticateFragment;
@@ -57,7 +58,8 @@ import static org.mockito.Mockito.mock;
                 SignInFragment.class,
                 LogoutTaskFragment.class,
                 StreamContentProvider.class,
-                StreamSyncAdapter.class
+                StreamSyncAdapter.class,
+                OhmageAuthenticator.class
         },
         complete = false,
         library = true,

@@ -16,6 +16,7 @@
 
 package org.ohmage.dagger;
 
+import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.Context;
 
@@ -27,9 +28,11 @@ import com.squareup.okhttp.OkHttpClient;
 
 import org.ohmage.app.MainActivity;
 import org.ohmage.app.Ohmage;
+import org.ohmage.app.OhmageAuthenticator;
 import org.ohmage.app.OhmageErrorHandler;
 import org.ohmage.app.OhmageService;
 import org.ohmage.auth.AuthHelper;
+import org.ohmage.auth.AuthUtil;
 import org.ohmage.auth.AuthenticateFragment;
 import org.ohmage.auth.Authenticator;
 import org.ohmage.auth.CreateAccountFragment;
@@ -46,6 +49,7 @@ import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
+import retrofit.RequestInterceptor;
 import retrofit.RestAdapter;
 import retrofit.client.OkClient;
 import retrofit.converter.GsonConverter;
@@ -59,7 +63,8 @@ import retrofit.converter.GsonConverter;
                 SignInFragment.class,
                 LogoutTaskFragment.class,
                 StreamContentProvider.class,
-                StreamSyncAdapter.class
+                StreamSyncAdapter.class,
+                OhmageAuthenticator.class
         },
         complete = false,
         library = true
@@ -90,8 +95,26 @@ public class OhmageModule {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
         Executor executor = Executors.newCachedThreadPool();
+
+        // Add an authenticator to handle 401 error by updating the token
+        okHttpClient.setAuthenticator(new OhmageAuthenticator());
+
+        // Add the ohmage token to each outgoing request for the current user
+        RequestInterceptor requestInterceptor = new RequestInterceptor() {
+            @Override public void intercept(RequestFacade request) {
+                AccountManager accountManager = AccountManager.get(Ohmage.app());
+                Account[] accounts = accountManager.getAccountsByType(AuthUtil.ACCOUNT_TYPE);
+                if (accounts.length != 0) {
+                    String token =
+                            accountManager.peekAuthToken(accounts[0], AuthUtil.AUTHTOKEN_TYPE);
+                    if (token != null) {
+                        request.addHeader("Authorization", "ohmage " + token);
+                    }
+                }
+            }
+        };
+
         RestAdapter restAdapter = new RestAdapter.Builder()
                 .setExecutors(executor, executor)
                 .setConverter(new GsonConverter(gson))
@@ -99,7 +122,9 @@ public class OhmageModule {
                 .setLogLevel(RestAdapter.LogLevel.FULL)
                 .setErrorHandler(new OhmageErrorHandler())
                 .setServer(Ohmage.API_ROOT)
+                .setRequestInterceptor(requestInterceptor)
                 .build();
+
         return restAdapter.create(OhmageService.class);
 
     }

@@ -74,6 +74,19 @@ public class DeletingCursor extends CursorWrapper {
         return super.moveToFirst();
     }
 
+    /**
+     * Restarts this cursor at the beginning only if deletions have not happened
+     *
+     * @return true if the cursor was restarted
+     */
+    public boolean restart() {
+        if (mOffset == 0 && mDeleted == 0) {
+            ids.clear();
+            return super.moveToFirst();
+        }
+        return false;
+    }
+
     @Override
     public boolean moveToLast() {
         throw new RuntimeException("Not implemented");
@@ -98,12 +111,12 @@ public class DeletingCursor extends CursorWrapper {
 
     @Override
     public boolean isFirst() {
-        return super.isFirst() && !deletedPoints();
+        return super.isFirst() && !hasDeletedPoints();
     }
 
     @Override
     public boolean isBeforeFirst() {
-        return super.isBeforeFirst() && !deletedPoints();
+        return super.isBeforeFirst() && !hasDeletedPoints();
     }
 
     /**
@@ -120,7 +133,7 @@ public class DeletingCursor extends CursorWrapper {
      *
      * @return true if it has deleted points
      */
-    public boolean deletedPoints() {
+    public boolean hasDeletedPoints() {
         return !ids.isEmpty() || mDeleted != 0;
     }
 

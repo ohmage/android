@@ -18,8 +18,6 @@ package org.ohmage.sync;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
-import android.accounts.AuthenticatorException;
-import android.accounts.OperationCanceledException;
 import android.annotation.TargetApi;
 import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
@@ -34,6 +32,7 @@ import org.apache.http.auth.AuthenticationException;
 import org.ohmage.app.Ohmage;
 import org.ohmage.app.OhmageService;
 import org.ohmage.auth.AuthUtil;
+import org.ohmage.auth.Authenticator;
 import org.ohmage.models.Stream;
 import org.ohmage.models.Streams;
 
@@ -153,28 +152,15 @@ public class StreamSyncAdapter extends AbstractThreadedSyncAdapter {
     }
 
     private void sendData(Account account, Stream stream, StreamWriterOutput data,
-            boolean retryIfAuthError) throws AuthenticationException, RetrofitError {
-        String token = null;
+            boolean retry) throws AuthenticationException, RetrofitError {
         try {
-            token = accountManager.blockingGetAuthToken(account, AuthUtil.AUTHTOKEN_TYPE, true);
-        } catch (OperationCanceledException e) {
-            throw new AuthenticationException("Error getting auth token.", e);
-        } catch (AuthenticatorException e) {
-            throw new AuthenticationException("Error getting auth token.", e);
-        } catch (IOException e) {
-            throw new AuthenticationException("Error getting auth token.", e);
-        }
-
-        if (token == null)
-            throw new AuthenticationException("Token could not be retrieved.");
-
-        try {
-            ohmageService.uploadStreamData("ohmage " + token, stream.id, stream.version, data);
+            if (accountStillExists(account))
+                ohmageService.uploadStreamData(stream.id, stream.version, data);
         } catch (AuthenticationException e) {
             // If the response failed because of an auth error, we will try one more time
-            if (retryIfAuthError) {
-                accountManager.invalidateAuthToken(AuthUtil.ACCOUNT_TYPE, token);
+            if (retry) {
                 try {
+                    data.restartBatch();
                     sendData(account, stream, data, false);
                 } catch (AuthenticationException e1) {
                     throw e1;
@@ -183,5 +169,29 @@ public class StreamSyncAdapter extends AbstractThreadedSyncAdapter {
                 throw e;
             }
         }
+    }
+
+    /**
+     * Checks to see if the account still exists on the system
+     * <p/>
+     * TODO: make this check more robust.
+     * Since there is no way to set the authentication header easily I just check the that the
+     * account still exists. It is highly unlikely that it will change between now and reading the
+     * token. It would be better if I could pass the account or the token to the ohmageService call,
+     * but since I already add an authtoken in the request interceptor that can't be changed.
+     *
+     * @param account
+     * @return
+     */
+    private boolean accountStillExists(Account account) {
+        String id = accountManager.getUserData(account, Authenticator.USER_ID);
+        if (id != null) {
+            Account[] accounts = accountManager.getAccountsByType(AuthUtil.ACCOUNT_TYPE);
+            for (Account a : accounts) {
+                if (id.equals(accountManager.getUserData(a, Authenticator.USER_ID)))
+                    return true;
+            }
+        }
+        return false;
     }
 }

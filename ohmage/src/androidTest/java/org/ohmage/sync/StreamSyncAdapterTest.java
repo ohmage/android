@@ -67,7 +67,6 @@ public class StreamSyncAdapterTest extends InjectedAndroidTestCase {
     private static final String fakeUserId = "userId";
     private ContentProviderClient fakeContentProviderClient;
     private SyncResult fakeSyncResult;
-    private String fakeToken = "ohmage token";
     private String fakeStreamId = "fakeStreamId";
     private String fakeStreamVersion = "fakeStreamVersion";
     private Stream fakeStream = new Stream(fakeStreamId, fakeStreamVersion);
@@ -101,9 +100,8 @@ public class StreamSyncAdapterTest extends InjectedAndroidTestCase {
         fakeStreams.add(fakeStream);
         when(fakeWriter.moveToNextBatch()).thenReturn(true, false);
         whenAccountStillExists();
-        when(fakeOhmageService
-                .uploadStreamData(fakeToken, fakeStreamId, fakeStreamVersion, fakeWriter))
-                .thenThrow(new AuthenticationException(""));
+        when(fakeOhmageService.uploadStreamData(fakeStreamId, fakeStreamVersion,
+                fakeWriter)).thenThrow(new AuthenticationException(""));
 
         mSyncAdapter.performSyncForStreams(fakeAccount, fakeStreams, fakeWriter, fakeSyncResult);
 
@@ -119,7 +117,7 @@ public class StreamSyncAdapterTest extends InjectedAndroidTestCase {
         mSyncAdapter.performSyncForStreams(fakeAccount, fakeStreams, fakeWriter, fakeSyncResult);
 
         verify(fakeOhmageService)
-                .uploadStreamData(fakeToken, fakeStreamId, fakeStreamVersion, fakeWriter);
+                .uploadStreamData(fakeStreamId, fakeStreamVersion, fakeWriter);
     }
 
     public void testOnPerformSyncForStreams_authErrorUploading_triesAgainAfterInvalidating()
@@ -128,16 +126,30 @@ public class StreamSyncAdapterTest extends InjectedAndroidTestCase {
         fakeStreams.add(fakeStream);
         when(fakeWriter.moveToNextBatch()).thenReturn(true, false);
         whenAccountStillExists();
-        when(fakeOhmageService.uploadStreamData(fakeToken, fakeStreamId, fakeStreamVersion,
-                fakeWriter)).thenThrow(new AuthenticationException(""))
-                            .thenReturn(new Response(200, "", new ArrayList<Header>(), null));
+        when(fakeOhmageService.uploadStreamData(fakeStreamId, fakeStreamVersion, fakeWriter))
+                .thenThrow(
+                        new AuthenticationException("")).thenReturn(
+                new Response(200, "", new ArrayList<Header>(), null));
 
-        // TODO: Does it not throw the exception the second time?
         mSyncAdapter.performSyncForStreams(fakeAccount, fakeStreams, fakeWriter, fakeSyncResult);
 
         verify(fakeOhmageService, times(2))
-                .uploadStreamData(fakeToken, fakeStreamId, fakeStreamVersion,
+                .uploadStreamData(fakeStreamId, fakeStreamVersion,
                         fakeWriter);
+    }
+
+    public void testOnPerformSyncForStreams_authErrorUploading_restartsBatch()
+            throws Exception {
+        Streams fakeStreams = new Streams();
+        fakeStreams.add(fakeStream);
+        when(fakeWriter.moveToNextBatch()).thenReturn(true, false);
+        whenAccountStillExists();
+        when(fakeOhmageService.uploadStreamData(fakeStreamId, fakeStreamVersion, fakeWriter))
+                .thenThrow(new AuthenticationException(""));
+
+        mSyncAdapter.performSyncForStreams(fakeAccount, fakeStreams, fakeWriter, fakeSyncResult);
+
+        verify(fakeWriter).restartBatch();
     }
 
     public void testOnPerformSyncForStreams_authErrorAfterRefreshing_setsAuthExceptionInSyncResult()
@@ -146,9 +158,8 @@ public class StreamSyncAdapterTest extends InjectedAndroidTestCase {
         fakeStreams.add(fakeStream);
         when(fakeWriter.moveToNextBatch()).thenReturn(true, false);
         whenAccountStillExists();
-        when(fakeOhmageService
-                .uploadStreamData(fakeToken, fakeStreamId, fakeStreamVersion, fakeWriter))
-                .thenThrow(new AuthenticationException(""));
+        when(fakeOhmageService.uploadStreamData(fakeStreamId, fakeStreamVersion,
+                fakeWriter)).thenThrow(new AuthenticationException(""));
 
         mSyncAdapter.performSyncForStreams(fakeAccount, fakeStreams, fakeWriter, fakeSyncResult);
 
@@ -161,9 +172,8 @@ public class StreamSyncAdapterTest extends InjectedAndroidTestCase {
         fakeStreams.add(fakeStream);
         when(fakeWriter.moveToNextBatch()).thenReturn(true, false);
         whenAccountStillExists();
-        when(fakeOhmageService
-                .uploadStreamData(fakeToken, fakeStreamId, fakeStreamVersion, fakeWriter))
-                .thenThrow(RetrofitError.networkError("", new IOException()));
+        when(fakeOhmageService.uploadStreamData(fakeStreamId, fakeStreamVersion,
+                fakeWriter)).thenThrow(RetrofitError.networkError("", new IOException()));
 
         mSyncAdapter.performSyncForStreams(fakeAccount, fakeStreams, fakeWriter, fakeSyncResult);
 
@@ -176,10 +186,9 @@ public class StreamSyncAdapterTest extends InjectedAndroidTestCase {
         fakeStreams.add(fakeStream);
         when(fakeWriter.moveToNextBatch()).thenReturn(true, false);
         whenAccountStillExists();
-        when(fakeOhmageService
-                .uploadStreamData(fakeToken, fakeStreamId, fakeStreamVersion, fakeWriter))
-                .thenThrow(RetrofitError.conversionError("", null, null, null,
-                        new ConversionException("")));
+        when(fakeOhmageService.uploadStreamData(fakeStreamId, fakeStreamVersion,
+                fakeWriter)).thenThrow(RetrofitError.conversionError("", null, null, null,
+                new ConversionException("")));
 
         mSyncAdapter.performSyncForStreams(fakeAccount, fakeStreams, fakeWriter, fakeSyncResult);
 
@@ -192,9 +201,8 @@ public class StreamSyncAdapterTest extends InjectedAndroidTestCase {
         fakeStreams.add(fakeStream);
         when(fakeWriter.moveToNextBatch()).thenReturn(true, false);
         whenAccountStillExists();
-        when(fakeOhmageService
-                .uploadStreamData(fakeToken, fakeStreamId, fakeStreamVersion, fakeWriter))
-                .thenThrow(RetrofitError.httpError("", null, null, null));
+        when(fakeOhmageService.uploadStreamData(fakeStreamId, fakeStreamVersion,
+                fakeWriter)).thenThrow(RetrofitError.httpError("", null, null, null));
 
         mSyncAdapter.performSyncForStreams(fakeAccount, fakeStreams, fakeWriter, fakeSyncResult);
 
@@ -232,9 +240,8 @@ public class StreamSyncAdapterTest extends InjectedAndroidTestCase {
         fakeStreams.add(fakeStream);
         when(fakeWriter.moveToNextBatch()).thenReturn(true, false);
         whenAccountStillExists();
-        when(fakeOhmageService
-                .uploadStreamData(fakeToken, fakeStreamId, fakeStreamVersion, fakeWriter))
-                .thenThrow(RetrofitError.unexpectedError("", null));
+        when(fakeOhmageService.uploadStreamData(fakeStreamId, fakeStreamVersion,
+                fakeWriter)).thenThrow(RetrofitError.unexpectedError("", null));
 
         mSyncAdapter.performSyncForStreams(fakeAccount, fakeStreams, fakeWriter, fakeSyncResult);
 
@@ -247,9 +254,8 @@ public class StreamSyncAdapterTest extends InjectedAndroidTestCase {
         fakeStreams.add(fakeStream);
         when(fakeWriter.moveToNextBatch()).thenReturn(true, false);
         whenAccountStillExists();
-        when(fakeOhmageService
-                .uploadStreamData(fakeToken, fakeStreamId, fakeStreamVersion, fakeWriter))
-                .thenThrow(new AuthenticationException());
+        when(fakeOhmageService.uploadStreamData(fakeStreamId, fakeStreamVersion,
+                fakeWriter)).thenThrow(new AuthenticationException());
 
         mSyncAdapter.performSyncForStreams(fakeAccount, fakeStreams, fakeWriter, fakeSyncResult);
 

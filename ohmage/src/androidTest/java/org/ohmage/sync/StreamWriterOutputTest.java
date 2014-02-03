@@ -93,19 +93,6 @@ public class StreamWriterOutputTest extends AndroidTestCase {
                 eq(new String[]{fakeName, fakeStream.id, fakeStream.version}), any(String.class));
     }
 
-    public void testSetCursor_hasPointsToDelete_throwsException() {
-        DeletingCursor fakeCursor = mock(DeletingCursor.class);
-        mStreamWriterOutput.setCursor(fakeCursor);
-        when(fakeCursor.deletedPoints()).thenReturn(true);
-
-        try {
-            mStreamWriterOutput.setCursor(mock(Cursor.class));
-            fail("No Exception Thrown");
-        } catch (Exception e) {
-            assertTrue(e instanceof RuntimeException);
-        }
-    }
-
     public void testSetCursor_hasCursor_closesOldCursor() {
         Cursor fakeCursor = mock(Cursor.class);
         mStreamWriterOutput.setCursor(fakeCursor);
@@ -126,7 +113,7 @@ public class StreamWriterOutputTest extends AndroidTestCase {
     public void testMoveToNextBatch_hasPointsToDelete_throwsException() throws Exception {
         DeletingCursor fakeCursor = mock(DeletingCursor.class);
         mStreamWriterOutput.setCursor(fakeCursor);
-        when(fakeCursor.deletedPoints()).thenReturn(true);
+        when(fakeCursor.hasDeletedPoints()).thenReturn(true);
 
         try {
             mStreamWriterOutput.moveToNextBatch();
@@ -143,6 +130,16 @@ public class StreamWriterOutputTest extends AndroidTestCase {
         mStreamWriterOutput.moveToNextBatch();
 
         verify(fakeCursor).isLast();
+    }
+
+    public void testMoveToNextBatch_hasCursorNotAtLast_returnsTrue() throws Exception {
+        DeletingCursor fakeCursor = mock(DeletingCursor.class);
+        mStreamWriterOutput.setCursor(fakeCursor);
+        when(fakeCursor.isLast()).thenReturn(false);
+
+        boolean ret = mStreamWriterOutput.moveToNextBatch();
+
+        assertTrue(ret);
     }
 
     public void testDeleteBatch_noCursor_returnsZero() throws Exception {

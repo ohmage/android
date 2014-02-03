@@ -129,7 +129,6 @@ public class StreamWriterOutput implements TypedOutput {
     }
 
     public void setCursor(Cursor cursor) {
-        ensureNoDanglingPoints();
         if (mCursor != null) {
             mCursor.close();
             mCursor = null;
@@ -147,7 +146,7 @@ public class StreamWriterOutput implements TypedOutput {
         ensureNoDanglingPoints();
         reset();
         if (mCursor != null) {
-            return mCursor.isLast();
+            return !mCursor.isLast();
         }
 
         return false;
@@ -158,6 +157,16 @@ public class StreamWriterOutput implements TypedOutput {
             return 0;
 
         return mCursor.deleteMarked(mProvider, StreamContract.Streams.CONTENT_URI);
+    }
+
+    /**
+     * Instead of deleting a batch, we can restart it in the case of certain errors
+     */
+    public void restartBatch() {
+        if (mCursor == null)
+            return;
+
+        mCursor.restart();
     }
 
     public void close() {
@@ -232,7 +241,7 @@ public class StreamWriterOutput implements TypedOutput {
     }
 
     private void ensureNoDanglingPoints() {
-        if (mCursor != null && mCursor.deletedPoints()) {
+        if (mCursor != null && mCursor.hasDeletedPoints()) {
             throw new RuntimeException(
                     "deleteBatch() must be called since there are some points to delete");
         }
