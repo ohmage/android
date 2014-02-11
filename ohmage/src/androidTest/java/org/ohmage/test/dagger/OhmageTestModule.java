@@ -26,6 +26,7 @@ import org.ohmage.app.MainActivityOhmletsTest;
 import org.ohmage.app.MainActivityTest;
 import org.ohmage.app.OhmageAuthenticator;
 import org.ohmage.app.OhmageService;
+import org.ohmage.app.OhmletActivity;
 import org.ohmage.auth.AuthHelper;
 import org.ohmage.auth.AuthenticateFragment;
 import org.ohmage.auth.Authenticator;
@@ -37,6 +38,7 @@ import org.ohmage.fragments.OhmletsFragment;
 import org.ohmage.fragments.OhmletsGridFragment;
 import org.ohmage.fragments.OhmletsSearchFragment;
 import org.ohmage.provider.StreamContentProvider;
+import org.ohmage.sync.OhmageSyncAdapter;
 import org.ohmage.sync.StreamSyncAdapter;
 import org.ohmage.sync.StreamSyncAdapterTest;
 import org.ohmage.tasks.LogoutTaskFragment;
@@ -67,7 +69,10 @@ import static org.mockito.Mockito.mock;
                 OhmageAuthenticator.class,
                 OhmletsSearchFragment.class,
                 OhmletsGridFragment.OhmletAdapter.class,
-                OhmletsFragment.class
+                OhmletsFragment.class,
+                OhmageSyncAdapter.class,
+                OhmletActivity.class,
+                OhmletActivity.OhmletFragment.class
         },
         complete = false,
         library = true,

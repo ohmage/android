@@ -29,7 +29,7 @@ public class Ohmlet {
     public int responseCount;
     public String icon;
     public boolean isParticipant;
-    public String shortDescription;
+    public String description;
     public PrivacyState privacyState;
     public JoinState joinState;
 }

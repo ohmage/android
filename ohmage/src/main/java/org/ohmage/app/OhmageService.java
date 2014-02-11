@@ -20,6 +20,7 @@ import org.apache.http.auth.AuthenticationException;
 import org.ohmage.auth.AuthUtil;
 import org.ohmage.auth.AuthUtil.GrantType;
 import org.ohmage.models.AccessToken;
+import org.ohmage.models.Ohmlet;
 import org.ohmage.models.Ohmlets;
 import org.ohmage.models.User;
 import org.ohmage.sync.StreamWriterOutput;
@@ -31,6 +32,7 @@ import retrofit.http.GET;
 import retrofit.http.POST;
 import retrofit.http.Path;
 import retrofit.http.Query;
+import rx.Observable;
 
 /**
  * Created by cketcham on 12/9/13.
@@ -68,6 +70,8 @@ public interface OhmageService {
     void searchOhmlets(@Query("query") String query, Callback<Ohmlets> ohmletsCallback);
 
     @GET("/ohmlets") void getOhmlets(Callback<Ohmlets> ohmletsCallback);
+
+    @GET("/ohmlets/{ohmletId}") Observable<Ohmlet> getOhmlet(@Path("ohmletId") String id);
 
     @POST("/streams/{streamId}/{streamVersion}/data")
     Response uploadStreamData(@Path("streamId") String streamId,

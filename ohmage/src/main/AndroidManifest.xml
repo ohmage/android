@@ -111,6 +111,15 @@
             android:name="org.ohmage.auth.AccountNotActivatedDialog"
             android:theme="@style/Theme.AppCompat.Light.Translucent.NoTitleBar" />
 
+        <activity
+            android:name="org.ohmage.app.OhmletActivity"
+            android:label="@string/title_activity_ohmlet"
+            android:parentActivityName="org.ohmage.app.MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="MainActivity" />
+        </activity>
+
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />

@@ -100,7 +100,7 @@ public class OhmletsGridFragment extends GridFragment {
             Ohmlet item = getItem(position);
             holder.name.setText(item.name);
             holder.organizer.setText(item.organizer.fullName);
-            holder.description.setText(item.shortDescription);
+            holder.description.setText(item.description);
             holder.response_count.setText(String.valueOf(item.responseCount));
             holder.action.setText(item.isParticipant ? "Leave" : "Join");
             return view;
