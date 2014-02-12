@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <!--
-  Copyright (C) 2013 ohmage
+  Copyright (C) 2014 ohmage
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -16,12 +17,7 @@
   -->
 
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item
-        android:state_pressed="true"
-        android:drawable="@drawable/email_signin_btn_pressed" />
-    <item
-        android:state_focused="true"
-        android:drawable="@drawable/email_signin_btn_focus" />
-    <item
-        android:drawable="@drawable/email_signin_btn_normal" />
+    <item android:state_pressed="true" android:drawable="@drawable/email_signin_btn_pressed" />
+    <item android:state_focused="true" android:drawable="@drawable/email_signin_btn_focus" />
+    <item android:drawable="@drawable/email_signin_btn_normal" />
 </selector>
