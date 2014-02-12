@@ -16,18 +16,24 @@
 
 package org.ohmage.app;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import org.ohmage.dagger.InjectedActionBarActivity;
+import org.ohmage.dagger.InjectedDialogFragment;
 import org.ohmage.dagger.InjectedFragment;
 import org.ohmage.models.Ohmlet;
+import org.ohmage.operators.ContentProviderSaver;
 
 import javax.inject.Inject;
 
@@ -35,6 +41,7 @@ import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
 import rx.android.observables.AndroidObservable;
+import rx.schedulers.Schedulers;
 
 public class OhmletActivity extends InjectedActionBarActivity {
 
@@ -75,7 +82,8 @@ public class OhmletActivity extends InjectedActionBarActivity {
     /**
      * A placeholder fragment containing a simple view.
      */
-    public static class OhmletFragment extends InjectedFragment implements Observer<Ohmlet> {
+    public static class OhmletFragment extends InjectedFragment
+            implements Observer<Ohmlet>, View.OnClickListener {
 
         @Inject OhmageService ohmageService;
 
@@ -85,6 +93,8 @@ public class OhmletActivity extends InjectedActionBarActivity {
 
         private Subscription ohmletSupscription;
 
+        private Button mJoinButton;
+
         @Override public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
 
@@ -92,7 +102,10 @@ public class OhmletActivity extends InjectedActionBarActivity {
 
             Observable<Ohmlet> ohmletObservable =
                     ohmageService.getOhmlet("d9fdbad3-3888-4540-a872-5fbcc38dfaf6")
-                                 .single();
+                                 .single().cache();
+
+            ohmletObservable.observeOn(Schedulers.io()).doOnNext(new ContentProviderSaver())
+                            .subscribe();
 
             ohmletSupscription = AndroidObservable.fromFragment(this, ohmletObservable)
                                                   .subscribe(this);
@@ -123,6 +136,8 @@ public class OhmletActivity extends InjectedActionBarActivity {
             View rootView = inflater.inflate(R.layout.fragment_ohmlet, container, false);
 
             mDescription = (TextView) rootView.findViewById(R.id.description);
+            mJoinButton = (Button) rootView.findViewById(R.id.join);
+            mJoinButton.setOnClickListener(this);
 
             return rootView;
         }
@@ -137,6 +152,42 @@ public class OhmletActivity extends InjectedActionBarActivity {
             if (getView() != null) {
                 mDescription.setText(mOhmlet.description);
             }
+        }
+
+        @Override public void onClick(View v) {
+            //TODO: handle more than just the join case
+            new JoinOhmletDialog().show(getFragmentManager(), "join_dialog");
+        }
+    }
+
+    public static class JoinOhmletDialog extends InjectedDialogFragment
+            implements DialogInterface.OnClickListener {
+
+        private Ohmlet mOhmlet;
+
+        public static JoinOhmletDialog getInstance(Ohmlet ohmlet) {
+            JoinOhmletDialog fragment = new JoinOhmletDialog();
+            fragment.setOhmlet(ohmlet);
+            return fragment;
+        }
+
+        @Inject OhmageService ohmageService;
+
+        @Override public Dialog onCreateDialog(Bundle savedInstanceState) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setTitle("Join ohmlet?")
+                   .setMessage("Are you sure you want to join this ohmlet?")
+                   .setPositiveButton(R.string.join, this)
+                   .setNegativeButton(R.string.cancel, null);
+            return builder.create();
+        }
+
+        @Override public void onClick(DialogInterface dialog, int which) {
+//            getActivity().getContentResolver().insert(Ohmage)
+        }
+
+        public void setOhmlet(Ohmlet ohmlet) {
+            mOhmlet = ohmlet;
         }
     }
 }

@@ -72,7 +72,8 @@ import static org.mockito.Mockito.mock;
                 OhmletsFragment.class,
                 OhmageSyncAdapter.class,
                 OhmletActivity.class,
-                OhmletActivity.OhmletFragment.class
+                OhmletActivity.OhmletFragment.class,
+                OhmletActivity.JoinOhmletDialog.class
         },
         complete = false,
         library = true,

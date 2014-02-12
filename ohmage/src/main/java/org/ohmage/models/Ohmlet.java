@@ -16,13 +16,17 @@
 
 package org.ohmage.models;
 
+import android.content.ContentValues;
+import android.net.Uri;
+
+import org.ohmage.operators.ContentProviderSaver;
 import org.ohmage.provider.OhmageContract.Ohmlets.JoinState;
 import org.ohmage.provider.OhmageContract.Ohmlets.PrivacyState;
 
 /**
  * Basic Ohmlet class
  */
-public class Ohmlet {
+public class Ohmlet implements ContentProviderSaver.Savable {
     public String id;
     public String name;
     public User organizer;
@@ -32,4 +36,12 @@ public class Ohmlet {
     public String description;
     public PrivacyState privacyState;
     public JoinState joinState;
+
+    @Override public ContentValues toContentValues() {
+        return new ContentValues();
+    }
+
+    @Override public Uri getUrl() {
+        return Uri.parse("blah");
+    }
 }
