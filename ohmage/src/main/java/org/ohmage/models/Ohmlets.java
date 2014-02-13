@@ -22,4 +22,13 @@ import java.util.ArrayList;
  * Created by cketcham on 10/29/13.
  */
 public class Ohmlets extends ArrayList<Ohmlet> {
+    public Ohmlet getById(String id) {
+        if (id != null) {
+            for (Ohmlet ohmlet : this) {
+                if (id.equals(ohmlet.id))
+                    return ohmlet;
+            }
+        }
+        return null;
+    }
 }

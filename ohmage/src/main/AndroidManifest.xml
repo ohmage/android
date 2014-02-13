@@ -73,6 +73,18 @@
         </service>
 
         <service
+            android:name="org.ohmage.sync.OhmageSyncService"
+            android:exported="true"
+            android:process=":sync">
+            <intent-filter>
+                <action android:name="android.content.SyncAdapter" />
+            </intent-filter>
+            <meta-data
+                android:name="android.content.SyncAdapter"
+                android:resource="@xml/syncadapter_ohmage" />
+        </service>
+
+        <service
             android:name="org.ohmage.services.StreamReceiver"
             android:enabled="true"
             android:exported="true">
@@ -82,9 +94,16 @@
         </service>
 
         <provider
-            android:name="org.ohmage.streams.StreamContentProvider"
+            android:name="org.ohmage.provider.StreamContentProvider"
             android:label="@string/streams"
             android:authorities="org.ohmage.streams"
+            android:exported="true"
+            android:syncable="true" />
+
+        <provider
+            android:name="org.ohmage.provider.OhmageContentProvider"
+            android:label="Account Data"
+            android:authorities="org.ohmage.db"
             android:exported="true"
             android:syncable="true" />
 

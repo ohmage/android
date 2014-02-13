@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.ohmage.streams;
+package org.ohmage.provider;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
@@ -33,7 +33,9 @@ import android.text.TextUtils;
 
 import org.ohmage.app.Ohmage;
 import org.ohmage.auth.AuthUtil;
-import org.ohmage.streams.StreamDbHelper.Tables;
+import org.ohmage.provider.OhmageDbHelper.Tables;
+import org.ohmage.streams.AsyncBulkInsertHandler;
+import org.ohmage.streams.StreamContract;
 
 import javax.inject.Inject;
 
@@ -54,7 +56,7 @@ public class StreamContentProvider extends ContentProvider implements OnAccounts
         int COUNTS = 2;
     }
 
-    private StreamDbHelper dbHelper;
+    private OhmageDbHelper dbHelper;
 
     private static UriMatcher sUriMatcher;
 
@@ -131,7 +133,7 @@ public class StreamContentProvider extends ContentProvider implements OnAccounts
 
     @Override
     public boolean onCreate() {
-        dbHelper = new StreamDbHelper(getContext());
+        dbHelper = new OhmageDbHelper(getContext());
 
         ((Ohmage) getContext().getApplicationContext()).getApplicationGraph().inject(this);
 

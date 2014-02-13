@@ -14,48 +14,65 @@
  * limitations under the License.
  */
 
-package org.ohmage.streams;
+package org.ohmage.provider;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
 
-public class StreamDbHelper extends SQLiteOpenHelper {
+import org.ohmage.provider.OhmageContract.Ohmlets;
+import org.ohmage.provider.OhmageContract.Ohmlets.JoinState;
+import org.ohmage.streams.StreamContract.Streams;
+
+public class OhmageDbHelper extends SQLiteOpenHelper {
 
     private static final String DB_NAME = "streams.db";
 
-    private static final int DB_VERSION = 1;
+    private static final int DB_VERSION = 3;
 
     public static final String SQL_AND = " AND %s='%s'";
 
     public interface Tables {
+        static final String Ohmlets = "ohmlets";
         static final String Streams = "streams";
     }
 
-    public StreamDbHelper(Context context) {
+    public OhmageDbHelper(Context context) {
         super(context, DB_NAME, null, DB_VERSION);
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
+        db.execSQL("CREATE TABLE IF NOT EXISTS " + Tables.Ohmlets + " ("
+                   + Ohmlets.OHMLET_ID + " TEXT NOT NULL, "
+                   + Ohmlets.OHMLET_VERSION + " INTEGER NOT NULL, "
+                   + Ohmlets.OHMLET_SURVEYS + " TEXT, "
+                   + Ohmlets.OHMLET_STREAMS + " TEXT, "
+                   + Ohmlets.OHMLET_STREAMS + " TEXT, "
+                   + Ohmlets.OHMLET_PRIVACY_STATE + " INTEGER NOT NULL, "
+                   + Ohmlets.OHMLET_JOIN_STATE + " INTEGER DEFAULT " + JoinState.NONE + ", "
+                   + "PRIMARY KEY (" + Ohmlets.OHMLET_ID + ", " + Ohmlets.OHMLET_VERSION + "));");
+
         db.execSQL("CREATE TABLE IF NOT EXISTS " + Tables.Streams + " ("
                    + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-                   + StreamContract.Streams.STREAM_ID + " TEXT NOT NULL, "
-                   + StreamContract.Streams.STREAM_VERSION + " INTEGER NOT NULL, "
-                   + StreamContract.Streams.USERNAME + " TEXT NOT NULL, "
-                   + StreamContract.Streams.STREAM_METADATA + " TEXT, "
-                   + StreamContract.Streams.STREAM_DATA + " TEXT);");
+                   + Streams.STREAM_ID + " TEXT NOT NULL, "
+                   + Streams.STREAM_VERSION + " INTEGER NOT NULL, "
+                   + Streams.USERNAME + " TEXT NOT NULL, "
+                   + Streams.STREAM_METADATA + " TEXT, "
+                   + Streams.STREAM_DATA + " TEXT);");
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        db.execSQL("DROP TABLE IF EXISTS " + Tables.Ohmlets);
         db.execSQL("DROP TABLE IF EXISTS " + Tables.Streams);
         onCreate(db);
     }
 
     public void clearAll() {
         SQLiteDatabase db = getWritableDatabase();
+        db.execSQL("DROP TABLE IF EXISTS " + Tables.Ohmlets);
         db.execSQL("DROP TABLE IF EXISTS " + Tables.Streams);
         onCreate(db);
     }

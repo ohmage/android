@@ -36,7 +36,7 @@ import org.ohmage.dagger.ForApplication;
 import org.ohmage.fragments.OhmletsFragment;
 import org.ohmage.fragments.OhmletsGridFragment;
 import org.ohmage.fragments.OhmletsSearchFragment;
-import org.ohmage.streams.StreamContentProvider;
+import org.ohmage.provider.StreamContentProvider;
 import org.ohmage.sync.StreamSyncAdapter;
 import org.ohmage.sync.StreamSyncAdapterTest;
 import org.ohmage.tasks.LogoutTaskFragment;

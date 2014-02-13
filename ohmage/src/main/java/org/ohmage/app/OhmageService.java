@@ -61,6 +61,9 @@ public interface OhmageService {
     @POST("/people") void createUser(@Query("password") String password, @Body User user,
             CancelableCallback<User> callback);
 
+    @GET("/people/{userId}/ohmlets") Ohmlets getCurrentStateForUser(@Path("userId") String userId)
+            throws AuthenticationException;
+
     @GET("/ohmlets")
     void searchOhmlets(@Query("query") String query, Callback<Ohmlets> ohmletsCallback);
 

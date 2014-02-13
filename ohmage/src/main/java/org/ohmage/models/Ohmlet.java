@@ -16,6 +16,9 @@
 
 package org.ohmage.models;
 
+import org.ohmage.provider.OhmageContract.Ohmlets.JoinState;
+import org.ohmage.provider.OhmageContract.Ohmlets.PrivacyState;
+
 /**
  * Basic Ohmlet class
  */
@@ -27,4 +30,6 @@ public class Ohmlet {
     public String icon;
     public boolean isParticipant;
     public String shortDescription;
+    public PrivacyState privacyState;
+    public JoinState joinState;
 }

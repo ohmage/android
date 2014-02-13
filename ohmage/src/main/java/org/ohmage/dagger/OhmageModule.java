@@ -40,7 +40,7 @@ import org.ohmage.auth.SignInFragment;
 import org.ohmage.fragments.OhmletsFragment;
 import org.ohmage.fragments.OhmletsGridFragment;
 import org.ohmage.fragments.OhmletsSearchFragment;
-import org.ohmage.streams.StreamContentProvider;
+import org.ohmage.provider.StreamContentProvider;
 import org.ohmage.sync.StreamSyncAdapter;
 import org.ohmage.tasks.LogoutTaskFragment;
 

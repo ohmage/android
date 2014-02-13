@@ -129,6 +129,7 @@ public class Authenticator extends AbstractAccountAuthenticator {
                         if (token != null) {
                             am.setUserData(account, Authenticator.USE_PASSWORD,
                                     String.valueOf(false));
+                            am.setUserData(account, Authenticator.USER_ID, token.getUserId());
                         }
                     } else {
                         token = ohmageService.getAccessToken(refreshToken);
