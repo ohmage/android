@@ -26,6 +26,7 @@ import android.net.Uri;
 
 import org.ohmage.provider.OhmageContract.Ohmlets;
 import org.ohmage.provider.OhmageDbHelper.Tables;
+import org.ohmage.streams.StreamContract;
 import org.ohmage.sync.OhmageSyncAdapter;
 
 public class OhmageContentProvider extends ContentProvider {
@@ -34,6 +35,8 @@ public class OhmageContentProvider extends ContentProvider {
     private interface MatcherTypes {
         int OHMLETS = 0;
         int OHMLET_ID = 1;
+        int SURVEYS = 2;
+        int SURVEY_ID = 3;
     }
 
     private OhmageDbHelper dbHelper;
@@ -42,8 +45,12 @@ public class OhmageContentProvider extends ContentProvider {
 
     {
         sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
-        sUriMatcher.addURI(OhmageContract.CONTENT_AUTHORITY, "ohmlets", MatcherTypes.OHMLETS);
-        sUriMatcher.addURI(OhmageContract.CONTENT_AUTHORITY, "ohmlets/*", MatcherTypes.OHMLET_ID);
+        sUriMatcher.addURI(StreamContract.CONTENT_AUTHORITY, "ohmlets", MatcherTypes.OHMLETS);
+        sUriMatcher
+                .addURI(StreamContract.CONTENT_AUTHORITY, "ohmlets/*/*", MatcherTypes.OHMLET_ID);
+        sUriMatcher.addURI(StreamContract.CONTENT_AUTHORITY, "surveys", MatcherTypes.SURVEYS);
+        sUriMatcher
+                .addURI(StreamContract.CONTENT_AUTHORITY, "surveys/*/*", MatcherTypes.SURVEY_ID);
     }
 
     @Override

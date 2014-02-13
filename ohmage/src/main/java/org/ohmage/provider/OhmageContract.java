@@ -90,4 +90,32 @@ public class OhmageContract {
                 OHMLET_MEMBERS, OHMLET_PRIVACY_STATE
         };
     }
+
+    interface SurveyColumns {
+        /**
+         * Unique string identifying the stream
+         */
+        String SURVEY_ID = "survey_id";
+
+        /**
+         * Version to identify stream
+         */
+        String SURVEY_VERSION = "survey_version";
+
+        String SURVEY_ITEMS = "survey_items";
+    }
+
+    private static final String PATH_SURVEYS = "surveys";
+
+    /**
+     * Represents a stream.
+     */
+    public static final class Surveys implements BaseColumns, SurveyColumns {
+
+        public static final Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_SURVEYS)
+                                                              .build();
+
+        public static final String CONTENT_TYPE =
+                "vnd.android.cursor.dir/vnd.ohmage.surveys.survey";
+    }
 }

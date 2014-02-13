@@ -16,6 +16,8 @@
 
 package org.ohmage.models;
 
+import java.util.ArrayList;
+
 /**
  * Created by cketcham on 12/18/13.
  */
@@ -23,4 +25,8 @@ public class Survey {
     public String id;
     public String name;
     public boolean isParticipant;
+
+    String schemaId;
+    String schemaVersion;
+    ArrayList<Object> surveyItems;
 }
