@@ -16,8 +16,11 @@
 
 package org.ohmage.provider;
 
+import android.content.ContentUris;
 import android.net.Uri;
 import android.provider.BaseColumns;
+
+import java.util.List;
 
 /**
  * Created by cketcham on 1/29/14.
@@ -115,8 +118,26 @@ public class OhmageContract {
         public static final Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_SURVEYS)
                                                               .build();
 
-        public static final String CONTENT_TYPE =
-                "vnd.android.cursor.dir/vnd.ohmage.surveys.survey";
+        public static final String CONTENT_ITEM_TYPE =
+                "vnd.android.cursor.item/vnd.ohmage.surveys.survey";
+
+        public static Uri getUriForSurveyId(String id) {
+            return Uri.withAppendedPath(CONTENT_URI, id);
+        }
+
+        public static Uri getUriForSurveyIdVersion(String id, long version) {
+            return ContentUris.withAppendedId(getUriForSurveyId(id), version);
+        }
+
+        public static String getId(Uri uri) {
+            List<String> path = uri.getPathSegments();
+            return (path.size() < 2) ? null : path.get(1);
+        }
+
+        public static Long getVersion(Uri uri) {
+            List<String> path = uri.getPathSegments();
+            return (path.size() < 3) ? null : Long.parseLong(path.get(2));
+        }
     }
 
     interface StreamColumns {
@@ -141,7 +162,25 @@ public class OhmageContract {
         public static final Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_STREAMS)
                                                               .build();
 
-        public static final String CONTENT_TYPE =
+        public static final String CONTENT_ITEM_TYPE =
                 "vnd.android.cursor.dir/vnd.ohmage.streams.stream";
+
+        public static Uri getUriForStreamId(String id) {
+            return Uri.withAppendedPath(CONTENT_URI, id);
+        }
+
+        public static Uri getUriForStreamIdVersion(String id, long version) {
+            return ContentUris.withAppendedId(getUriForStreamId(id), version);
+        }
+
+        public static String getId(Uri uri) {
+            List<String> path = uri.getPathSegments();
+            return (path.size() < 2) ? null : path.get(1);
+        }
+
+        public static Long getVersion(Uri uri) {
+            List<String> path = uri.getPathSegments();
+            return (path.size() < 3) ? null : Long.parseLong(path.get(2));
+        }
     }
 }

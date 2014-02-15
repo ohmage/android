@@ -25,8 +25,9 @@ import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 
 import org.ohmage.provider.OhmageContract.Ohmlets;
+import org.ohmage.provider.OhmageContract.Streams;
+import org.ohmage.provider.OhmageContract.Surveys;
 import org.ohmage.provider.OhmageDbHelper.Tables;
-import org.ohmage.streams.StreamContract;
 import org.ohmage.sync.OhmageSyncAdapter;
 
 public class OhmageContentProvider extends ContentProvider {
@@ -38,6 +39,7 @@ public class OhmageContentProvider extends ContentProvider {
         int SURVEYS = 2;
         int SURVEY_ID = 3;
         int STREAMS = 4;
+        int STREAM_ID = 5;
     }
 
     private OhmageDbHelper dbHelper;
@@ -46,13 +48,13 @@ public class OhmageContentProvider extends ContentProvider {
 
     {
         sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
-        sUriMatcher.addURI(StreamContract.CONTENT_AUTHORITY, "ohmlets", MatcherTypes.OHMLETS);
-        sUriMatcher
-                .addURI(StreamContract.CONTENT_AUTHORITY, "ohmlets/*/*", MatcherTypes.OHMLET_ID);
-        sUriMatcher.addURI(StreamContract.CONTENT_AUTHORITY, "surveys", MatcherTypes.SURVEYS);
-        sUriMatcher
-                .addURI(StreamContract.CONTENT_AUTHORITY, "surveys/*/*", MatcherTypes.SURVEY_ID);
+        sUriMatcher.addURI(OhmageContract.CONTENT_AUTHORITY, "ohmlets", MatcherTypes.OHMLETS);
+        sUriMatcher.addURI(OhmageContract.CONTENT_AUTHORITY, "ohmlets/*", MatcherTypes.OHMLET_ID);
+        sUriMatcher.addURI(OhmageContract.CONTENT_AUTHORITY, "surveys", MatcherTypes.SURVEYS);
+        sUriMatcher.addURI(OhmageContract.CONTENT_AUTHORITY, "surveys/*", MatcherTypes.SURVEY_ID);
+        sUriMatcher.addURI(OhmageContract.CONTENT_AUTHORITY, "surveys/*/*", MatcherTypes.SURVEY_ID);
         sUriMatcher.addURI(OhmageContract.CONTENT_AUTHORITY, "streams", MatcherTypes.STREAMS);
+        sUriMatcher.addURI(OhmageContract.CONTENT_AUTHORITY, "streams/*/*", MatcherTypes.STREAM_ID);
     }
 
     @Override
@@ -113,16 +115,36 @@ public class OhmageContentProvider extends ContentProvider {
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs,
             String sortOrder) {
         Cursor cursor;
+        String id;
+        Long version;
         switch (sUriMatcher.match(uri)) {
             case MatcherTypes.OHMLETS:
                 cursor = dbHelper.getReadableDatabase().query(Tables.Ohmlets, projection, selection,
                         selectionArgs, null, null, sortOrder);
                 break;
             case MatcherTypes.OHMLET_ID:
-                cursor = dbHelper.getReadableDatabase()
-                                 .query(Tables.Ohmlets, projection, Ohmlets.OHMLET_ID + "=?",
-                                         new String[]{uri.getLastPathSegment()}, null, null,
-                                         sortOrder);
+                cursor = dbHelper.getReadableDatabase().query(Tables.Ohmlets, projection,
+                        Ohmlets.OHMLET_ID + "=?", new String[]{uri.getLastPathSegment()}, null,
+                        null, sortOrder);
+                break;
+            case MatcherTypes.SURVEY_ID:
+                id = Surveys.getId(uri);
+                if(id != null) {
+                    selection = Surveys.SURVEY_ID + "=?";
+                    selectionArgs = new String[] { id };
+                    version = Surveys.getVersion(uri);
+                    if(version != null) {
+                        selection += " AND " + Surveys.SURVEY_VERSION + "=" + version;
+                    }
+                }
+                cursor = dbHelper.getReadableDatabase().query(Tables.Surveys, projection, selection,
+                        selectionArgs, null, null, sortOrder);
+                break;
+            case MatcherTypes.STREAM_ID:
+                cursor = dbHelper.getReadableDatabase().query(Tables.Streams, projection,
+                        Streams.STREAM_ID + "=? AND " + Streams.STREAM_VERSION + "=" +
+                        Streams.getVersion(uri), new String[]{Streams.getId(uri)}, null, null,
+                        sortOrder);
                 break;
             default:
                 throw new UnsupportedOperationException("query(): Unknown URI: " + uri);

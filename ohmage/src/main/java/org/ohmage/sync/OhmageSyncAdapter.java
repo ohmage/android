@@ -46,6 +46,8 @@ import org.ohmage.models.Stream;
 import org.ohmage.models.Survey;
 import org.ohmage.operators.ContentProviderSaver.ContentProviderSaverObserver;
 import org.ohmage.provider.OhmageContract;
+import org.ohmage.provider.OhmageContract.Streams;
+import org.ohmage.provider.OhmageContract.Surveys;
 
 import java.io.IOException;
 
@@ -96,7 +98,7 @@ public class OhmageSyncAdapter extends AbstractThreadedSyncAdapter {
 
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority,
-            ContentProviderClient provider, final SyncResult syncResult) {
+            final ContentProviderClient provider, final SyncResult syncResult) {
         // Check for authtoken
         String token = null;
         try {
@@ -176,7 +178,6 @@ public class OhmageSyncAdapter extends AbstractThreadedSyncAdapter {
                 return;
 
             // Second, synchronize all data
-            // TODO: only download new streams and surveys with different versions (filter?)
             // TODO: this probably needs to be in a transaction some how? It needs to deal with the case where it wants to sync an ohmlet that the user is trying to interact with at the same time.
             // TODO: handle errors that occur here using the syncResult
             Observable<Ohmlet> ohmlets = ohmageService.getCurrentStateForUser(userId).flatMap(
@@ -189,10 +190,10 @@ public class OhmageSyncAdapter extends AbstractThreadedSyncAdapter {
                         }
                     }).flatMap(new RefreshOhmlet()).cache();
             ohmlets.subscribe(new ContentProviderSaverObserver(true));
-            ohmlets.flatMap(new SurveysFromOhmlet()).flatMap(new RefreshSurvey())
-                   .subscribe(new ContentProviderSaverObserver(true));
-            ohmlets.flatMap(new StreamsFromOhmlet()).flatMap(new RefreshStream())
-                   .subscribe(new ContentProviderSaverObserver(true));
+            ohmlets.flatMap(new SurveysFromOhmlet()).filter(new FilterUpToDateSurveys(provider))
+                   .flatMap(new RefreshSurvey()).subscribe(new ContentProviderSaverObserver(true));
+            ohmlets.flatMap(new StreamsFromOhmlet()).filter(new FilterUpToDateStreams(provider))
+                   .flatMap(new RefreshStream()).subscribe(new ContentProviderSaverObserver(true));
 
             // TODO: clean up old ohmlets
 
@@ -235,6 +236,54 @@ public class OhmageSyncAdapter extends AbstractThreadedSyncAdapter {
     public class RefreshOhmlet implements Func1<Ohmlet, Observable<Ohmlet>> {
         @Override public Observable<Ohmlet> call(Ohmlet ohmlet) {
             return ohmageService.getOhmlet(ohmlet.ohmletId);
+        }
+    }
+
+    public static class FilterUpToDateSurveys implements Func1<Survey, Boolean> {
+
+        private final ContentProviderClient provider;
+
+        public FilterUpToDateSurveys(ContentProviderClient provider) {
+            this.provider = provider;
+        }
+
+        @Override public Boolean call(Survey survey) {
+            try {
+                Cursor c = provider.query(
+                        Surveys.getUriForSurveyIdVersion(survey.schemaId, survey.schemaVersion),
+                        new String[]{Surveys.SURVEY_ID, Surveys.SURVEY_VERSION}, null, null, null);
+                if (c.moveToFirst()) {
+                    return !c.getString(0).equals(survey.schemaId) ||
+                           c.getInt(1) != survey.schemaVersion;
+                }
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+            return true;
+        }
+    }
+
+    public static class FilterUpToDateStreams implements Func1<Stream, Boolean> {
+
+        private final ContentProviderClient provider;
+
+        public FilterUpToDateStreams(ContentProviderClient provider) {
+            this.provider = provider;
+        }
+
+        @Override public Boolean call(Stream stream) {
+            try {
+                Cursor c = provider.query(
+                        Streams.getUriForStreamIdVersion(stream.schemaId, stream.schemaVersion),
+                        new String[]{Streams.STREAM_ID, Streams.STREAM_VERSION}, null, null, null);
+                if (c.moveToFirst()) {
+                    return !c.getString(0).equals(stream.schemaId) ||
+                           c.getInt(1) != stream.schemaVersion;
+                }
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+            return true;
         }
     }
 
