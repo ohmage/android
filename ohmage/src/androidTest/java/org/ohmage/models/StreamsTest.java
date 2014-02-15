@@ -37,7 +37,7 @@ public class StreamsTest extends AndroidTestCase {
     private ContentProviderClient fakeContentProviderClient;
     Account fakeAccount = new Account("name", "type");
     String fakeStreamId = "fakeStreamId";
-    String fakeStreamVersion = "fakeStreamVersion";
+    Long fakeStreamVersion = 0l;
 
     SelectParamBuilder select = new SelectParamBuilder();
 
@@ -109,7 +109,7 @@ public class StreamsTest extends AndroidTestCase {
             throws Exception {
         select.and(StreamContract.Streams.USERNAME, fakeAccount.name);
         select.and(StreamContract.Streams.STREAM_ID, fakeStreamId);
-        select.and(StreamContract.Streams.STREAM_VERSION, fakeStreamVersion);
+        select.and(StreamContract.Streams.STREAM_VERSION, fakeStreamVersion.toString());
         Cursor fakeCursor = new MatrixCursor(COLUMNS);
         when(fakeContentProviderClient.query(StreamContract.Streams.CONTENT_URI,
                 new String[]{"distinct " + StreamContract.Streams.STREAM_ID,
@@ -128,7 +128,7 @@ public class StreamsTest extends AndroidTestCase {
     public void testStreams_withTenPoints_createsStreamWithTenPoints() throws Exception {
         MatrixCursor fakeCursor = new MatrixCursor(COLUMNS);
         for (int i = 0; i < 10; i++) {
-            fakeCursor.addRow(new Object[]{"", ""});
+            fakeCursor.addRow(new Object[]{"", 0});
         }
         when(fakeContentProviderClient.query(StreamContract.Streams.CONTENT_URI,
                 new String[]{"distinct " + StreamContract.Streams.STREAM_ID,

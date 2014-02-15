@@ -28,6 +28,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import org.ohmage.app.OhmageService;
+import org.ohmage.app.OhmageService.CancelableCallback;
 import org.ohmage.app.R;
 import org.ohmage.fragments.TransitionFragment;
 import org.ohmage.models.AccessToken;
@@ -111,6 +112,7 @@ public class CreateAccountFragment extends TransitionFragment {
             }
         });
 
+        mEmailView.setText(mUser.email);
         mFullnameView.setText(mUser.fullName);
 
         view.findViewById(R.id.create_account_button)
@@ -215,7 +217,7 @@ public class CreateAccountFragment extends TransitionFragment {
      */
     private void createAccount(final String token) {
         if (mGrantType == AuthUtil.GrantType.CLIENT_CREDENTIALS) {
-            ohmageService.createUser(token, mUser, new OhmageService.CancelableCallback<User>() {
+            CancelableCallback<User> callback = new CancelableCallback<User>() {
                 @Override public void success(User user, Response response) {
                     ((AuthenticatorActivity) getActivity()).createAccount(user, token);
                 }
@@ -223,7 +225,14 @@ public class CreateAccountFragment extends TransitionFragment {
                 @Override public void failure(RetrofitError error) {
                     ((AuthenticatorActivity) getActivity()).onRetrofitError(error);
                 }
-            });
+            };
+
+            String emailVerificationCode = getActivity().getIntent().getStringExtra(
+                    AuthenticatorActivity.EXTRA_USER_INVITATION_CODE);
+            if (emailVerificationCode != null)
+                ohmageService.createUser(token, mUser, emailVerificationCode, callback);
+            else
+                ohmageService.createUser(token, mUser, callback);
         } else {
             ohmageService.createUser(mGrantType, token, mUser,
                     new OhmageService.CancelableCallback<User>() {
@@ -237,7 +246,8 @@ public class CreateAccountFragment extends TransitionFragment {
                                                 public void success(AccessToken accessToken,
                                                         Response response) {
                                                     ((AuthenticatorActivity) getActivity())
-                                                            .createAccount(user.email, accessToken);
+                                                            .createAccount(user.email,
+                                                                    accessToken);
                                                 }
 
                                                 @Override public void failure(RetrofitError error) {
@@ -283,6 +293,11 @@ public class CreateAccountFragment extends TransitionFragment {
     public void setGrantType(AuthUtil.GrantType grantType) {
         mGrantType = grantType;
         setViewState(getView());
+    }
+
+    public void setEmail(String email) {
+        if (!TextUtils.isEmpty(email))
+            mUser.email = email;
     }
 
     public static interface Callbacks {

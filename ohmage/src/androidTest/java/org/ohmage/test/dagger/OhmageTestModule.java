@@ -37,6 +37,8 @@ import org.ohmage.dagger.ForApplication;
 import org.ohmage.fragments.OhmletsFragment;
 import org.ohmage.fragments.OhmletsGridFragment;
 import org.ohmage.fragments.OhmletsSearchFragment;
+import org.ohmage.operators.ContentProviderSaver;
+import org.ohmage.provider.ContentProviderReader;
 import org.ohmage.provider.StreamContentProvider;
 import org.ohmage.sync.OhmageSyncAdapter;
 import org.ohmage.sync.StreamSyncAdapter;
@@ -73,7 +75,9 @@ import static org.mockito.Mockito.mock;
                 OhmageSyncAdapter.class,
                 OhmletActivity.class,
                 OhmletActivity.OhmletFragment.class,
-                OhmletActivity.JoinOhmletDialog.class
+                OhmletActivity.JoinOhmletDialog.class,
+                ContentProviderSaver.class,
+                ContentProviderReader.class
         },
         complete = false,
         library = true,

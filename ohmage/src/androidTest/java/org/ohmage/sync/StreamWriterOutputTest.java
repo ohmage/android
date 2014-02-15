@@ -51,9 +51,13 @@ import static org.mockito.Mockito.when;
  */
 public class StreamWriterOutputTest extends AndroidTestCase {
 
-    private ContentProviderClient fakeContentProviderClient;
 
     private StreamWriterOutput mStreamWriterOutput;
+
+    private ContentProviderClient fakeContentProviderClient;
+    StreamPointBuilder builder = new StreamPointBuilder();
+    String fakeData = "{}";
+    String fakeMetaData = builder.withTime("timestamp").withId().getMetadata();
 
     String[] PROJECTION = new String[]{
             StreamContract.Streams._ID,
@@ -76,21 +80,25 @@ public class StreamWriterOutputTest extends AndroidTestCase {
 
     public void testQuery_withNameAndStream_QueriesForStreamsWithUserForStream() throws Exception {
         String fakeName = "fakeName";
-        Stream fakeStream = new Stream("fakeId", "fakeVersion");
-        when(fakeContentProviderClient.query(eq(StreamContract.Streams.CONTENT_URI),
-                any(String[].class), eq(StreamContract.Streams.USERNAME + "=? AND "
-                                        + StreamContract.Streams.STREAM_ID + "=? AND "
-                                        + StreamContract.Streams.STREAM_VERSION + "=?"),
-                eq(new String[]{fakeName, fakeStream.id, fakeStream.version}), any(String.class)))
+        Stream fakeStream = new Stream("fakeId", 0);
+        when(fakeContentProviderClient
+                .query(eq(StreamContract.Streams.CONTENT_URI), any(String[].class),
+                        eq(StreamContract.Streams.USERNAME + "=? AND " +
+                           StreamContract.Streams.STREAM_ID + "=? AND " +
+                           StreamContract.Streams.STREAM_VERSION + "=?"),
+                        eq(new String[]{fakeName, fakeStream.schemaId,
+                                String.valueOf(fakeStream.schemaVersion)}), any(String.class)))
                 .thenReturn(new MatrixCursor(PROJECTION));
 
         mStreamWriterOutput.query(fakeName, fakeStream);
 
-        verify(fakeContentProviderClient).query(eq(StreamContract.Streams.CONTENT_URI),
-                any(String[].class), eq(StreamContract.Streams.USERNAME + "=? AND "
-                                        + StreamContract.Streams.STREAM_ID + "=? AND "
-                                        + StreamContract.Streams.STREAM_VERSION + "=?"),
-                eq(new String[]{fakeName, fakeStream.id, fakeStream.version}), any(String.class));
+        verify(fakeContentProviderClient)
+                .query(eq(StreamContract.Streams.CONTENT_URI), any(String[].class),
+                        eq(StreamContract.Streams.USERNAME + "=? AND " +
+                           StreamContract.Streams.STREAM_ID + "=? AND " +
+                           StreamContract.Streams.STREAM_VERSION + "=?"),
+                        eq(new String[]{fakeName, fakeStream.schemaId,
+                                String.valueOf(fakeStream.schemaVersion)}), any(String.class));
     }
 
     public void testSetCursor_hasCursor_closesOldCursor() {
@@ -246,11 +254,7 @@ public class StreamWriterOutputTest extends AndroidTestCase {
 
     public void testWriteTo_hasSinglePoint_writesPointJson() throws Exception {
         MatrixCursor fakeCursor = new MatrixCursor(PROJECTION);
-        StreamPointBuilder builder = new StreamPointBuilder();
-        Stream point = new Stream();
-        point.data = "{}";
-        point.metaData = builder.withTime("timestamp").withId().getMetadata();
-        fakeCursor.addRow(new Object[]{0, point.metaData, point.data});
+        fakeCursor.addRow(new Object[]{0, fakeMetaData, fakeData});
         mStreamWriterOutput.setCursor(fakeCursor);
         final StringBuilder output = new StringBuilder();
         OutputStream fakeOutputStream = new OutputStream() {
@@ -265,8 +269,8 @@ public class StreamWriterOutputTest extends AndroidTestCase {
         Object[] streams = gson.fromJson(output.toString(), Object[].class);
         assertEquals(1, streams.length);
         LinkedTreeMap pointStream = (LinkedTreeMap) streams[0];
-        assertEquals(point.data, gson.toJson(pointStream.get("data")));
-        assertEquals(point.metaData, gson.toJson(pointStream.get("meta_data")));
+        assertEquals(fakeData, gson.toJson(pointStream.get("data")));
+        assertEquals(fakeMetaData, gson.toJson(pointStream.get("meta_data")));
     }
 
     public void testWriteTo_hasMultiplePoints_writesPointsJson() throws Exception {
@@ -275,10 +279,8 @@ public class StreamWriterOutputTest extends AndroidTestCase {
         Streams points = new Streams();
         for (int i = 0; i < 100; i++) {
             Stream point = new Stream();
-            point.data = "{}";
-            point.metaData = builder.withTime("timestamp").withId().getMetadata();
             points.add(point);
-            fakeCursor.addRow(new Object[]{i, point.metaData, point.data});
+            fakeCursor.addRow(new Object[]{i, fakeMetaData, fakeData});
         }
         mStreamWriterOutput.setCursor(fakeCursor);
         final StringBuilder output = new StringBuilder();
@@ -295,8 +297,8 @@ public class StreamWriterOutputTest extends AndroidTestCase {
         assertEquals(100, streams.length);
         for (int i = 0; i < 100; i++) {
             LinkedTreeMap pointStream = (LinkedTreeMap) streams[i];
-            assertEquals(points.get(i).data, gson.toJson(pointStream.get("data")));
-            assertEquals(points.get(i).metaData, gson.toJson(pointStream.get("meta_data")));
+            assertEquals(fakeData, gson.toJson(pointStream.get("data")));
+            assertEquals(fakeMetaData, gson.toJson(pointStream.get("meta_data")));
         }
     }
 

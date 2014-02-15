@@ -16,9 +16,15 @@
 
 package org.ohmage.auth;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
+import android.os.Bundle;
 import android.text.TextUtils;
 
 import com.google.android.gms.common.Scopes;
+
+import org.ohmage.app.Ohmage;
+import org.ohmage.provider.OhmageContract;
 
 /**
  * Utilities for dealing with Authentication providers and local accounts
@@ -35,6 +41,10 @@ public class AuthUtil {
      */
     public static final String AUTHTOKEN_TYPE = "org.ohmage.ALL";
 
+    // Sync interval constants
+    private static final long SECONDS_PER_MINUTE = 60L;
+    private static final long SYNC_INTERVAL_IN_MINUTES = 60L;
+    public static final long SYNC_INTERVAL = SYNC_INTERVAL_IN_MINUTES * SECONDS_PER_MINUTE;
 
     public static final class Google {
         public static final String[] SCOPES = {
@@ -67,6 +77,15 @@ public class AuthUtil {
 
         public String toString() {
             return type;
+        }
+    }
+
+    public static void requestSync() {
+        AccountManager am = AccountManager.get(Ohmage.app());
+        Account[] accounts = am.getAccountsByType(ACCOUNT_TYPE);
+        if (accounts.length > 0) {
+            Ohmage.app().getContentResolver()
+                  .requestSync(accounts[0], OhmageContract.CONTENT_AUTHORITY, new Bundle());
         }
     }
 }

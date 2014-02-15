@@ -49,7 +49,7 @@ public class CompatArrayAdapter<T> extends ArrayAdapter<T> {
      * @param context            The current context.
      * @param resource           The resource ID for a layout file containing a layout to use when
      *                           instantiating views.
-     * @param textViewResourceId The id of the TextView within the layout resource to be populated
+     * @param textViewResourceId The ohmletId of the TextView within the layout resource to be populated
      */
     public CompatArrayAdapter(Context context, int resource, int textViewResourceId) {
         super(context, resource, textViewResourceId, new ArrayList<T>());
@@ -73,7 +73,7 @@ public class CompatArrayAdapter<T> extends ArrayAdapter<T> {
      * @param context            The current context.
      * @param resource           The resource ID for a layout file containing a layout to use when
      *                           instantiating views.
-     * @param textViewResourceId The id of the TextView within the layout resource to be populated
+     * @param textViewResourceId The ohmletId of the TextView within the layout resource to be populated
      * @param objects            The objects to represent in the ListView.
      */
     public CompatArrayAdapter(Context context, int resource, int textViewResourceId, T[] objects) {
@@ -98,7 +98,7 @@ public class CompatArrayAdapter<T> extends ArrayAdapter<T> {
      * @param context            The current context.
      * @param resource           The resource ID for a layout file containing a layout to use when
      *                           instantiating views.
-     * @param textViewResourceId The id of the TextView within the layout resource to be populated
+     * @param textViewResourceId The ohmletId of the TextView within the layout resource to be populated
      * @param objects            The objects to represent in the ListView.
      */
     public CompatArrayAdapter(Context context, int resource, int textViewResourceId,

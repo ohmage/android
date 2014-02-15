@@ -65,9 +65,9 @@ public class GridFragment extends InjectedFragment {
     /**
      * Provide default implementation to return a simple grid view.  Subclasses
      * can override to replace with their own layout.  If doing so, the
-     * returned view hierarchy <em>must</em> have a GridView whose id
-     * is {@link R.id#grid R.id.grid} and can optionally
-     * have a sibling view id {@link android.R.id#empty android.R.id.empty}
+     * returned view hierarchy <em>must</em> have a GridView whose ohmletId
+     * is {@link R.id#grid R.ohmletId.grid} and can optionally
+     * have a sibling view ohmletId {@link android.R.id#empty android.R.ohmletId.empty}
      * that is to be shown when the grid is empty.
      * <p/>
      * <p>If you are overriding this method with your own custom content,
@@ -113,7 +113,7 @@ public class GridFragment extends InjectedFragment {
      * @param g        The GridView where the click happened
      * @param v        The view that was clicked within the GridView
      * @param position The position of the view in the grid
-     * @param id       The row id of the item that was clicked
+     * @param id       The row ohmletId of the item that was clicked
      */
     public void onGridItemClick(GridView g, View v, int position, long id) {
     }
@@ -288,11 +288,11 @@ public class GridFragment extends InjectedFragment {
             if (!(rawGridView instanceof GridView)) {
                 if (rawGridView == null) {
                     throw new RuntimeException(
-                            "Your content must have a GridView whose id attribute is " +
-                            "'R.id.grid'");
+                            "Your content must have a GridView whose ohmletId attribute is " +
+                            "'R.ohmletId.grid'");
                 }
                 throw new RuntimeException(
-                        "Content has view with id attribute 'R.id.grid' "
+                        "Content has view with ohmletId attribute 'R.ohmletId.grid' "
                         + "that is not a GridView class");
             }
             mGrid = (GridView) rawGridView;

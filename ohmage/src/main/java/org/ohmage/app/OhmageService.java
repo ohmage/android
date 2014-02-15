@@ -21,6 +21,7 @@ import org.ohmage.auth.AuthUtil;
 import org.ohmage.auth.AuthUtil.GrantType;
 import org.ohmage.models.AccessToken;
 import org.ohmage.models.Ohmlet;
+import org.ohmage.models.Ohmlet.Member;
 import org.ohmage.models.Ohmlets;
 import org.ohmage.models.User;
 import org.ohmage.sync.StreamWriterOutput;
@@ -28,6 +29,7 @@ import org.ohmage.sync.StreamWriterOutput;
 import retrofit.Callback;
 import retrofit.client.Response;
 import retrofit.http.Body;
+import retrofit.http.DELETE;
 import retrofit.http.GET;
 import retrofit.http.POST;
 import retrofit.http.Path;
@@ -63,7 +65,11 @@ public interface OhmageService {
     @POST("/people") void createUser(@Query("password") String password, @Body User user,
             CancelableCallback<User> callback);
 
-    @GET("/people/{userId}/ohmlets") Ohmlets getCurrentStateForUser(@Path("userId") String userId)
+    @POST("/people") void createUser(@Query("password") String password, @Body User user,
+            @Query("user_invitation_id") String inviteCode, CancelableCallback<User> callback);
+
+    @GET("/people/{userId}/ohmlets/")
+    Observable<Ohmlets> getCurrentStateForUser(@Path("userId") String userId)
             throws AuthenticationException;
 
     @GET("/ohmlets")
@@ -73,9 +79,21 @@ public interface OhmageService {
 
     @GET("/ohmlets/{ohmletId}") Observable<Ohmlet> getOhmlet(@Path("ohmletId") String id);
 
+    @POST("/ohmlets/{ohmletId}/people")
+    Response updateMemberForOhmlet(@Path("ohmletId") String ohmletId, @Body Member member)
+            throws AuthenticationException;
+
+    @POST("/ohmlets/{ohmletId}/people")
+    Response updateMemberForOhmlet(@Path("ohmletId") String ohmletId, @Body Member member,
+            @Query("ohmlet_invitation_id") String inviteCode) throws AuthenticationException;
+
+    @DELETE("/ohmlets/{ohmletId}/people/{userId}")
+    Response removeUserFromOhmlet(@Path("ohmletId") String ohmletId, @Path("userId") String userId)
+            throws AuthenticationException;
+
     @POST("/streams/{streamId}/{streamVersion}/data")
     Response uploadStreamData(@Path("streamId") String streamId,
-            @Path("streamVersion") String streamVersion, @Body StreamWriterOutput data)
+            @Path("streamVersion") long streamVersion, @Body StreamWriterOutput data)
             throws AuthenticationException;
 
     public abstract static class CancelableCallback<T> implements Callback<T> {

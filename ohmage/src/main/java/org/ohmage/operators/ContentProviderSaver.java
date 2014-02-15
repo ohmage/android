@@ -19,8 +19,14 @@ package org.ohmage.operators;
 import android.content.ContentValues;
 import android.net.Uri;
 
-import org.ohmage.app.Ohmage;
+import com.google.gson.Gson;
 
+import org.ohmage.app.Ohmage;
+import org.ohmage.sync.OhmageSyncAdapter;
+
+import javax.inject.Inject;
+
+import rx.Observer;
 import rx.util.functions.Action1;
 
 /**
@@ -29,13 +35,54 @@ import rx.util.functions.Action1;
 public class ContentProviderSaver implements Action1<ContentProviderSaver.Savable> {
     private static final String TAG = ContentProviderSaver.class.getSimpleName();
 
+    private final boolean mIsSyncAdapter;
+
+    @Inject Gson gson;
+
+    public ContentProviderSaver() {
+        this(false);
+    }
+
+    public ContentProviderSaver(boolean isSyncAdapter) {
+        Ohmage.app().getApplicationGraph().inject(this);
+        mIsSyncAdapter = isSyncAdapter;
+    }
+
     @Override public void call(Savable savable) {
-        Ohmage.app().getContentResolver().insert(savable.getUrl(), savable.toContentValues());
+        Uri uri = savable.getUrl();
+        if (mIsSyncAdapter)
+            uri = OhmageSyncAdapter.appendSyncAdapterParam(uri);
+        Ohmage.app().getContentResolver().insert(uri, savable.toContentValues(this));
+    }
+
+    public Gson gson() {
+        return gson;
     }
 
     public static interface Savable {
-        ContentValues toContentValues();
+        ContentValues toContentValues(ContentProviderSaver saver);
 
         Uri getUrl();
+    }
+
+    public static class ContentProviderSaverObserver implements Observer<Savable> {
+
+        private final boolean mIsSyncAdapter;
+
+        public ContentProviderSaverObserver(boolean isSyncAdapter) {
+            mIsSyncAdapter = isSyncAdapter;
+        }
+
+        @Override public void onCompleted() {
+
+        }
+
+        @Override public void onError(Throwable e) {
+            e.printStackTrace();
+        }
+
+        @Override public void onNext(Savable args) {
+            new ContentProviderSaver(mIsSyncAdapter).call(args);
+        }
     }
 }

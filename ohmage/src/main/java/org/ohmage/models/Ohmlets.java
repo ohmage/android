@@ -25,10 +25,16 @@ public class Ohmlets extends ArrayList<Ohmlet> {
     public Ohmlet getById(String id) {
         if (id != null) {
             for (Ohmlet ohmlet : this) {
-                if (id.equals(ohmlet.id))
+                if (id.equals(ohmlet.ohmletId))
                     return ohmlet;
             }
         }
         return null;
+    }
+
+    public Ohmlet pop(String id) {
+        Ohmlet item = getById(id);
+        remove(item);
+        return item;
     }
 }

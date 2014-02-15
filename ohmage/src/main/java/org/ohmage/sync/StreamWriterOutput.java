@@ -124,7 +124,7 @@ public class StreamWriterOutput implements TypedOutput {
                 StreamContract.Streams.USERNAME + "=? AND "
                 + StreamContract.Streams.STREAM_ID + "=? AND "
                 + StreamContract.Streams.STREAM_VERSION + "=?", new String[]{
-                accountName, stream.id, stream.version
+                accountName, stream.schemaId, String.valueOf(stream.schemaVersion)
         }, null));
     }
 

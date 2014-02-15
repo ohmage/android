@@ -115,6 +115,20 @@
             android:name="org.ohmage.app.OhmletActivity"
             android:label="@string/title_activity_ohmlet"
             android:parentActivityName="org.ohmage.app.MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="vnd.android.cursor.item/vnd.ohmage.ohmlets.ohmlet" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data
+                    android:pathPattern="/ohmage/ohmlets/.*/join"
+                    android:host="ohmage.org"
+                    android:scheme="https" />
+            </intent-filter>
+
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="MainActivity" />

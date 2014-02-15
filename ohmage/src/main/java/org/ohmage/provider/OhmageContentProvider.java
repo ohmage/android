@@ -18,23 +18,22 @@ package org.ohmage.provider;
 
 import android.content.ContentProvider;
 import android.content.ContentResolver;
-import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
-import android.provider.BaseColumns;
 
+import org.ohmage.provider.OhmageContract.Ohmlets;
 import org.ohmage.provider.OhmageDbHelper.Tables;
-import org.ohmage.streams.StreamContract;
+import org.ohmage.sync.OhmageSyncAdapter;
 
 public class OhmageContentProvider extends ContentProvider {
 
     // enum of the URIs we can match using sUriMatcher
     private interface MatcherTypes {
         int OHMLETS = 0;
-        int OHMLETS_ID = 1;
+        int OHMLET_ID = 1;
     }
 
     private OhmageDbHelper dbHelper;
@@ -43,9 +42,8 @@ public class OhmageContentProvider extends ContentProvider {
 
     {
         sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
-        sUriMatcher.addURI(StreamContract.CONTENT_AUTHORITY, "ohmlets", MatcherTypes.OHMLETS);
-        sUriMatcher
-                .addURI(StreamContract.CONTENT_AUTHORITY, "ohmlets/*/*", MatcherTypes.OHMLETS_ID);
+        sUriMatcher.addURI(OhmageContract.CONTENT_AUTHORITY, "ohmlets", MatcherTypes.OHMLETS);
+        sUriMatcher.addURI(OhmageContract.CONTENT_AUTHORITY, "ohmlets/*", MatcherTypes.OHMLET_ID);
     }
 
     @Override
@@ -57,8 +55,8 @@ public class OhmageContentProvider extends ContentProvider {
     public String getType(Uri uri) {
         switch (sUriMatcher.match(uri)) {
 
-            case MatcherTypes.OHMLETS:
-                return OhmageContract.Ohmlets.CONTENT_TYPE;
+            case MatcherTypes.OHMLET_ID:
+                return OhmageContract.Ohmlets.CONTENT_ITEM_TYPE;
             default:
                 throw new UnsupportedOperationException("getType(): Unknown URI: " + uri);
         }
@@ -66,21 +64,27 @@ public class OhmageContentProvider extends ContentProvider {
 
     @Override
     public Uri insert(Uri uri, ContentValues values) {
-        long id = -1;
+        long result = -1;
+        String id = null;
 
         ContentResolver cr = getContext().getContentResolver();
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
 
         switch (sUriMatcher.match(uri)) {
             case MatcherTypes.OHMLETS:
-                SQLiteDatabase db = dbHelper.getWritableDatabase();
-                db.insert(Tables.Ohmlets, BaseColumns._ID, values);
-
+                if (values.containsKey(Ohmlets.OHMLET_ID)) {
+                    id = values.getAsString(Ohmlets.OHMLET_ID);
+                }
+                result = db.replace(Tables.Ohmlets, null, values);
                 break;
             default:
                 throw new UnsupportedOperationException("insert(): Unknown URI: " + uri);
         }
-        if (id != -1)
-            return ContentUris.withAppendedId(StreamContract.Streams.CONTENT_URI, id);
+        if (result != -1 && id != null) {
+            Uri notifyUri = uri.buildUpon().appendPath(id).build();
+            cr.notifyChange(notifyUri, null, !isSyncAdapter(uri));
+            return notifyUri;
+        }
         return null;
     }
 
@@ -93,11 +97,32 @@ public class OhmageContentProvider extends ContentProvider {
     @Override
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs,
             String sortOrder) {
-        throw new UnsupportedOperationException("query(): Unknown URI: " + uri);
+        Cursor cursor;
+        switch (sUriMatcher.match(uri)) {
+            case MatcherTypes.OHMLETS:
+                cursor = dbHelper.getReadableDatabase().query(Tables.Ohmlets, projection, selection,
+                        selectionArgs, null, null, sortOrder);
+                break;
+            case MatcherTypes.OHMLET_ID:
+                cursor = dbHelper.getReadableDatabase()
+                                 .query(Tables.Ohmlets, projection, Ohmlets.OHMLET_ID + "=?",
+                                         new String[]{uri.getLastPathSegment()}, null, null,
+                                         sortOrder);
+                break;
+            default:
+                throw new UnsupportedOperationException("query(): Unknown URI: " + uri);
+        }
+
+        cursor.setNotificationUri(getContext().getContentResolver(), uri);
+        return cursor;
     }
 
     @Override
     public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
         throw new UnsupportedOperationException("Update not allowed");
+    }
+
+    private boolean isSyncAdapter(Uri uri) {
+        return uri.getQueryParameter(OhmageSyncAdapter.IS_SYNCADAPTER) != null;
     }
 }

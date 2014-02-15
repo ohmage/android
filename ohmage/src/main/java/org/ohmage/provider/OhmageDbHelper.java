@@ -21,15 +21,15 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
 
+import org.ohmage.models.Ohmlet.PrivacyState;
 import org.ohmage.provider.OhmageContract.Ohmlets;
-import org.ohmage.provider.OhmageContract.Ohmlets.JoinState;
 import org.ohmage.streams.StreamContract.Streams;
 
 public class OhmageDbHelper extends SQLiteOpenHelper {
 
-    private static final String DB_NAME = "streams.db";
+    private static final String DB_NAME = "ohmage.db";
 
-    private static final int DB_VERSION = 3;
+    private static final int DB_VERSION = 5;
 
     public static final String SQL_AND = " AND %s='%s'";
 
@@ -45,14 +45,14 @@ public class OhmageDbHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL("CREATE TABLE IF NOT EXISTS " + Tables.Ohmlets + " ("
-                   + Ohmlets.OHMLET_ID + " TEXT NOT NULL, "
-                   + Ohmlets.OHMLET_VERSION + " INTEGER NOT NULL, "
+                   + Ohmlets.OHMLET_ID + " TEXT PRIMARY KEY, "
+                   + Ohmlets.OHMLET_NAME + " TEXT NOT NULL, "
+                   + Ohmlets.OHMLET_DESCRIPTION + " TEXT, "
                    + Ohmlets.OHMLET_SURVEYS + " TEXT, "
                    + Ohmlets.OHMLET_STREAMS + " TEXT, "
-                   + Ohmlets.OHMLET_STREAMS + " TEXT, "
-                   + Ohmlets.OHMLET_PRIVACY_STATE + " INTEGER NOT NULL, "
-                   + Ohmlets.OHMLET_JOIN_STATE + " INTEGER DEFAULT " + JoinState.NONE + ", "
-                   + "PRIMARY KEY (" + Ohmlets.OHMLET_ID + ", " + Ohmlets.OHMLET_VERSION + "));");
+                   + Ohmlets.OHMLET_MEMBERS + " TEXT, "
+                   + Ohmlets.OHMLET_PRIVACY_STATE + " INTEGER DEFAULT " +
+                   PrivacyState.UNKNOWN.ordinal() + ");");
 
         db.execSQL("CREATE TABLE IF NOT EXISTS " + Tables.Streams + " ("
                    + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "

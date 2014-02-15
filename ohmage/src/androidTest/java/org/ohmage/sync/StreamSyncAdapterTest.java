@@ -68,7 +68,7 @@ public class StreamSyncAdapterTest extends InjectedAndroidTestCase {
     private ContentProviderClient fakeContentProviderClient;
     private SyncResult fakeSyncResult;
     private String fakeStreamId = "fakeStreamId";
-    private String fakeStreamVersion = "fakeStreamVersion";
+    private int fakeStreamVersion = 0;
     private Stream fakeStream = new Stream(fakeStreamId, fakeStreamVersion);
     private StreamWriterOutput fakeWriter;
 

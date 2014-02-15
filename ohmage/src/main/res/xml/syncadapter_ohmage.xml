@@ -20,6 +20,6 @@
     android:contentAuthority="org.ohmage.db"
     android:accountType="org.ohmage.ACCOUNT"
     android:userVisible="true"
-    android:supportsUploading="false"
+    android:supportsUploading="true"
     android:allowParallelSyncs="false"
     android:isAlwaysSyncable="true" />

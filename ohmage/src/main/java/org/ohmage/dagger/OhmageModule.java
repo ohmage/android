@@ -23,6 +23,12 @@ import android.content.Context;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.TypeAdapter;
+import com.google.gson.TypeAdapterFactory;
+import com.google.gson.reflect.TypeToken;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonToken;
+import com.google.gson.stream.JsonWriter;
 import com.squareup.okhttp.HttpResponseCache;
 import com.squareup.okhttp.OkHttpClient;
 
@@ -41,12 +47,17 @@ import org.ohmage.auth.SignInFragment;
 import org.ohmage.fragments.OhmletsFragment;
 import org.ohmage.fragments.OhmletsGridFragment;
 import org.ohmage.fragments.OhmletsSearchFragment;
+import org.ohmage.operators.ContentProviderSaver;
+import org.ohmage.provider.ContentProviderReader;
 import org.ohmage.provider.StreamContentProvider;
 import org.ohmage.sync.OhmageSyncAdapter;
 import org.ohmage.sync.StreamSyncAdapter;
 import org.ohmage.tasks.LogoutTaskFragment;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -76,7 +87,9 @@ import retrofit.converter.GsonConverter;
                 OhmageSyncAdapter.class,
                 OhmletActivity.class,
                 OhmletActivity.OhmletFragment.class,
-                OhmletActivity.JoinOhmletDialog.class
+                OhmletActivity.JoinOhmletDialog.class,
+                ContentProviderSaver.class,
+                ContentProviderReader.class
         },
         complete = false,
         library = true
@@ -94,6 +107,7 @@ public class OhmageModule {
     @Provides @Singleton Gson provideGson() {
         Gson gson = new GsonBuilder()
                 .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+                .registerTypeAdapterFactory(new LowercaseEnumTypeAdapterFactory())
                 .create();
         return gson;
     }
@@ -139,5 +153,45 @@ public class OhmageModule {
 
         return restAdapter.create(OhmageService.class);
 
+    }
+
+    /**
+     * Factory which translates strings from the server to enums
+     */
+    public static class LowercaseEnumTypeAdapterFactory implements TypeAdapterFactory {
+        public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
+            Class<T> rawType = (Class<T>) type.getRawType();
+            if (!rawType.isEnum()) {
+                return null;
+            }
+
+            final Map<String, T> lowercaseToConstant = new HashMap<String, T>();
+            for (T constant : rawType.getEnumConstants()) {
+                lowercaseToConstant.put(toLowercase(constant), constant);
+            }
+
+            return new TypeAdapter<T>() {
+                public void write(JsonWriter out, T value) throws IOException {
+                    if (value == null) {
+                        out.nullValue();
+                    } else {
+                        out.value(toLowercase(value));
+                    }
+                }
+
+                public T read(JsonReader reader) throws IOException {
+                    if (reader.peek() == JsonToken.NULL) {
+                        reader.nextNull();
+                        return null;
+                    } else {
+                        return lowercaseToConstant.get(reader.nextString());
+                    }
+                }
+            };
+        }
+
+        private String toLowercase(Object o) {
+            return o.toString().toLowerCase(Locale.US);
+        }
     }
 }

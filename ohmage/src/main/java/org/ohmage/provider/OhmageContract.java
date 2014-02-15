@@ -30,34 +30,39 @@ public class OhmageContract {
 
     interface OhmletColumns {
         /**
-         * Unique string identifying the stream
+         * Unique string identifying the ohmlet
          */
         String OHMLET_ID = "ohmlet_id";
 
         /**
-         * Version to identify stream
+         * Name of ohmlet
          */
-        String OHMLET_VERSION = "ohmlet_version";
+        String OHMLET_NAME = "ohmlet_name";
 
         /**
-         * String array of surveys for this ohmlet *
+         * Description of ohmlet
+         */
+        String OHMLET_DESCRIPTION = "ohmlet_description";
+
+        /**
+         * String array of surveys for this ohmlet
          */
         String OHMLET_SURVEYS = "ohmlet_surveys";
 
         /**
-         * String array of streams for this ohmlet *
+         * String array of streams for this ohmlet
          */
         String OHMLET_STREAMS = "ohmlet_streams";
 
         /**
-         * The privacy state for this ohmlet *
+         * String array of members for this ohmlet
          */
-        String OHMLET_PRIVACY_STATE = "ohmlet_privacy_state";
+        String OHMLET_MEMBERS = "ohmlet_members";
 
         /**
-         * Join state for this ohmlet *
+         * The privacy state for this ohmlet
          */
-        String OHMLET_JOIN_STATE = "ohmlet_join_state";
+        String OHMLET_PRIVACY_STATE = "ohmlet_privacy_state";
     }
 
     private static final String PATH_OHMLETS = "ohmlets";
@@ -71,19 +76,18 @@ public class OhmageContract {
                                                               .build();
 
         public static final String CONTENT_TYPE =
-                "vnd.android.cursor.dir/vnd.ohmage.ohmlets.ohmlet";
+                "vnd.android.cursor.dir/vnd.ohmage.ohmlets";
 
-        public static enum JoinState {
-            NONE,
-            INVITED,
-            REQUESTED,
-            JOINED,
+        public static final String CONTENT_ITEM_TYPE =
+                "vnd.android.cursor.item/vnd.ohmage.ohmlets.ohmlet";
+
+        public static Uri getUriForOhmletId(String id) {
+            return Uri.withAppendedPath(CONTENT_URI, id);
         }
 
-        public static enum PrivacyState {
-            PRIVATE,
-            INVITE_ONLY,
-            PUBLIC,
-        }
+        public static final String[] DEFAULT_PROJECTION = new String[]{
+                OHMLET_ID, OHMLET_NAME, OHMLET_DESCRIPTION, OHMLET_SURVEYS, OHMLET_STREAMS,
+                OHMLET_MEMBERS, OHMLET_PRIVACY_STATE
+        };
     }
 }

@@ -21,17 +21,13 @@ package org.ohmage.models;
  * metadata associated with a single point.
  */
 public class Stream {
-    public String id;
+    public String schemaId;
 
-    public String version;
+    public long schemaVersion;
 
-    public String metaData;
-
-    public String data;
-
-    public Stream(String id, String version) {
-        this.id = id;
-        this.version = version;
+    public Stream(String schemaId, long schemaVersion) {
+        this.schemaId = schemaId;
+        this.schemaVersion = schemaVersion;
     }
 
     public Stream() {

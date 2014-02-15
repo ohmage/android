@@ -55,7 +55,7 @@
     <string name="ok">Ok</string>
     <string name="action_search">Search</string>
     <string name="loading">Loading…</string>
-    <string name="title_activity_ohmlet">OhmletActivity</string>
+    <string name="title_activity_ohmlet">Ohmlet</string>
     <string name="hello_world">Hello world!</string>
     <string name="cancel">Cancel</string>
     <string name="join">Join</string>

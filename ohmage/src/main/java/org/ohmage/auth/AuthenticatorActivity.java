@@ -39,10 +39,16 @@ import com.google.android.gms.plus.model.people.Person;
 
 import org.ohmage.app.MainActivity;
 import org.ohmage.app.OhmageService;
+import org.ohmage.app.OhmletActivity.OhmletFragment;
 import org.ohmage.app.R;
 import org.ohmage.dagger.PlusClientFragmentModule;
 import org.ohmage.models.AccessToken;
+import org.ohmage.models.Ohmlet;
+import org.ohmage.models.Ohmlet.Member;
+import org.ohmage.models.Ohmlet.Role;
 import org.ohmage.models.User;
+import org.ohmage.operators.ContentProviderSaver;
+import org.ohmage.provider.OhmageContract;
 import org.ohmage.streams.StreamContract;
 
 import java.io.IOException;
@@ -55,6 +61,9 @@ import javax.inject.Inject;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 import retrofit.mime.TypedByteArray;
+import rx.Observable;
+import rx.schedulers.Schedulers;
+import rx.util.functions.Action1;
 
 public class AuthenticatorActivity extends AuthenticatorFragmentActivity implements
         PlusClientFragment.OnSignInListener, CreateAccountFragment.Callbacks,
@@ -73,6 +82,9 @@ public class AuthenticatorActivity extends AuthenticatorFragmentActivity impleme
     public static final String EXTRA_HANDLE_USER_RECOVERABLE_ERROR = "extra_handle_error";
 
     public static final String EXTRA_CLEAR_DEFAULT_ACCOUNT = "clear_default_account";
+    public static final String EXTRA_JOIN_OHMLET_ID = "extra_join_ohmlet_id";
+    public static final String EXTRA_USER_INVITATION_CODE = "extra_user_invitation_code";
+    public static final String EXTRA_EMAIL = "extra_email";
 
     private boolean mClearDefaultAccount;
 
@@ -80,6 +92,8 @@ public class AuthenticatorActivity extends AuthenticatorFragmentActivity impleme
 
     private ArrayList<OhmageService.CancelableCallback> mNetworkCallbacks =
             new ArrayList<OhmageService.CancelableCallback>();
+
+    private String mJoinOhmletId;
 
     /**
      * We need to listen to the back stack so we know if we should cancel network requests,
@@ -171,6 +185,9 @@ public class AuthenticatorActivity extends AuthenticatorFragmentActivity impleme
         }
 
         mClearDefaultAccount = getIntent().getBooleanExtra(EXTRA_CLEAR_DEFAULT_ACCOUNT, false);
+
+        // Check for auto join ohmlet id
+        mJoinOhmletId = getIntent().getStringExtra(EXTRA_JOIN_OHMLET_ID);
     }
 
     @Override
@@ -308,6 +325,10 @@ public class AuthenticatorActivity extends AuthenticatorFragmentActivity impleme
         createAccountFragment.setGrantType(grantType);
         createAccountFragment.setFullName(fullName);
 
+        // If an email exists, send that
+        if (getIntent().hasExtra(EXTRA_EMAIL))
+            createAccountFragment.setEmail(getIntent().getStringExtra(EXTRA_EMAIL));
+
         // Add the fragment
         addFragment(R.id.create_account_frame, createAccountFragment, TAG_CREATE_ACCOUNT);
     }
@@ -407,6 +428,10 @@ public class AuthenticatorActivity extends AuthenticatorFragmentActivity impleme
     }
 
     public void createAccount(String email, AccessToken token) {
+        // Join ohmlet if applicable
+        if (mJoinOhmletId != null)
+            autoJoinOhmlet(token.getUserId());
+
         // Add the account or find an existing account
         Account account = addOrFindAccount(email, token.getRefreshToken());
 
@@ -424,6 +449,11 @@ public class AuthenticatorActivity extends AuthenticatorFragmentActivity impleme
     }
 
     public void createAccount(User user, String password) {
+        // Join ohmlet if applicable
+        if (mJoinOhmletId != null && user.registration != null) {
+            autoJoinOhmlet(user.registration.userId);
+        }
+
         // Add the account or find an existing account
         Account account = addOrFindAccount(user.email, password);
 
@@ -433,6 +463,10 @@ public class AuthenticatorActivity extends AuthenticatorFragmentActivity impleme
         // Determine the userId for this user if we can
         if (user.registration != null) {
             am.setUserData(account, Authenticator.USER_ID, user.registration.userId);
+
+            // Join ohmlet if applicable
+            if (mJoinOhmletId != null)
+                autoJoinOhmlet(user.registration.userId);
         }
 
         finishAccountAdd(user.email, null, password);
@@ -449,6 +483,15 @@ public class AuthenticatorActivity extends AuthenticatorFragmentActivity impleme
             // Turn on automatic syncing for this account
             getContentResolver()
                     .setSyncAutomatically(account, StreamContract.CONTENT_AUTHORITY, true);
+            getContentResolver()
+                    .addPeriodicSync(account, StreamContract.CONTENT_AUTHORITY, new Bundle(),
+                            AuthUtil.SYNC_INTERVAL);
+            getContentResolver()
+                    .setSyncAutomatically(account, OhmageContract.CONTENT_AUTHORITY, true);
+            getContentResolver()
+                    .addPeriodicSync(account, StreamContract.CONTENT_AUTHORITY, new Bundle(),
+                            AuthUtil.SYNC_INTERVAL);
+
         } else {
             am.setPassword(accounts[0], password);
         }
@@ -468,6 +511,25 @@ public class AuthenticatorActivity extends AuthenticatorFragmentActivity impleme
 
         if (!calledByAuthenticator())
             startActivity(new Intent(getBaseContext(), MainActivity.class));
+    }
+
+    private void autoJoinOhmlet(String userId) {
+        Ohmlet o = new Ohmlet();
+        o.name = "ohmlet";
+        o.ohmletId = mJoinOhmletId;
+        o.people = new Member.List();
+        Member m = new Member();
+        m.memberId = userId;
+        m.role = Role.MEMBER;
+        m.code = getIntent().getStringExtra(OhmletFragment.EXTRA_OHMLET_INVITATION_ID);
+        o.people.add(m);
+
+        Observable.from(o).subscribeOn(Schedulers.io()).doOnNext(
+                new ContentProviderSaver()).doOnError(new Action1<Throwable>() {
+            @Override public void call(Throwable throwable) {
+                throwable.printStackTrace();
+            }
+        }).subscribe();
     }
 
     /**

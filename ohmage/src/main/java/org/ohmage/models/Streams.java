@@ -69,11 +69,11 @@ public class Streams extends ArrayList<Stream> {
      *
      * @param provider      queries for streams using the given provider
      * @param account       queries for streams for this account
-     * @param streamId      if given, will query for versions of only this stream
-     * @param streamVersion if given, will query for a specific stream version pair
+     * @param streamId      if not null, will query for versions of only this stream
+     * @param streamVersion if not null, will query for a specific stream version pair
      */
     public Streams(ContentProviderClient provider, Account account, String streamId,
-            String streamVersion) {
+            Long streamVersion) {
         SelectParamBuilder select = new SelectParamBuilder();
 
         if (account != null) {
@@ -84,7 +84,7 @@ public class Streams extends ArrayList<Stream> {
             select.and(StreamContract.Streams.STREAM_ID, streamId);
 
             if (streamVersion != null) {
-                select.and(StreamContract.Streams.STREAM_VERSION, streamVersion);
+                select.and(StreamContract.Streams.STREAM_VERSION, streamVersion.toString());
             }
         }
 
@@ -96,7 +96,7 @@ public class Streams extends ArrayList<Stream> {
                     select.buildSelection(), select.buildParams(), null);
 
             while (cursor.moveToNext()) {
-                Stream s = new Stream(cursor.getString(0), cursor.getString(1));
+                Stream s = new Stream(cursor.getString(0), cursor.getLong(1));
                 this.add(s);
             }
         } catch (RemoteException e) {

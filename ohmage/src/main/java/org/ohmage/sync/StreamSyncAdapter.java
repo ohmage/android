@@ -93,7 +93,7 @@ public class StreamSyncAdapter extends AbstractThreadedSyncAdapter {
             ContentProviderClient provider, SyncResult syncResult) {
 
         String streamId = extras.getString(EXTRA_STREAM_ID);
-        String streamVersion = extras.getString(EXTRA_STREAM_VERSION);
+        Long streamVersion = extras.getLong(EXTRA_STREAM_VERSION);
 
         performSyncForStreams(account, new Streams(provider, account, streamId, streamVersion),
                 new StreamWriterOutput(provider), syncResult);
@@ -155,7 +155,7 @@ public class StreamSyncAdapter extends AbstractThreadedSyncAdapter {
             boolean retry) throws AuthenticationException, RetrofitError {
         try {
             if (accountStillExists(account))
-                ohmageService.uploadStreamData(stream.id, stream.version, data);
+                ohmageService.uploadStreamData(stream.schemaId, stream.schemaVersion, data);
         } catch (AuthenticationException e) {
             // If the response failed because of an auth error, we will try one more time
             if (retry) {
