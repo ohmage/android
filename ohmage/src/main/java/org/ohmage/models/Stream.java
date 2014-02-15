@@ -16,11 +16,18 @@
 
 package org.ohmage.models;
 
+import android.content.ContentValues;
+import android.net.Uri;
+
+import org.ohmage.operators.ContentProviderSaver;
+import org.ohmage.operators.ContentProviderSaver.Savable;
+import org.ohmage.provider.OhmageContract;
+
 /**
  * Basic Stream class. This class can hold a definition of a stream, and optionally the data and
  * metadata associated with a single point.
  */
-public class Stream {
+public class Stream implements Savable {
     public String schemaId;
 
     public long schemaVersion;
@@ -31,5 +38,16 @@ public class Stream {
     }
 
     public Stream() {
+    }
+
+    @Override public ContentValues toContentValues(ContentProviderSaver saver) {
+        ContentValues values = new ContentValues();
+        values.put(OhmageContract.Streams.STREAM_ID, schemaId);
+        values.put(OhmageContract.Streams.STREAM_VERSION, schemaVersion);
+        return values;
+    }
+
+    @Override public Uri getUrl() {
+        return OhmageContract.Streams.CONTENT_URI;
     }
 }

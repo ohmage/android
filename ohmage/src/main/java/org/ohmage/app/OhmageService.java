@@ -23,6 +23,8 @@ import org.ohmage.models.AccessToken;
 import org.ohmage.models.Ohmlet;
 import org.ohmage.models.Ohmlet.Member;
 import org.ohmage.models.Ohmlets;
+import org.ohmage.models.Stream;
+import org.ohmage.models.Survey;
 import org.ohmage.models.Surveys;
 import org.ohmage.models.User;
 import org.ohmage.sync.StreamWriterOutput;
@@ -93,6 +95,14 @@ public interface OhmageService {
             throws AuthenticationException;
 
     @GET("/surveys") void getSurveys(Callback<Surveys> surveysCallback);
+
+    @GET("/surveys/{surveyId}/{surveyVersion}")
+    Observable<Survey> getSurvey(@Path("surveyId") String surveyId,
+            @Path("surveyVersion") long surveyVersion);
+
+    @GET("/streams/{streamId}/{streamVersion}")
+    Observable<Stream> getStream(@Path("streamId") String streamId,
+            @Path("streamVersion") long streamVersion);
 
     @POST("/streams/{streamId}/{streamVersion}/data")
     Response uploadStreamData(@Path("streamId") String streamId,

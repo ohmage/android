@@ -75,7 +75,7 @@ public class StreamContentProvider extends ContentProvider implements OnAccounts
         switch (sUriMatcher.match(uri)) {
 
             case MatcherTypes.STREAMS:
-                count = dbHelper.getWritableDatabase().delete(Tables.Streams, selection,
+                count = dbHelper.getWritableDatabase().delete(Tables.StreamData, selection,
                         selectionArgs);
                 break;
             case MatcherTypes.COUNTS:
@@ -120,7 +120,7 @@ public class StreamContentProvider extends ContentProvider implements OnAccounts
                 values.put(StreamContract.Streams.USERNAME, mAccount);
 
                 SQLiteDatabase db = dbHelper.getWritableDatabase();
-                db.insert(Tables.Streams, BaseColumns._ID, values);
+                db.insert(Tables.StreamData, BaseColumns._ID, values);
 
                 break;
             default:
@@ -162,14 +162,14 @@ public class StreamContentProvider extends ContentProvider implements OnAccounts
         switch (sUriMatcher.match(uri)) {
             case MatcherTypes.COUNTS:
                 SQLiteQueryBuilder streams = new SQLiteQueryBuilder();
-                streams.setTables(Tables.Streams);
+                streams.setTables(Tables.StreamData);
                 cursor = streams.query(dbHelper.getReadableDatabase(), projection, selection,
                         selectionArgs, StreamContract.Streams.STREAM_ID + ", "
                                        + StreamContract.Streams.STREAM_VERSION, null, sortOrder);
                 break;
             case MatcherTypes.STREAMS:
                 cursor = dbHelper.getReadableDatabase()
-                                 .query(Tables.Streams, projection, selection,
+                                 .query(Tables.StreamData, projection, selection,
                                          selectionArgs, null, null, sortOrder);
                 break;
             default:
@@ -203,7 +203,7 @@ public class StreamContentProvider extends ContentProvider implements OnAccounts
             String table;
             switch (sUriMatcher.match(uri)) {
                 case MatcherTypes.STREAMS:
-                    table = Tables.Streams;
+                    table = Tables.StreamData;
                     break;
                 default:
                     throw new UnsupportedOperationException("bulkInsert(): Unknown URI: " + uri);

@@ -126,7 +126,7 @@ public class SurveysFragment extends GridFragment implements Callback<Surveys> {
 
             Survey item = getItem(position);
             holder.name.setText(item.name);
-            holder.action.setText(item.isParticipant ? "Leave" : "Join");
+//            holder.action.setText(item.isParticipant ? "Leave" : "Join");
             return view;
         }
     }

@@ -37,6 +37,7 @@ public class OhmageContentProvider extends ContentProvider {
         int OHMLET_ID = 1;
         int SURVEYS = 2;
         int SURVEY_ID = 3;
+        int STREAMS = 4;
     }
 
     private OhmageDbHelper dbHelper;
@@ -51,6 +52,7 @@ public class OhmageContentProvider extends ContentProvider {
         sUriMatcher.addURI(StreamContract.CONTENT_AUTHORITY, "surveys", MatcherTypes.SURVEYS);
         sUriMatcher
                 .addURI(StreamContract.CONTENT_AUTHORITY, "surveys/*/*", MatcherTypes.SURVEY_ID);
+        sUriMatcher.addURI(OhmageContract.CONTENT_AUTHORITY, "streams", MatcherTypes.STREAMS);
     }
 
     @Override
@@ -83,6 +85,12 @@ public class OhmageContentProvider extends ContentProvider {
                     id = values.getAsString(Ohmlets.OHMLET_ID);
                 }
                 result = db.replace(Tables.Ohmlets, null, values);
+                break;
+            case MatcherTypes.SURVEYS:
+                result = db.replace(Tables.Surveys, null, values);
+                break;
+            case MatcherTypes.STREAMS:
+                result = db.replace(Tables.Streams, null, values);
                 break;
             default:
                 throw new UnsupportedOperationException("insert(): Unknown URI: " + uri);

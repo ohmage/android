@@ -23,7 +23,9 @@ import android.provider.BaseColumns;
 
 import org.ohmage.models.Ohmlet.PrivacyState;
 import org.ohmage.provider.OhmageContract.Ohmlets;
-import org.ohmage.streams.StreamContract.Streams;
+import org.ohmage.provider.OhmageContract.Streams;
+import org.ohmage.provider.OhmageContract.Surveys;
+import org.ohmage.streams.StreamContract;
 
 public class OhmageDbHelper extends SQLiteOpenHelper {
 
@@ -36,6 +38,8 @@ public class OhmageDbHelper extends SQLiteOpenHelper {
     public interface Tables {
         static final String Ohmlets = "ohmlets";
         static final String Streams = "streams";
+        static final String Surveys = "surveys";
+        static final String StreamData = "stream_data";
     }
 
     public OhmageDbHelper(Context context) {
@@ -55,18 +59,30 @@ public class OhmageDbHelper extends SQLiteOpenHelper {
                    PrivacyState.UNKNOWN.ordinal() + ");");
 
         db.execSQL("CREATE TABLE IF NOT EXISTS " + Tables.Streams + " ("
-                   + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                    + Streams.STREAM_ID + " TEXT NOT NULL, "
                    + Streams.STREAM_VERSION + " INTEGER NOT NULL, "
-                   + Streams.USERNAME + " TEXT NOT NULL, "
-                   + Streams.STREAM_METADATA + " TEXT, "
-                   + Streams.STREAM_DATA + " TEXT);");
+                   + "PRIMARY KEY (" + Streams.STREAM_ID + ", " + Streams.STREAM_VERSION + "));");
+
+        db.execSQL("CREATE TABLE IF NOT EXISTS " + Tables.Surveys + " ("
+                   + Surveys.SURVEY_ID + " TEXT NOT NULL, "
+                   + Surveys.SURVEY_VERSION + " INTEGER NOT NULL, "
+                   + Surveys.SURVEY_ITEMS + " TEXT NOT NULL,"
+                   + "PRIMARY KEY (" + Surveys.SURVEY_ID + ", " + Surveys.SURVEY_VERSION + "));");
+
+        db.execSQL("CREATE TABLE IF NOT EXISTS " + Tables.StreamData + " ("
+                   + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                   + StreamContract.Streams.STREAM_ID + " TEXT NOT NULL, "
+                   + StreamContract.Streams.STREAM_VERSION + " INTEGER NOT NULL, "
+                   + StreamContract.Streams.USERNAME + " TEXT NOT NULL, "
+                   + StreamContract.Streams.STREAM_METADATA + " TEXT, "
+                   + StreamContract.Streams.STREAM_DATA + " TEXT);");
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS " + Tables.Ohmlets);
         db.execSQL("DROP TABLE IF EXISTS " + Tables.Streams);
+        db.execSQL("DROP TABLE IF EXISTS " + Tables.Surveys);
         onCreate(db);
     }
 
@@ -74,6 +90,7 @@ public class OhmageDbHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = getWritableDatabase();
         db.execSQL("DROP TABLE IF EXISTS " + Tables.Ohmlets);
         db.execSQL("DROP TABLE IF EXISTS " + Tables.Streams);
+        db.execSQL("DROP TABLE IF EXISTS " + Tables.Surveys);
         onCreate(db);
     }
 }

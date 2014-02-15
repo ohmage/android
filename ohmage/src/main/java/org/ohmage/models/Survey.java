@@ -16,17 +16,35 @@
 
 package org.ohmage.models;
 
+import android.content.ContentValues;
+import android.net.Uri;
+
+import org.ohmage.operators.ContentProviderSaver;
+import org.ohmage.operators.ContentProviderSaver.Savable;
+import org.ohmage.provider.OhmageContract;
+
 import java.util.ArrayList;
 
 /**
  * Created by cketcham on 12/18/13.
  */
-public class Survey {
-    public String id;
-    public String name;
-    public boolean isParticipant;
+public class Survey implements Savable {
+    public String schemaId;
 
-    String schemaId;
-    String schemaVersion;
+    public long schemaVersion;
+    public String name;
+
     ArrayList<Object> surveyItems;
+
+    @Override public ContentValues toContentValues(ContentProviderSaver saver) {
+        ContentValues values = new ContentValues();
+        values.put(OhmageContract.Surveys.SURVEY_ID, schemaId);
+        values.put(OhmageContract.Surveys.SURVEY_VERSION, schemaVersion);
+        values.put(OhmageContract.Surveys.SURVEY_ITEMS, saver.gson().toJson(surveyItems));
+        return values;
+    }
+
+    @Override public Uri getUrl() {
+        return OhmageContract.Surveys.CONTENT_URI;
+    }
 }

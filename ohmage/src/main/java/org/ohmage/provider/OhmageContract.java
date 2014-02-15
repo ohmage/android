@@ -93,12 +93,12 @@ public class OhmageContract {
 
     interface SurveyColumns {
         /**
-         * Unique string identifying the stream
+         * Unique string identifying the survey
          */
         String SURVEY_ID = "survey_id";
 
         /**
-         * Version to identify stream
+         * Version to identify survey
          */
         String SURVEY_VERSION = "survey_version";
 
@@ -117,5 +117,31 @@ public class OhmageContract {
 
         public static final String CONTENT_TYPE =
                 "vnd.android.cursor.dir/vnd.ohmage.surveys.survey";
+    }
+
+    interface StreamColumns {
+        /**
+         * Unique string identifying the stream
+         */
+        String STREAM_ID = "stream_id";
+
+        /**
+         * Version to identify stream
+         */
+        String STREAM_VERSION = "stream_version";
+    }
+
+    private static final String PATH_STREAMS = "streams";
+
+    /**
+     * Represents a stream.
+     */
+    public static final class Streams implements BaseColumns, StreamColumns {
+
+        public static final Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_STREAMS)
+                                                              .build();
+
+        public static final String CONTENT_TYPE =
+                "vnd.android.cursor.dir/vnd.ohmage.streams.stream";
     }
 }

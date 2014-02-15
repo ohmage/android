@@ -42,6 +42,8 @@ import org.ohmage.auth.Authenticator;
 import org.ohmage.models.Ohmlet;
 import org.ohmage.models.Ohmlet.Member;
 import org.ohmage.models.Ohmlets;
+import org.ohmage.models.Stream;
+import org.ohmage.models.Survey;
 import org.ohmage.operators.ContentProviderSaver.ContentProviderSaverObserver;
 import org.ohmage.provider.OhmageContract;
 
@@ -187,6 +189,10 @@ public class OhmageSyncAdapter extends AbstractThreadedSyncAdapter {
                         }
                     }).flatMap(new RefreshOhmlet()).cache();
             ohmlets.subscribe(new ContentProviderSaverObserver(true));
+            ohmlets.flatMap(new SurveysFromOhmlet()).flatMap(new RefreshSurvey())
+                   .subscribe(new ContentProviderSaverObserver(true));
+            ohmlets.flatMap(new StreamsFromOhmlet()).flatMap(new RefreshStream())
+                   .subscribe(new ContentProviderSaverObserver(true));
 
             // TODO: clean up old ohmlets
 
@@ -199,6 +205,30 @@ public class OhmageSyncAdapter extends AbstractThreadedSyncAdapter {
         } finally {
             if (cursor != null)
                 cursor.close();
+        }
+    }
+
+    public static class SurveysFromOhmlet implements Func1<Ohmlet, Observable<Survey>> {
+        @Override public Observable<Survey> call(Ohmlet ohmlet) {
+            return Observable.from(ohmlet.surveys);
+        }
+    }
+
+    public static class StreamsFromOhmlet implements Func1<Ohmlet, Observable<Stream>> {
+        @Override public Observable<Stream> call(Ohmlet ohmlet) {
+            return Observable.from(ohmlet.streams);
+        }
+    }
+
+    public class RefreshStream implements Func1<Stream, Observable<Stream>> {
+        @Override public Observable<Stream> call(Stream stream) {
+            return ohmageService.getStream(stream.schemaId, stream.schemaVersion);
+        }
+    }
+
+    public class RefreshSurvey implements Func1<Survey, Observable<Survey>> {
+        @Override public Observable<Survey> call(Survey survey) {
+            return ohmageService.getSurvey(survey.schemaId, survey.schemaVersion);
         }
     }
 

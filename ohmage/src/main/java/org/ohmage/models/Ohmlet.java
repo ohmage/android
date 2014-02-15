@@ -37,6 +37,7 @@ public class Ohmlet implements Savable, Readable {
     public String description;
 
     public Streams streams;
+    public Surveys surveys;
     public Member.List people;
     public PrivacyState privacyState;
 
@@ -130,6 +131,7 @@ public class Ohmlet implements Savable, Readable {
         values.put(OhmageContract.Ohmlets.OHMLET_ID, ohmletId);
         values.put(OhmageContract.Ohmlets.OHMLET_NAME, name);
         values.put(OhmageContract.Ohmlets.OHMLET_DESCRIPTION, description);
+        values.put(OhmageContract.Ohmlets.OHMLET_SURVEYS, saver.gson().toJson(surveys));
         values.put(OhmageContract.Ohmlets.OHMLET_STREAMS, saver.gson().toJson(streams));
         values.put(OhmageContract.Ohmlets.OHMLET_MEMBERS, saver.gson().toJson(people));
         if (privacyState != null)
@@ -143,7 +145,8 @@ public class Ohmlet implements Savable, Readable {
         name = cursor.getString(1);
         description = cursor.getString(2);
         streams = reader.gson().fromJson(cursor.getString(3), Streams.class);
-        people = reader.gson().fromJson(cursor.getString(4), Member.List.class);
-        privacyState = PrivacyState.values()[cursor.getInt(5)];
+        surveys = reader.gson().fromJson(cursor.getString(4), Surveys.class);
+        people = reader.gson().fromJson(cursor.getString(5), Member.List.class);
+        privacyState = PrivacyState.values()[cursor.getInt(6)];
     }
 }
