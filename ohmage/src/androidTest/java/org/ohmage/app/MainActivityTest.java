@@ -19,6 +19,7 @@ package org.ohmage.app;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.accounts.AccountManagerCallback;
+import android.accounts.OnAccountsUpdateListener;
 import android.os.Handler;
 import android.test.suitebuilder.annotation.LargeTest;
 
@@ -46,6 +47,7 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.ohmage.test.OhmageTest.assertActivityCreated;
@@ -135,9 +137,7 @@ public class MainActivityTest extends InjectedActivityInstrumentationTestCase<Ma
         when(fakeAccountManager.removeAccount(eq(fakeAccount), any(AccountManagerCallback.class),
                 any(Handler.class))).then(new Answer<Object>() {
             @Override public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
-                AccountManagerCallback callback =
-                        (AccountManagerCallback) invocationOnMock.getArguments()[1];
-                callback.run(null);
+                getActivity().onAccountsUpdated(new Account[]{});
                 return null;
             }
         });
@@ -149,14 +149,24 @@ public class MainActivityTest extends InjectedActivityInstrumentationTestCase<Ma
     }
 
     private void startActivityWithAccount() {
-        when(fakeAccountManager.getAccountsByType(AuthUtil.ACCOUNT_TYPE))
-                .thenReturn(new Account[]{fakeAccount});
-        getActivity();
+        startActivityWithAccounts(new Account[]{fakeAccount});
     }
 
     private void startActivityWithoutAccount() {
-        when(fakeAccountManager.getAccountsByType(AuthUtil.ACCOUNT_TYPE))
-                .thenReturn(new Account[]{});
+        startActivityWithAccounts(new Account[]{});
+    }
+
+    private void startActivityWithAccounts(final Account[] accounts) {
+        when(fakeAccountManager.getAccountsByType(AuthUtil.ACCOUNT_TYPE)).thenReturn(accounts);
+
+        doAnswer(new Answer<Object>() {
+            @Override public Object answer(InvocationOnMock invocation) throws Throwable {
+                ((OnAccountsUpdateListener) invocation.getArguments()[0]).onAccountsUpdated(
+                        accounts);
+                return null;
+            }
+        }).when(fakeAccountManager).addOnAccountsUpdatedListener(
+                any(OnAccountsUpdateListener.class), any(Handler.class), eq(true));
         getActivity();
     }
 }

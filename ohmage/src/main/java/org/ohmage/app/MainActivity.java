@@ -18,6 +18,7 @@ package org.ohmage.app;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.accounts.OnAccountsUpdateListener;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
@@ -42,14 +43,13 @@ import org.ohmage.auth.AuthenticatorActivity;
 import org.ohmage.dagger.InjectedActionBarActivity;
 import org.ohmage.fragments.HomeFragment;
 import org.ohmage.fragments.OhmletsFragment;
-import org.ohmage.streams.StreamContract;
 import org.ohmage.tasks.LogoutTaskFragment;
 
 import javax.inject.Inject;
 
 public class MainActivity extends InjectedActionBarActivity
         implements AdapterView.OnItemClickListener,
-        LogoutTaskFragment.LogoutCallbacks {
+        OnAccountsUpdateListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
@@ -79,6 +79,11 @@ public class MainActivity extends InjectedActionBarActivity
      * An array which holds the icons for the navigation items
      */
     private TypedArray mNavigationIcons;
+
+    /**
+     * Set when the user wants to logout
+     */
+    private boolean mLoggingOut;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -141,16 +146,14 @@ public class MainActivity extends InjectedActionBarActivity
     public void onResume() {
         super.onResume();
 
-        // Check to see if the account still exists.
-        Account[] accounts = accountManager.getAccountsByType(AuthUtil.ACCOUNT_TYPE);
-        if (accounts.length == 0) {
-            startActivity(new Intent(this, AuthenticatorActivity.class));
-            finish();
-            return;
+        // Watch to make sure the account still exists.
+        accountManager.addOnAccountsUpdatedListener(this, null, true);
     }
 
-        getContentResolver().requestSync(accounts[0], StreamContract.CONTENT_AUTHORITY,
-                new Bundle());
+    @Override protected void onPause() {
+        super.onPause();
+
+        accountManager.removeOnAccountsUpdatedListener(this);
     }
 
     public void onConfigurationChanged(Configuration newConfig) {
@@ -166,8 +169,8 @@ public class MainActivity extends InjectedActionBarActivity
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            setFragment(position);
-        }
+        setFragment(position);
+    }
 
     private void setFragment(int position) {
         // Set the fragment by the name
@@ -207,6 +210,7 @@ public class MainActivity extends InjectedActionBarActivity
                 return true;
 
             case R.id.action_sign_out:
+                mLoggingOut = true;
                 FragmentManager fm = getSupportFragmentManager();
                 LogoutTaskFragment logoutTaskFragment =
                         (LogoutTaskFragment) fm.findFragmentByTag("logout");
@@ -241,9 +245,18 @@ public class MainActivity extends InjectedActionBarActivity
         }
     }
 
-    @Override
-    public void onLogoutFinished() {
-        startActivity(new Intent(this, AuthenticatorActivity.class));
+    @Override public void onAccountsUpdated(Account[] accounts) {
+        for (Account account : accounts) {
+            if (AuthUtil.ACCOUNT_TYPE.equals(account.type)) {
+                return;
+            }
+        }
+
+        // No ohmage accounts so start the authenticator activity
+        Intent intent = new Intent(this, AuthenticatorActivity.class);
+        if (mLoggingOut)
+            intent.putExtra(AuthenticatorActivity.EXTRA_CLEAR_DEFAULT_ACCOUNT, true);
+        startActivity(intent);
         finish();
     }
 }

@@ -18,6 +18,7 @@ package org.ohmage.auth;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -26,6 +27,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.text.TextUtils;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
 import com.google.android.gms.auth.GoogleAuthException;
@@ -69,6 +71,10 @@ public class AuthenticatorActivity extends AuthenticatorFragmentActivity impleme
     private static final String TAG_CREATE_ACCOUNT = "create_account";
     private static final String TAG_INFO_WINDOW = "info_window";
     public static final String EXTRA_HANDLE_USER_RECOVERABLE_ERROR = "extra_handle_error";
+
+    public static final String EXTRA_CLEAR_DEFAULT_ACCOUNT = "clear_default_account";
+
+    private boolean mClearDefaultAccount;
 
     private AuthenticateFragment mAuthenticateFragment;
 
@@ -163,6 +169,8 @@ public class AuthenticatorActivity extends AuthenticatorFragmentActivity impleme
                 ft.attach(signInEmailFragment).commit();
             }
         }
+
+        mClearDefaultAccount = getIntent().getBooleanExtra(EXTRA_CLEAR_DEFAULT_ACCOUNT, false);
     }
 
     @Override
@@ -212,7 +220,8 @@ public class AuthenticatorActivity extends AuthenticatorFragmentActivity impleme
     public void onSignedIn(PlusClient plusClient) {
         // If the user just logged out, their google auth credentials will still be logged in
         // so we need to always clear the first account by default
-        if (mAuthenticateFragment.useClearDefaultAccount()) {
+        if (mClearDefaultAccount) {
+            mClearDefaultAccount = false;
             plusClient.clearDefaultAccount();
         } else {
             startLogin(plusClient);
@@ -223,7 +232,7 @@ public class AuthenticatorActivity extends AuthenticatorFragmentActivity impleme
     public void onSignInFailed() {
         showProgress(false);
         // There was no default account
-        mAuthenticateFragment.useClearDefaultAccount();
+        mClearDefaultAccount = false;
     }
 
     /**
@@ -247,6 +256,7 @@ public class AuthenticatorActivity extends AuthenticatorFragmentActivity impleme
      */
     @Override
     public void onCreateAccount() {
+        hideKeyboard();
         // Hide the create account fragment and show the progress spinner
         hideFragment(TAG_CREATE_ACCOUNT);
     }
@@ -256,6 +266,7 @@ public class AuthenticatorActivity extends AuthenticatorFragmentActivity impleme
      */
     @Override
     public void onAccountSignInOhmage() {
+        hideKeyboard();
         // Hide the sign in fragment
         hideFragment(TAG_OHMAGE_SIGN_IN);
     }
@@ -494,6 +505,14 @@ public class AuthenticatorActivity extends AuthenticatorFragmentActivity impleme
                 }
             }
         });
+    }
+
+    private void hideKeyboard() {
+        if (getCurrentFocus() != null) {
+            InputMethodManager imm =
+                    (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
+        }
     }
 
     public static interface GoogleAccessTokenCallback {

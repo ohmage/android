@@ -16,19 +16,15 @@
 
 package org.ohmage.auth;
 
-import android.accounts.Account;
-import android.accounts.AccountManager;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 
 import com.google.android.gms.common.SignInButton;
@@ -36,27 +32,16 @@ import com.google.android.gms.common.SignInButton;
 import org.ohmage.app.R;
 import org.ohmage.fragments.TransitionFragment;
 
-import javax.inject.Inject;
-
 /**
  * This fragment shows the sign in buttons and loading state for the
  * {@link org.ohmage.auth.AuthenticatorActivity}
  */
 public class AuthenticateFragment extends TransitionFragment implements View.OnClickListener {
 
-    @Inject AccountManager accountManager;
-
     /**
      * Keeps track of the state of if the progress spinner is shown
      */
     private boolean mShowProgress;
-
-    /**
-     * If the user has logged out of the app we need to clear the default account.
-     * We should only do it once the first time the fragment is created. This keeps track
-     * of if we have cleared the account or not
-     */
-    private boolean mClearDefaultAccount;
 
     /**
      * The view which shows the progress spinner
@@ -99,22 +84,20 @@ public class AuthenticateFragment extends TransitionFragment implements View.OnC
     }
 
     @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean("showProgress", mShowProgress);
+    }
+
+    @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         mCallbacks = (Callbacks) activity;
     }
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
+    @Override public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
-
-        /**
-         * If an account does not exist in the account manager when this activity is started,
-         * it should not login to the default account automatically.
-         */
-        Account[] accounts = accountManager.getAccountsByType(AuthUtil.ACCOUNT_TYPE);
-        mClearDefaultAccount = accounts.length == 0;
     }
 
     @Override
@@ -129,13 +112,6 @@ public class AuthenticateFragment extends TransitionFragment implements View.OnC
     @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
     public void showProgress(boolean show) {
         mShowProgress = show;
-
-        if (getActivity().getCurrentFocus() != null) {
-            InputMethodManager imm =
-                    (InputMethodManager) getActivity()
-                            .getSystemService(Context.INPUT_METHOD_SERVICE);
-            imm.hideSoftInputFromWindow(getActivity().getCurrentFocus().getWindowToken(), 0);
-        }
 
         // On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
         // for very easy animations. If available, use these APIs to fade-in
@@ -172,17 +148,6 @@ public class AuthenticateFragment extends TransitionFragment implements View.OnC
             mAuthLoadingView.setVisibility(show ? View.VISIBLE : View.INVISIBLE);
             mAuthButtonsView.setVisibility(show ? View.INVISIBLE : View.VISIBLE);
         }
-    }
-
-    /**
-     * Once the default account has been cleared, this will always return false.
-     *
-     * @return true only the first time if there are no ohmage accounts
-     */
-    public boolean useClearDefaultAccount() {
-        boolean ret = mClearDefaultAccount;
-        mClearDefaultAccount = false;
-        return ret;
     }
 
     @Override

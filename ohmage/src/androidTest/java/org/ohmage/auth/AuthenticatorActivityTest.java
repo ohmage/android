@@ -469,13 +469,6 @@ public class AuthenticatorActivityTest
     }
 
     private void setPlusClientFragmentSuccessfullyConnects() {
-        getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                getActivity().onSignedIn(mock(PlusClient.class));
-            }
-        });
-
         doAnswer(new Answer() {
             @Override
             public Object answer(InvocationOnMock invocationOnMock) throws Throwable {

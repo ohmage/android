@@ -16,15 +16,9 @@
 
 package org.ohmage.tasks;
 
-/**
- * Created by cketcham on 10/11/13.
- */
-
 import android.accounts.Account;
 import android.accounts.AccountManager;
-import android.accounts.AccountManagerCallback;
 import android.accounts.AccountManagerFuture;
-import android.app.Activity;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.os.Bundle;
@@ -42,43 +36,31 @@ public class LogoutTaskFragment extends InjectedDialogFragment {
 
     @Inject AccountManager accountManager;
 
-    private LogoutCallbacks mCallbacks;
-
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        mCallbacks = (LogoutCallbacks) activity;
-    }
+    /**
+     * Future provided by removeAccount call
+     */
+    private AccountManagerFuture<Boolean> res;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // Retain this fragment across configuration changes.
         setRetainInstance(true);
 
         // This dialog should not be cancelable since it will always be fast
         // and it would be difficult to replace the account once it has been removed
         setCancelable(false);
+    }
+
+    @Override public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        if (res != null) return;
 
         Account[] accounts = accountManager.getAccountsByType(AuthUtil.ACCOUNT_TYPE);
         //TODO: handle more than one account correctly
         if (accounts.length > 0) {
-            accountManager.removeAccount(accounts[0], new AccountManagerCallback<Boolean>() {
-                @Override
-                public void run(AccountManagerFuture<Boolean> future) {
-                    if (mCallbacks != null) {
-                        mCallbacks.onLogoutFinished();
-                    }
-                }
-            }, null);
+            res = accountManager.removeAccount(accounts[0], null, null);
         }
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mCallbacks = null;
     }
 
     @Override
@@ -86,12 +68,5 @@ public class LogoutTaskFragment extends InjectedDialogFragment {
         ProgressDialog dialog = new ProgressDialog(getActivity());
         dialog.setMessage(getString(R.string.logging_out));
         return dialog;
-    }
-
-    /**
-     * This fragment only reports when the account has been removed
-     */
-    public static interface LogoutCallbacks {
-        void onLogoutFinished();
     }
 }
