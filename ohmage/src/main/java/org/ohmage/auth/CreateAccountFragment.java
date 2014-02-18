@@ -97,7 +97,7 @@ public class CreateAccountFragment extends TransitionFragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+            Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_create_account, container, false);
 
         // Set up the login form.
@@ -119,11 +119,11 @@ public class CreateAccountFragment extends TransitionFragment {
 
         view.findViewById(R.id.create_account_button)
             .setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                attemptAccountCreate();
-            }
-        });
+                @Override
+                public void onClick(View view) {
+                    attemptAccountCreate();
+                }
+            });
 
         setViewState(view);
 

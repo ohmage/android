@@ -79,7 +79,7 @@ public class SignInFragment extends TransitionFragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+            Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_sign_in_ohmage, container, false);
 
         // Set up the login form.
@@ -103,11 +103,11 @@ public class SignInFragment extends TransitionFragment {
 
         view.findViewById(R.id.sign_in_email_button)
             .setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                attemptSignIn();
-            }
-        });
+                @Override
+                public void onClick(View view) {
+                    attemptSignIn();
+                }
+            });
 
         return view;
     }
