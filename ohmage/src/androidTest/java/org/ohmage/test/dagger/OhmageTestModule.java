@@ -34,6 +34,7 @@ import org.ohmage.auth.AuthenticatorTest;
 import org.ohmage.auth.CreateAccountFragment;
 import org.ohmage.auth.SignInFragment;
 import org.ohmage.dagger.ForApplication;
+import org.ohmage.fragments.HomeFragment;
 import org.ohmage.fragments.OhmletsFragment;
 import org.ohmage.fragments.OhmletsGridFragment;
 import org.ohmage.fragments.OhmletsSearchFragment;
@@ -79,7 +80,8 @@ import static org.mockito.Mockito.mock;
                 OhmletActivity.JoinOhmletDialog.class,
                 ContentProviderSaver.class,
                 ContentProviderReader.class,
-                SurveysFragment.class
+                SurveysFragment.class,
+                HomeFragment.class
         },
         complete = false,
         library = true,

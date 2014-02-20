@@ -68,6 +68,8 @@ public class OhmageContentProvider extends ContentProvider {
 
             case MatcherTypes.OHMLET_ID:
                 return OhmageContract.Ohmlets.CONTENT_ITEM_TYPE;
+            case MatcherTypes.SURVEY_ID:
+                return OhmageContract.Surveys.CONTENT_ITEM_TYPE;
             default:
                 throw new UnsupportedOperationException("getType(): Unknown URI: " + uri);
         }
@@ -127,6 +129,10 @@ public class OhmageContentProvider extends ContentProvider {
                         Ohmlets.OHMLET_ID + "=?", new String[]{uri.getLastPathSegment()}, null,
                         null, sortOrder);
                 break;
+            case MatcherTypes.SURVEYS:
+                cursor = dbHelper.getReadableDatabase().query(Tables.Surveys, projection, selection,
+                        selectionArgs, null, null, sortOrder);
+                break;
             case MatcherTypes.SURVEY_ID:
                 id = Surveys.getId(uri);
                 if(id != null) {
@@ -138,6 +144,10 @@ public class OhmageContentProvider extends ContentProvider {
                     }
                 }
                 cursor = dbHelper.getReadableDatabase().query(Tables.Surveys, projection, selection,
+                        selectionArgs, null, null, sortOrder);
+                break;
+            case MatcherTypes.STREAMS:
+                cursor = dbHelper.getReadableDatabase().query(Tables.Streams, projection, selection,
                         selectionArgs, null, null, sortOrder);
                 break;
             case MatcherTypes.STREAM_ID:

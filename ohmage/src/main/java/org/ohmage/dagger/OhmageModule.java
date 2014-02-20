@@ -44,6 +44,7 @@ import org.ohmage.auth.AuthenticateFragment;
 import org.ohmage.auth.Authenticator;
 import org.ohmage.auth.CreateAccountFragment;
 import org.ohmage.auth.SignInFragment;
+import org.ohmage.fragments.HomeFragment;
 import org.ohmage.fragments.OhmletsFragment;
 import org.ohmage.fragments.OhmletsGridFragment;
 import org.ohmage.fragments.OhmletsSearchFragment;
@@ -91,7 +92,8 @@ import retrofit.converter.GsonConverter;
                 OhmletActivity.JoinOhmletDialog.class,
                 ContentProviderSaver.class,
                 ContentProviderReader.class,
-                SurveysFragment.class
+                SurveysFragment.class,
+                HomeFragment.class
         },
         complete = false,
         library = true
