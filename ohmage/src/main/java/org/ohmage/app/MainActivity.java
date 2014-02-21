@@ -127,6 +127,8 @@ public class MainActivity extends InjectedActionBarActivity
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
+
+        setFragment(0);
     }
 
     public void onPostCreate(Bundle savedInstanceState) {
@@ -163,6 +165,10 @@ public class MainActivity extends InjectedActionBarActivity
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        setFragment(position);
+    }
+
+    private void setFragment(int position) {
         // Create a new fragment and specify the planet to show based on position
         Fragment fragment = new HomeFragment();
 
