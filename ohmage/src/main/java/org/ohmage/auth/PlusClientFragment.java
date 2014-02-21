@@ -168,7 +168,7 @@ public class PlusClientFragment extends Fragment
         plusClientBuilder.setScopes(scopes);
 
         if (visibleActivities != null && visibleActivities.length > 0) {
-            plusClientBuilder.setVisibleActivities(visibleActivities);
+            plusClientBuilder.setActions(visibleActivities);
         }
         mPlusClient = plusClientBuilder.build();
 

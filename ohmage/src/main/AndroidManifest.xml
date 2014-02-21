@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <!--
   Copyright (C) 2013 ohmage
 
@@ -16,6 +17,7 @@
   -->
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="org.ohmage.app"
     android:versionCode="1"
     android:versionName="1.0">
@@ -29,8 +31,9 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <uses-sdk
-        android:minSdkVersion="8"
-        android:targetSdkVersion="18" />
+        android:minSdkVersion="9"
+        android:targetSdkVersion="19"
+        tools:ignore="GradleOverrides" />
 
     <application
         android:name="org.ohmage.app.Ohmage"
@@ -89,6 +92,10 @@
             android:authorities="org.ohmage.streams"
             android:exported="true"
             android:syncable="true" />
+
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
     </application>
 
 </manifest>
