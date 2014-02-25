@@ -337,8 +337,7 @@ public class SurveyActivity extends InjectedActionBarActivity
             mSkipped = skipped;
             if (view == null)
                 return;
-            AlphaAnimation aa =
-                    (skipped) ? new AlphaAnimation(1f, 0.3f) : new AlphaAnimation(0.3f, 1f);
+            AlphaAnimation aa = (skipped) ? new AlphaAnimation(1f, 0f) : new AlphaAnimation(0f, 1f);
             aa.setFillAfter(true);
             aa.setDuration(duration);
             view.startAnimation(aa);
