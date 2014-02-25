@@ -18,7 +18,6 @@ package org.ohmage.widget;
 
 import android.content.Context;
 import android.support.v4.app.Fragment;
-import android.support.v4.view.MotionEventCompat;
 import android.support.v4.view.PagerAdapter;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
@@ -67,18 +66,18 @@ public class PromptViewPager extends VerticalViewPager {
 
     //TODO: don't scroll back to the top of the item if the bottom of the item is still on the screen ie. when there is a long prompt
     private void scrollBack(MotionEvent ev) {
-        final int action = ev.getAction();
-
-        switch (action & MotionEventCompat.ACTION_MASK) {
-            case MotionEvent.ACTION_UP:
-                for (int i = 0; i < getCurrentItem(); i++) {
-                    if (!getAdapter().canPassItem(i)) {
-                        setCurrentItem(i, true);
-                        break;
-                    }
-                }
-                break;
-        }
+//        final int action = ev.getAction();
+//
+//        switch (action & MotionEventCompat.ACTION_MASK) {
+//            case MotionEvent.ACTION_UP:
+//                for (int i = 0; i < getCurrentItem(); i++) {
+//                    if(!getAdapter().canPassItem(i)) {
+//                        setCurrentItem(i, true);
+//                        break;
+//                    }
+//                }
+//                break;
+//        }
     }
 
     @Override
@@ -127,15 +126,25 @@ public class PromptViewPager extends VerticalViewPager {
         calculateBottomBound();
     }
 
+    //TODO: something should keep track of the pivot position so we don't need to keep calculating it
     private void updateSkipped() {
         boolean skippedPivot = false;
         final int N = getAdapter().getCount();
-        for (int i = getCurrentItem(); i < N; i++) {
+        for (int i = Math.max(getCurrentItem() - 1, 0); i < N; i++) {
             Fragment item = getAdapter().getObject(i);
             if (item instanceof SurveyActivity.BasePromptAdapterFragment) {
                 ((SurveyActivity.BasePromptAdapterFragment) item).setSkipped(skippedPivot);
             }
             skippedPivot |= !getAdapter().canPassItem(i);
+        }
+
+        // Move the current item back to the top of the last item if this item is wrong
+        if (getCurrentItem() > 0 && !getAdapter().canPassItem(getCurrentItem() - 1)) {
+            post(new Runnable() {
+                @Override public void run() {
+                    setCurrentItem(getCurrentItem() - 1, true);
+                }
+            });
         }
     }
 }
