@@ -25,8 +25,11 @@ import android.widget.DatePicker;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.ohmage.app.R;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 /**
@@ -36,9 +39,15 @@ import java.util.Calendar;
  */
 public class TimestampPrompt extends AnswerablePrompt<Calendar> {
 
+
     @Override
     public Fragment getFragment() {
         return TimestampPromptFragment.getInstance(this);
+    }
+
+    public void addAnswer(JSONObject data, JSONObject extras) throws JSONException {
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+        data.put(surveyItemId, formatter.format(value.getTime()));
     }
 
     public static class TimestampPromptFragment extends AnswerablePromptFragment<TimestampPrompt> {

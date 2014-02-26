@@ -16,6 +16,7 @@
 
 package org.ohmage.app;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
@@ -27,18 +28,20 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.app.LoaderManager.LoaderCallbacks;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.viewpagerindicator.CirclePageIndicator;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.ohmage.dagger.InjectedActionBarActivity;
 import org.ohmage.prompts.AnswerablePrompt;
 import org.ohmage.prompts.BasePrompt;
@@ -46,6 +49,9 @@ import org.ohmage.prompts.BasePrompt.AnswerablePromptFragment;
 import org.ohmage.prompts.BasePrompt.AnswerablePromptFragment.OnSkipStateChanged;
 import org.ohmage.prompts.Prompt;
 import org.ohmage.provider.OhmageContract;
+import org.ohmage.provider.OhmageContract.Responses;
+import org.ohmage.provider.OhmageContract.Surveys;
+import org.ohmage.streams.StreamPointBuilder;
 import org.ohmage.widget.CompatArrayAdapter;
 import org.ohmage.widget.PromptViewPager;
 
@@ -124,8 +130,20 @@ public class SurveyActivity extends InjectedActionBarActivity
     }
 
     public void submit() {
-        mPagerAdapter.buildResponse();
+        try {
+            ContentValues values = new ContentValues();
+            values.put(Responses.SURVEY_ID, Surveys.getId(getIntent().getData()));
+            values.put(Responses.SURVEY_VERSION, Surveys.getVersion(getIntent().getData()));
+            values.put(Responses.RESPONSE_METADATA,
+                    new StreamPointBuilder().now().withId().getMetadata());
+            mPagerAdapter.buildResponse(values);
+            getContentResolver().insert(Responses.CONTENT_URI, values);
+            finish();
+        } catch (JSONException e) {
+            e.printStackTrace();
+            Toast.makeText(this, "There was an error saving the response", Toast.LENGTH_SHORT);
         }
+    }
 
     public class PromptFragmentAdapter extends FragmentStatePagerAdapter implements
             OnSkipStateChanged {
@@ -249,16 +267,19 @@ public class SurveyActivity extends InjectedActionBarActivity
             mPager.onValueChanged(prompt);
         }
 
-        public void buildResponse() {
+        public void buildResponse(ContentValues values) throws JSONException {
+            JSONObject extras = new JSONObject();
+            JSONObject data = new JSONObject();
             for (int i = 0; i < getCount(); i++) {
                 Fragment item = getItem(i);
                 if (item instanceof AnswerablePromptFragment) {
                     //TODO: remove some casting?
-                    AnswerablePrompt prompt =
-                            (AnswerablePrompt) ((AnswerablePromptFragment) item).getPrompt();
-                    Log.d(TAG, prompt.getId() + "=" + prompt.value);
+                    ((AnswerablePrompt) ((AnswerablePromptFragment) item).getPrompt()).addAnswer(
+                            data, extras);
                 }
             }
+            values.put(Responses.RESPONSE_EXTRAS, extras.toString());
+            values.put(Responses.RESPONSE_DATA, data.toString());
         }
     }
 

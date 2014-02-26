@@ -16,6 +16,8 @@
 
 package org.ohmage.prompts;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.ohmage.app.Ohmage;
 
 import java.io.File;
@@ -45,5 +47,11 @@ public class MediaPrompt extends AnswerablePrompt<File> {
 
         value = new File(Ohmage.app().getExternalCacheDir(), UUID.randomUUID().toString());
         return value;
+    }
+
+    @Override
+    public void addAnswer(JSONObject data, JSONObject extras) throws JSONException {
+        data.put(surveyItemId, value.getName());
+        extras.put(surveyItemId, value.getAbsolutePath());
     }
 }

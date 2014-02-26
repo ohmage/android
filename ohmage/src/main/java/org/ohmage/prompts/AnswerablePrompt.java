@@ -16,6 +16,9 @@
 
 package org.ohmage.prompts;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 /**
  * Created by cketcham on 12/19/13.
  * TODO: value goes here? or elsewhere
@@ -33,5 +36,9 @@ public class AnswerablePrompt<T> extends BasePrompt {
 
     public boolean isSkippable() {
         return skippable || value != null;
+    }
+
+    public void addAnswer(JSONObject data, JSONObject extras) throws JSONException {
+        data.put(surveyItemId, value);
     }
 }

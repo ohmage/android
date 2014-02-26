@@ -183,4 +183,48 @@ public class OhmageContract {
             return (path.size() < 3) ? null : Long.parseLong(path.get(2));
         }
     }
+
+    interface ResponseColumns {
+        /**
+         * Unique string identifying the survey
+         */
+        String SURVEY_ID = "survey_id";
+
+        /**
+         * Version to identify survey
+         */
+        String SURVEY_VERSION = "survey_version";
+
+        /**
+         * Metadata of the response
+         */
+        String RESPONSE_METADATA = "response_metadata";
+
+        /**
+         * Extra data for the response such as where files exist on the system
+         * keyed by the prompt ids
+         */
+        String RESPONSE_EXTRAS = "response_extras";
+
+        /**
+         * Data of the response
+         */
+        String RESPONSE_DATA = "response_data";
+    }
+
+    private static final String PATH_RESPONSES = "responses";
+
+    /**
+     * Represents a response.
+     */
+    public static final class Responses implements BaseColumns, ResponseColumns {
+
+        public static final Uri CONTENT_URI =
+                BASE_CONTENT_URI.buildUpon().appendPath(PATH_RESPONSES)
+                        .build();
+
+        public static final String CONTENT_ITEM_TYPE =
+                "vnd.android.cursor.dir/vnd.ohmage.responses.response";
+
+    }
 }

@@ -23,6 +23,7 @@ import android.provider.BaseColumns;
 
 import org.ohmage.models.Ohmlet.PrivacyState;
 import org.ohmage.provider.OhmageContract.Ohmlets;
+import org.ohmage.provider.OhmageContract.Responses;
 import org.ohmage.provider.OhmageContract.Streams;
 import org.ohmage.provider.OhmageContract.Surveys;
 import org.ohmage.streams.StreamContract;
@@ -31,7 +32,7 @@ public class OhmageDbHelper extends SQLiteOpenHelper {
 
     private static final String DB_NAME = "ohmage.db";
 
-    private static final int DB_VERSION = 5;
+    private static final int DB_VERSION = 6;
 
     public static final String SQL_AND = " AND %s='%s'";
 
@@ -39,6 +40,7 @@ public class OhmageDbHelper extends SQLiteOpenHelper {
         static final String Ohmlets = "ohmlets";
         static final String Streams = "streams";
         static final String Surveys = "surveys";
+        static final String Responses = "responses";
         static final String StreamData = "stream_data";
     }
 
@@ -69,6 +71,14 @@ public class OhmageDbHelper extends SQLiteOpenHelper {
                    + Surveys.SURVEY_ITEMS + " TEXT NOT NULL,"
                    + "PRIMARY KEY (" + Surveys.SURVEY_ID + ", " + Surveys.SURVEY_VERSION + "));");
 
+        db.execSQL("CREATE TABLE IF NOT EXISTS " + Tables.Responses + " ("
+                   + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                   + Responses.SURVEY_ID + " TEXT NOT NULL, "
+                   + Responses.SURVEY_VERSION + " INTEGER NOT NULL, "
+                   + Responses.RESPONSE_METADATA + " TEXT, "
+                   + Responses.RESPONSE_EXTRAS + " TEXT, "
+                   + Responses.RESPONSE_DATA + " TEXT);");
+
         db.execSQL("CREATE TABLE IF NOT EXISTS " + Tables.StreamData + " ("
                    + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                    + StreamContract.Streams.STREAM_ID + " TEXT NOT NULL, "
@@ -83,6 +93,7 @@ public class OhmageDbHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + Tables.Ohmlets);
         db.execSQL("DROP TABLE IF EXISTS " + Tables.Streams);
         db.execSQL("DROP TABLE IF EXISTS " + Tables.Surveys);
+        db.execSQL("DROP TABLE IF EXISTS " + Tables.Responses);
         onCreate(db);
     }
 
@@ -91,6 +102,7 @@ public class OhmageDbHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + Tables.Ohmlets);
         db.execSQL("DROP TABLE IF EXISTS " + Tables.Streams);
         db.execSQL("DROP TABLE IF EXISTS " + Tables.Surveys);
+        db.execSQL("DROP TABLE IF EXISTS " + Tables.Responses);
         onCreate(db);
     }
 }
