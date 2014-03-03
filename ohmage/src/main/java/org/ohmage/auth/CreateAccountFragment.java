@@ -47,16 +47,12 @@ public class CreateAccountFragment extends TransitionFragment {
     private static final String TAG = CreateAccountFragment.class.getSimpleName();
 
     @Inject RequestQueue requestQueue;
-
     @Inject Bus bus;
 
     // UI references.
     private EditText mFullnameView;
-
     private EditText mUsernameView;
-
     private EditText mEmailView;
-
     private EditText mPasswordView;
 
     private User mUser = new User();
@@ -102,7 +98,7 @@ public class CreateAccountFragment extends TransitionFragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+            Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_create_account, container, false);
 
         // Set up the login form.
@@ -124,12 +120,13 @@ public class CreateAccountFragment extends TransitionFragment {
 
         mFullnameView.setText(mUser.fullName);
 
-        view.findViewById(R.id.create_account_button).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                attemptAccountCreate();
-            }
-        });
+        view.findViewById(R.id.create_account_button)
+            .setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    attemptAccountCreate();
+                }
+            });
 
         setViewState(view);
 

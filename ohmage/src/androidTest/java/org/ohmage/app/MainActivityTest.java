@@ -112,7 +112,8 @@ public class MainActivityTest extends InjectedActivityInstrumentationTestCase<Ma
         onView(withId(R.id.drawer_layout)).check(matches(isClosed()));
     }
 
-    public void testStartActivity_accountDoesNotExist_RedirectsToAuthenticatorActivity() throws Exception {
+    public void testStartActivity_accountDoesNotExist_RedirectsToAuthenticatorActivity()
+            throws Exception {
         startActivityWithoutAccount();
 
         assertActivityCreated(this, AuthenticatorActivity.class);

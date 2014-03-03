@@ -61,7 +61,9 @@ public class InjectedActionBarActivity extends ActionBarActivity {
         return Arrays.<Object>asList();
     }
 
-    /** Inject the supplied {@code object} using the activity-specific graph. */
+    /**
+     * Inject the supplied {@code object} using the activity-specific graph.
+     */
     public void inject(Object object) {
         activityGraph.inject(object);
     }

@@ -32,7 +32,6 @@ import org.ohmage.dagger.InjectedFragment;
 public class TransitionFragment extends InjectedFragment {
 
     private int mAnimationIn = -1;
-
     private int mAnimationOut = -1;
 
     /**

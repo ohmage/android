@@ -97,8 +97,8 @@ public abstract class OttoRequest<T> extends Request<T> {
             Request request = (Request) other;
             try {
                 return request.getUrl().equals(getUrl())
-                        && request.getMethod() == getMethod()
-                        && Arrays.equals(request.getBody(), getBody());
+                       && request.getMethod() == getMethod()
+                       && Arrays.equals(request.getBody(), getBody());
             } catch (AuthFailureError authFailureError) {
                 authFailureError.printStackTrace();
             }

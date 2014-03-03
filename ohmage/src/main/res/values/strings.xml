@@ -28,7 +28,6 @@
     <string name="account_error">Unexpected Error. Try to login with a different account.</string>
     <string name="google_progress_message">Signing in to Google&#8230;</string>
     <string name="logging_out">Logging Out&#8230;</string>
-    <!-- Create Account -->
     <string name="title_create_account">Create Account</string>
     <string name="prompt_email">E-mail</string>
     <string name="prompt_email_hint">Enter your E-mail</string>

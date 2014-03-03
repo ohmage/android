@@ -31,11 +31,11 @@ import com.android.volley.VolleyError;
 import com.google.android.gms.auth.UserRecoverableAuthException;
 
 import org.mockito.stubbing.OngoingStubbing;
-import org.ohmage.test.dagger.InjectedAndroidTestCase;
 import org.ohmage.models.AccessToken;
 import org.ohmage.requests.AccessTokenRequest;
 import org.ohmage.test.DeliverVolleyErrorToListener;
 import org.ohmage.test.DeliverVolleyResultToListener;
+import org.ohmage.test.dagger.InjectedAndroidTestCase;
 
 import javax.inject.Inject;
 
@@ -51,25 +51,16 @@ import static org.mockito.Mockito.when;
 public class AuthenticatorTest extends InjectedAndroidTestCase {
 
     @Inject AuthHelper fakeAuthHelper;
-
     @Inject AccountManager fakeAccountManager;
-
     @Inject RequestQueue fakeRequestQueue;
 
     private Authenticator mAuthenticator;
-
     private Context fakeContext;
-
     private Account fakeAccount;
-
     private static final String fakeGoogleEmail = "fake@gmail.com";
-
     private static final String accessToken = "token";
-
     private static final String refreshToken = "refresh";
-
     private AccessToken token;
-
     private static final String stubGoogleToken = "google_token";
 
     @Override
@@ -262,7 +253,8 @@ public class AuthenticatorTest extends InjectedAndroidTestCase {
         when(fakeAccountManager.getPassword(fakeAccount)).thenReturn(refreshToken);
     }
 
-    private void setAccessTokenResult(AccessTokenRequest mockAccessTokenRequest, VolleyError error) {
+    private void setAccessTokenResult(AccessTokenRequest mockAccessTokenRequest,
+            VolleyError error) {
         when(fakeRequestQueue.add(mockAccessTokenRequest)).then(
                 (error == null) ?
                         new DeliverVolleyResultToListener(token) :

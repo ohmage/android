@@ -49,7 +49,7 @@ public class CreateUserRequest extends GsonRequest<User> {
         switch (grantType) {
             case GOOGLE_OAUTH2:
                 url.append("?provider=").append(grantType.getName())
-                        .append("&access_token=").append(accessToken);
+                   .append("&access_token=").append(accessToken);
                 break;
             case CLIENT_CREDENTIALS:
                 url.append("?password=").append(accessToken);

@@ -62,25 +62,16 @@ public class AuthenticatorActivity extends AuthenticatorFragmentActivity impleme
         AuthenticateFragment.Callbacks, SignInFragment.Callbacks {
 
     @Inject AuthHelper auth;
-
     @Inject AccountManager am;
-
     @Inject RequestQueue requestQueue;
-
     @Inject PlusClientFragment mPlusClientFragment;
-
     @Inject Bus bus;
 
     public static final int REQUEST_CODE_PLUS_CLIENT_FRAGMENT = 0;
-
     private static final String TAG_ERROR_DIALOG = "error_dialog";
-
     private static final String TAG_OHMAGE_SIGN_IN = "sign_in_email";
-
     private static final String TAG_CREATE_ACCOUNT = "create_account";
-
     private static final String TAG_INFO_WINDOW = "info_window";
-
     public static final String EXTRA_HANDLE_USER_RECOVERABLE_ERROR = "extra_handle_error";
 
     private AuthenticateFragment mAuthenticateFragment;
@@ -137,12 +128,14 @@ public class AuthenticatorActivity extends AuthenticatorFragmentActivity impleme
 
         // We handle user recoverable errors on behalf of the account authenticator
         UserRecoverableAuthException authException =
-                (UserRecoverableAuthException) getIntent().getSerializableExtra(EXTRA_HANDLE_USER_RECOVERABLE_ERROR);
+                (UserRecoverableAuthException) getIntent()
+                        .getSerializableExtra(EXTRA_HANDLE_USER_RECOVERABLE_ERROR);
         if (authException != null) {
             try {
                 throw authException;
             } catch (GooglePlayServicesAvailabilityException playEx) {
-                GooglePlayServicesErrorDialogFragment fragment = new GooglePlayServicesErrorDialogFragment();
+                GooglePlayServicesErrorDialogFragment fragment =
+                        new GooglePlayServicesErrorDialogFragment();
                 fragment.setArguments(GooglePlayServicesErrorDialogFragment.createArguments(
                         playEx.getConnectionStatusCode(), REQUEST_CODE_PLUS_CLIENT_FRAGMENT));
                 showErrorDialog(fm, fragment);
@@ -323,7 +316,7 @@ public class AuthenticatorActivity extends AuthenticatorFragmentActivity impleme
         FragmentManager fm = getSupportFragmentManager();
         FragmentTransaction ft = fm.beginTransaction().detach(mAuthenticateFragment);
         ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-                .addToBackStack(TAG_INFO_WINDOW).attach(fragment).commit();
+          .addToBackStack(TAG_INFO_WINDOW).attach(fragment).commit();
     }
 
     /**
@@ -339,7 +332,7 @@ public class AuthenticatorActivity extends AuthenticatorFragmentActivity impleme
             FragmentManager fm = getSupportFragmentManager();
             FragmentTransaction ft = fm.beginTransaction().detach(mAuthenticateFragment);
             ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-                    .addToBackStack(TAG_INFO_WINDOW).add(id, fragment, tag).commit();
+              .addToBackStack(TAG_INFO_WINDOW).add(id, fragment, tag).commit();
         } else {
             showFragment(fragment);
         }
@@ -357,7 +350,7 @@ public class AuthenticatorActivity extends AuthenticatorFragmentActivity impleme
         FragmentManager fm = getSupportFragmentManager();
         Fragment fragment = fm.findFragmentByTag(tag);
         fm.beginTransaction().setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-                .detach(fragment).attach(mAuthenticateFragment).addToBackStack(null).commit();
+          .detach(fragment).attach(mAuthenticateFragment).addToBackStack(null).commit();
     }
 
     /**
@@ -400,13 +393,14 @@ public class AuthenticatorActivity extends AuthenticatorFragmentActivity impleme
             am.addAccountExplicitly(account, token.getRefreshToken(), null);
 
             // Turn on automatic syncing for this account
-            getContentResolver().setSyncAutomatically(account, StreamContract.CONTENT_AUTHORITY, true);
+            getContentResolver()
+                    .setSyncAutomatically(account, StreamContract.CONTENT_AUTHORITY, true);
         } else {
             am.setPassword(accounts[0], token.getRefreshToken());
         }
 
         if (mPlusClientFragment.getClient() != null &&
-                mPlusClientFragment.getClient().isConnected()) {
+            mPlusClientFragment.getClient().isConnected()) {
             String googleAccountName = mPlusClientFragment.getClient().getAccountName();
             am.setUserData(account, Authenticator.USER_DATA_GOOGLE_ACCOUNT, googleAccountName);
         }
@@ -458,9 +452,11 @@ public class AuthenticatorActivity extends AuthenticatorFragmentActivity impleme
         if (error instanceof NetworkError) {
             Toast.makeText(getBaseContext(), R.string.network_error, Toast.LENGTH_SHORT).show();
         } else if (error instanceof ServerError) {
-            Toast.makeText(getBaseContext(), new String(error.networkResponse.data), Toast.LENGTH_SHORT).show();
+            Toast.makeText(getBaseContext(), new String(error.networkResponse.data),
+                    Toast.LENGTH_SHORT).show();
         } else if (error instanceof AuthFailureError) {
-            Toast.makeText(getBaseContext(), R.string.error_invalid_credentials, Toast.LENGTH_SHORT).show();
+            Toast.makeText(getBaseContext(), R.string.error_invalid_credentials, Toast.LENGTH_SHORT)
+                 .show();
         } else {
             Toast.makeText(getBaseContext(), R.string.unknown_error, Toast.LENGTH_SHORT).show();
         }
@@ -505,7 +501,8 @@ public class AuthenticatorActivity extends AuthenticatorFragmentActivity impleme
             try {
                 return auth.googleAuthGetToken(accountName);
             } catch (GooglePlayServicesAvailabilityException playEx) {
-                GooglePlayServicesErrorDialogFragment fragment = new GooglePlayServicesErrorDialogFragment();
+                GooglePlayServicesErrorDialogFragment fragment =
+                        new GooglePlayServicesErrorDialogFragment();
                 fragment.setArguments(GooglePlayServicesErrorDialogFragment.createArguments(
                         playEx.getConnectionStatusCode(), REQUEST_CODE_PLUS_CLIENT_FRAGMENT));
                 showErrorDialog(getSupportFragmentManager(), fragment);
@@ -527,7 +524,8 @@ public class AuthenticatorActivity extends AuthenticatorFragmentActivity impleme
      *
      * @param errorDialog
      */
-    public static void showErrorDialog(FragmentManager fragmentManager, DialogFragment errorDialog) {
+    public static void showErrorDialog(FragmentManager fragmentManager,
+            DialogFragment errorDialog) {
         DialogFragment oldErrorDialog =
                 (DialogFragment) fragmentManager.findFragmentByTag(TAG_ERROR_DIALOG);
         if (oldErrorDialog != null) {

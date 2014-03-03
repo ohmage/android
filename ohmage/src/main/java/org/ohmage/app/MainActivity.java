@@ -46,7 +46,8 @@ import org.ohmage.tasks.LogoutTaskFragment;
 
 import javax.inject.Inject;
 
-public class MainActivity extends InjectedActionBarActivity implements AdapterView.OnItemClickListener,
+public class MainActivity extends InjectedActionBarActivity
+        implements AdapterView.OnItemClickListener,
         LogoutTaskFragment.LogoutCallbacks {
 
     private static final String TAG = MainActivity.class.getSimpleName();
@@ -145,7 +146,8 @@ public class MainActivity extends InjectedActionBarActivity implements AdapterVi
             return;
         }
 
-        getContentResolver().requestSync(accounts[0], StreamContract.CONTENT_AUTHORITY, new Bundle());
+        getContentResolver().requestSync(accounts[0], StreamContract.CONTENT_AUTHORITY,
+                new Bundle());
     }
 
     public void onConfigurationChanged(Configuration newConfig) {
@@ -167,8 +169,8 @@ public class MainActivity extends InjectedActionBarActivity implements AdapterVi
         // Insert the fragment by replacing any existing fragment
         FragmentManager fragmentManager = getSupportFragmentManager();
         fragmentManager.beginTransaction()
-                .replace(R.id.content_frame, fragment)
-                .commit();
+                       .replace(R.id.content_frame, fragment)
+                       .commit();
 
         // Highlight the selected item, update the title, and close the drawer
         mDrawerList.setItemChecked(position, true);
@@ -192,7 +194,8 @@ public class MainActivity extends InjectedActionBarActivity implements AdapterVi
 
             case R.id.action_sign_out:
                 FragmentManager fm = getSupportFragmentManager();
-                LogoutTaskFragment logoutTaskFragment = (LogoutTaskFragment) fm.findFragmentByTag("logout");
+                LogoutTaskFragment logoutTaskFragment =
+                        (LogoutTaskFragment) fm.findFragmentByTag("logout");
 
                 // If the Fragment is non-null, then it is currently being
                 // retained across a configuration change.

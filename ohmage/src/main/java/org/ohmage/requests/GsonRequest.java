@@ -37,10 +37,14 @@ import java.io.UnsupportedEncodingException;
  * @param <T> JSON type of response expected
  */
 public abstract class GsonRequest<T> extends OttoRequest<T> {
-    /** Charset for request. */
+    /**
+     * Charset for request.
+     */
     private static final String PROTOCOL_CHARSET = "utf-8";
 
-    /** Content type for request. */
+    /**
+     * Content type for request.
+     */
     private static final String PROTOCOL_CONTENT_TYPE =
             String.format("application/json; charset=%s", PROTOCOL_CHARSET);
 

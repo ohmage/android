@@ -35,11 +35,8 @@ import static org.mockito.Mockito.when;
 public class StreamsTest extends AndroidTestCase {
 
     private ContentProviderClient fakeContentProviderClient;
-
     Account fakeAccount = new Account("name", "type");
-
     String fakeStreamId = "fakeStreamId";
-
     String fakeStreamVersion = "fakeStreamVersion";
 
     SelectParamBuilder select = new SelectParamBuilder();

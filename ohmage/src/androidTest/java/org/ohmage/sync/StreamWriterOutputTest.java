@@ -79,8 +79,8 @@ public class StreamWriterOutputTest extends AndroidTestCase {
         Stream fakeStream = new Stream("fakeId", "fakeVersion");
         when(fakeContentProviderClient.query(eq(StreamContract.Streams.CONTENT_URI),
                 any(String[].class), eq(StreamContract.Streams.USERNAME + "=? AND "
-                + StreamContract.Streams.STREAM_ID + "=? AND "
-                + StreamContract.Streams.STREAM_VERSION + "=?"),
+                                        + StreamContract.Streams.STREAM_ID + "=? AND "
+                                        + StreamContract.Streams.STREAM_VERSION + "=?"),
                 eq(new String[]{fakeName, fakeStream.id, fakeStream.version}), any(String.class)))
                 .thenReturn(new MatrixCursor(PROJECTION));
 
@@ -88,8 +88,8 @@ public class StreamWriterOutputTest extends AndroidTestCase {
 
         verify(fakeContentProviderClient).query(eq(StreamContract.Streams.CONTENT_URI),
                 any(String[].class), eq(StreamContract.Streams.USERNAME + "=? AND "
-                + StreamContract.Streams.STREAM_ID + "=? AND "
-                + StreamContract.Streams.STREAM_VERSION + "=?"),
+                                        + StreamContract.Streams.STREAM_ID + "=? AND "
+                                        + StreamContract.Streams.STREAM_VERSION + "=?"),
                 eq(new String[]{fakeName, fakeStream.id, fakeStream.version}), any(String.class));
     }
 
@@ -252,7 +252,7 @@ public class StreamWriterOutputTest extends AndroidTestCase {
         StreamPointBuilder builder = new StreamPointBuilder();
         Stream point = new Stream();
         point.data = "{}";
-        point.metaData = builder.withTimestamp("timestamp").withId().getMetadata();
+        point.metaData = builder.withTime("timestamp").withId().getMetadata();
         fakeCursor.addRow(new Object[]{0, point.metaData, point.data});
         mStreamWriterOutput.setCursor(fakeCursor);
         final StringBuilder output = new StringBuilder();
@@ -276,10 +276,10 @@ public class StreamWriterOutputTest extends AndroidTestCase {
         MatrixCursor fakeCursor = new MatrixCursor(PROJECTION);
         StreamPointBuilder builder = new StreamPointBuilder();
         Streams points = new Streams();
-        for(int i=0;i<100;i++) {
+        for (int i = 0; i < 100; i++) {
             Stream point = new Stream();
             point.data = "{}";
-            point.metaData = builder.withTimestamp("timestamp").withId().getMetadata();
+            point.metaData = builder.withTime("timestamp").withId().getMetadata();
             points.add(point);
             fakeCursor.addRow(new Object[]{i, point.metaData, point.data});
         }
@@ -296,7 +296,7 @@ public class StreamWriterOutputTest extends AndroidTestCase {
 
         Object[] streams = gson.fromJson(output.toString(), Object[].class);
         assertEquals(100, streams.length);
-        for(int i=0;i<100;i++) {
+        for (int i = 0; i < 100; i++) {
             LinkedTreeMap pointStream = (LinkedTreeMap) streams[i];
             assertEquals(points.get(i).data, gson.toJson(pointStream.get("data")));
             assertEquals(points.get(i).metaData, gson.toJson(pointStream.get("meta_data")));

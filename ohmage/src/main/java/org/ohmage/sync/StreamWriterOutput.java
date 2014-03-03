@@ -122,8 +122,8 @@ public class StreamWriterOutput implements TypedOutput {
                 StreamContract.Streams.CONTENT_URI,
                 ProbeQuery.PROJECTION,
                 StreamContract.Streams.USERNAME + "=? AND "
-                        + StreamContract.Streams.STREAM_ID + "=? AND "
-                        + StreamContract.Streams.STREAM_VERSION + "=?", new String[]{
+                + StreamContract.Streams.STREAM_ID + "=? AND "
+                + StreamContract.Streams.STREAM_VERSION + "=?", new String[]{
                 accountName, stream.id, stream.version
         }, null));
     }
@@ -146,7 +146,7 @@ public class StreamWriterOutput implements TypedOutput {
     public boolean moveToNextBatch() throws RemoteException {
         ensureNoDanglingPoints();
         reset();
-        if(mCursor != null) {
+        if (mCursor != null) {
             return mCursor.isLast();
         }
 
@@ -179,10 +179,10 @@ public class StreamWriterOutput implements TypedOutput {
     }
 
     @Override public void writeTo(OutputStream out) throws IOException {
-        if(mCursor == null)
+        if (mCursor == null)
             throw new RuntimeException("Cursor was never set");
 
-        if(mCurrentSize == 0 || mCurrentNum == 0)
+        if (mCurrentSize == 0 || mCurrentNum == 0)
             return;
 
         mOut = new OutputStreamWriter(out);
@@ -232,8 +232,9 @@ public class StreamWriterOutput implements TypedOutput {
     }
 
     private void ensureNoDanglingPoints() {
-        if(mCursor != null && mCursor.deletedPoints()) {
-            throw new RuntimeException("deleteBatch() must be called since there are some points to delete");
+        if (mCursor != null && mCursor.deletedPoints()) {
+            throw new RuntimeException(
+                    "deleteBatch() must be called since there are some points to delete");
         }
     }
 

@@ -39,8 +39,8 @@ public class OhmageViewMatchers {
             @Override
             public boolean matchesSafely(View view) {
                 return view instanceof TextView
-                        && ((TextView) view).getError() != null
-                        && ((TextView) view).getError().equals(error);
+                       && ((TextView) view).getError() != null
+                       && ((TextView) view).getError().equals(error);
             }
         };
     }

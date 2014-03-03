@@ -67,14 +67,6 @@ public class StreamSyncAdapter extends AbstractThreadedSyncAdapter {
      */
     public static final String EXTRA_STREAM_VERSION = "extra_stream_version";
 
-//    private Account mAccount;
-//
-//    private Streams mStreams;
-//
-//    private StreamWriterOutput mWriter;
-//
-//    private ContentProviderClient mProvider;
-
     /**
      * Set up the sync adapter
      */
@@ -99,7 +91,7 @@ public class StreamSyncAdapter extends AbstractThreadedSyncAdapter {
 
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority,
-                              ContentProviderClient provider, SyncResult syncResult) {
+            ContentProviderClient provider, SyncResult syncResult) {
 
         String streamId = extras.getString(EXTRA_STREAM_ID);
         String streamVersion = extras.getString(EXTRA_STREAM_VERSION);
@@ -109,7 +101,7 @@ public class StreamSyncAdapter extends AbstractThreadedSyncAdapter {
     }
 
     public void performSyncForStreams(Account account, Streams streams, StreamWriterOutput writer,
-                                      SyncResult syncResult) {
+            SyncResult syncResult) {
         Log.d("ohmage", "start stream sync");
 
         try {
@@ -161,7 +153,7 @@ public class StreamSyncAdapter extends AbstractThreadedSyncAdapter {
     }
 
     private void sendData(Account account, Stream stream, StreamWriterOutput data,
-                          boolean retryIfAuthError) throws AuthenticationException, RetrofitError {
+            boolean retryIfAuthError) throws AuthenticationException, RetrofitError {
         String token = null;
         try {
             token = accountManager.blockingGetAuthToken(account, AuthUtil.AUTHTOKEN_TYPE, true);
@@ -173,7 +165,7 @@ public class StreamSyncAdapter extends AbstractThreadedSyncAdapter {
             throw new AuthenticationException("Error getting auth token.", e);
         }
 
-        if(token == null)
+        if (token == null)
             throw new AuthenticationException("Token could not be retrieved.");
 
         try {

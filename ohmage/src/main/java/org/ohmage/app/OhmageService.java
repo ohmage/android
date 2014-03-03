@@ -31,11 +31,7 @@ import retrofit.http.Path;
 public interface OhmageService {
     @POST("/streams/{id}/{version}/data")
     Response uploadStreamData(@Header("Authorization") String token, @Path("id") String streamId,
-                              @Path("version") String streamVersion,
-                              @Body StreamWriterOutput data)
+            @Path("version") String streamVersion,
+            @Body StreamWriterOutput data)
             throws AuthenticationException;
-//    Response uploadStreamData(Account account, @Path("id") String streamId,
-//                              @Path("version") String streamVersion,
-//                              @Body StreamSyncAdapter.ProbeWriterBody data)
-//            throws AuthenticationException;
 }

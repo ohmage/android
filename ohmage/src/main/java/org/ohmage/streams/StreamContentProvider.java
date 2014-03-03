@@ -61,7 +61,8 @@ public class StreamContentProvider extends ContentProvider implements OnAccounts
     {
         sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
         sUriMatcher.addURI(StreamContract.CONTENT_AUTHORITY, "streams", MatcherTypes.STREAMS);
-        sUriMatcher.addURI(StreamContract.CONTENT_AUTHORITY, "streams/*/*", MatcherTypes.STREAMS_ID);
+        sUriMatcher
+                .addURI(StreamContract.CONTENT_AUTHORITY, "streams/*/*", MatcherTypes.STREAMS_ID);
         sUriMatcher.addURI(StreamContract.CONTENT_AUTHORITY, "counts", MatcherTypes.COUNTS);
     }
 
@@ -154,7 +155,7 @@ public class StreamContentProvider extends ContentProvider implements OnAccounts
 
     @Override
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs,
-                        String sortOrder) {
+            String sortOrder) {
         Cursor cursor;
         switch (sUriMatcher.match(uri)) {
             case MatcherTypes.COUNTS:
@@ -162,7 +163,7 @@ public class StreamContentProvider extends ContentProvider implements OnAccounts
                 streams.setTables(Tables.Streams);
                 cursor = streams.query(dbHelper.getReadableDatabase(), projection, selection,
                         selectionArgs, StreamContract.Streams.STREAM_ID + ", "
-                        + StreamContract.Streams.STREAM_VERSION, null, sortOrder);
+                                       + StreamContract.Streams.STREAM_VERSION, null, sortOrder);
                 break;
             case MatcherTypes.STREAMS:
                 cursor = dbHelper.getReadableDatabase().query(Tables.Streams, projection, selection,

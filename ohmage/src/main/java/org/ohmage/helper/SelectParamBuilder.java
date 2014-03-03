@@ -24,11 +24,9 @@ import java.util.LinkedList;
 public class SelectParamBuilder {
 
     private final StringBuilder selection;
-
     private final LinkedList<String> params;
 
     public final static String AND = " AND ";
-
     public final static String OR = " OR ";
 
     public SelectParamBuilder() {
@@ -45,12 +43,13 @@ public class SelectParamBuilder {
     /**
      * Convenience method to add a the first value since it wont be an AND or an OR. Calling
      * either {@link #and(String, String)} or {@link #or(String, String)} has the same effect.
+     *
      * @param key
      * @param value
      * @return
      */
     public SelectParamBuilder start(String key, String value) {
-        if(size() > 0)
+        if (size() > 0)
             throw new RuntimeException("start must be called before and() or or()");
         append("", key, value);
         return this;
@@ -58,6 +57,7 @@ public class SelectParamBuilder {
 
     /**
      * Append a key and value to the selection with an appended AND if there are parameters before.
+     *
      * @param key
      * @param value
      * @return
@@ -68,6 +68,7 @@ public class SelectParamBuilder {
 
     /**
      * Append a key and value to the selection with an appended OR if there are parameters before.
+     *
      * @param key
      * @param value
      * @return
@@ -77,7 +78,7 @@ public class SelectParamBuilder {
     }
 
     private SelectParamBuilder append(String operator, String key, String value) {
-        if(selection.length() != 0) selection.append(operator);
+        if (selection.length() != 0) selection.append(operator);
         selection.append(key).append("=?");
         params.add(value);
         return this;
@@ -85,6 +86,7 @@ public class SelectParamBuilder {
 
     /**
      * Builds the selection string
+     *
      * @return
      */
     public String buildSelection() {
@@ -93,6 +95,7 @@ public class SelectParamBuilder {
 
     /**
      * Builds the params array
+     *
      * @return
      */
     public String[] buildParams() {
@@ -101,6 +104,7 @@ public class SelectParamBuilder {
 
     /**
      * Returns the number of key value pairs added to the builder.
+     *
      * @return
      */
     public int size() {

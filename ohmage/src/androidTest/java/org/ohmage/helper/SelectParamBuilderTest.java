@@ -26,11 +26,8 @@ public class SelectParamBuilderTest extends AndroidTestCase {
     private SelectParamBuilder mSelectParamBuilder;
 
     private String fakeKey = "fakeKey";
-
     private String fakeValue = "fakeValue";
-
     private String fakeKey2 = "fakeKey2";
-
     private String fakeValue2 = "fakeValue2";
 
     @Override

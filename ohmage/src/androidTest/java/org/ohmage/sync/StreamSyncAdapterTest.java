@@ -153,7 +153,8 @@ public class StreamSyncAdapterTest extends InjectedAndroidTestCase {
                 .thenReturn(accessToken, refreshedToken);
         when(fakeOhmageService.uploadStreamData("ohmage " + accessToken, fakeStreamId,
                 fakeStreamVersion, fakeWriter)).thenThrow(new AuthenticationException(""))
-                .thenReturn(new Response(200, "", new ArrayList<Header>(), null));
+                                               .thenReturn(new Response(200, "",
+                                                       new ArrayList<Header>(), null));
 
         // TODO: Does it not throw the exception the second time?
         mSyncAdapter.performSyncForStreams(fakeAccount, fakeStreams, fakeWriter, fakeSyncResult);

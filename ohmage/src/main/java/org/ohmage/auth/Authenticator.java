@@ -51,9 +51,7 @@ import javax.inject.Inject;
  */
 public class Authenticator extends AbstractAccountAuthenticator {
     @Inject AccountManager am;
-
     @Inject RequestQueue requestQueue;
-
     @Inject AuthHelper authHelper;
 
     /**
@@ -72,8 +70,8 @@ public class Authenticator extends AbstractAccountAuthenticator {
 
     @Override
     public Bundle addAccount(AccountAuthenticatorResponse response,
-                             String accountType, String authTokenType, String[] requiredFeatures,
-                             Bundle options) {
+            String accountType, String authTokenType, String[] requiredFeatures,
+            Bundle options) {
         // TODO: decide if we should allow more than one account, and if not, make it clear to the
         // user that they need to logout and login with a new account
 
@@ -87,19 +85,19 @@ public class Authenticator extends AbstractAccountAuthenticator {
 
     @Override
     public Bundle confirmCredentials(AccountAuthenticatorResponse response,
-                                     Account account, Bundle options) {
+            Account account, Bundle options) {
         throw new UnsupportedOperationException();
     }
 
     @Override
     public Bundle editProperties(AccountAuthenticatorResponse response,
-                                 String accountType) {
+            String accountType) {
         throw new UnsupportedOperationException();
     }
 
     @Override
     public Bundle getAuthToken(AccountAuthenticatorResponse response, Account account,
-                               String authTokenType, Bundle loginOptions)
+            String authTokenType, Bundle loginOptions)
             throws NetworkErrorException {
 
         // Extract the username and refresh_token from the Account Manager, and ask
@@ -175,7 +173,8 @@ public class Authenticator extends AbstractAccountAuthenticator {
         return bundle;
     }
 
-    private AccessToken getTokenFromGoogle(String googleAccount) throws NetworkErrorException, UserRecoverableAuthException {
+    private AccessToken getTokenFromGoogle(String googleAccount)
+            throws NetworkErrorException, UserRecoverableAuthException {
         // We can check for a google account to automatically update the refresh token
 
         try {
@@ -213,12 +212,11 @@ public class Authenticator extends AbstractAccountAuthenticator {
             return mContext.getString(R.string.app_name);
         }
         return null;
-
     }
 
     @Override
     public Bundle hasFeatures(AccountAuthenticatorResponse response,
-                              Account account, String[] features) {
+            Account account, String[] features) {
         final Bundle result = new Bundle();
         result.putBoolean(AccountManager.KEY_BOOLEAN_RESULT, false);
         return result;
@@ -226,8 +224,7 @@ public class Authenticator extends AbstractAccountAuthenticator {
 
     @Override
     public Bundle updateCredentials(AccountAuthenticatorResponse response,
-                                    Account account, String authTokenType, Bundle loginOptions) {
+            Account account, String authTokenType, Bundle loginOptions) {
         throw new UnsupportedOperationException();
     }
-
 }

@@ -40,12 +40,12 @@ public class StreamDbHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL("CREATE TABLE IF NOT EXISTS " + Tables.Streams + " ("
-                + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + StreamContract.Streams.STREAM_ID + " TEXT NOT NULL, "
-                + StreamContract.Streams.STREAM_VERSION + " INTEGER NOT NULL, "
-                + StreamContract.Streams.USERNAME + " TEXT NOT NULL, "
-                + StreamContract.Streams.STREAM_METADATA + " TEXT, "
-                + StreamContract.Streams.STREAM_DATA + " TEXT);");
+                   + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                   + StreamContract.Streams.STREAM_ID + " TEXT NOT NULL, "
+                   + StreamContract.Streams.STREAM_VERSION + " INTEGER NOT NULL, "
+                   + StreamContract.Streams.USERNAME + " TEXT NOT NULL, "
+                   + StreamContract.Streams.STREAM_METADATA + " TEXT, "
+                   + StreamContract.Streams.STREAM_DATA + " TEXT);");
     }
 
     @Override

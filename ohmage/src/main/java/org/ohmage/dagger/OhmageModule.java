@@ -27,8 +27,8 @@ import com.squareup.otto.Bus;
 
 import org.ohmage.app.Endpoints;
 import org.ohmage.app.MainActivity;
-import org.ohmage.app.OhmageService;
 import org.ohmage.app.OhmageErrorHandler;
+import org.ohmage.app.OhmageService;
 import org.ohmage.app.OkHttpStack;
 import org.ohmage.auth.AuthHelper;
 import org.ohmage.auth.AuthenticateFragment;
@@ -95,35 +95,13 @@ public class OhmageModule {
         } catch (IOException e) {
             e.printStackTrace();
         }
-//        okHttpClient.setAuthenticator(new OhmageAuthenticator());
-
-        // Create the Gson object
-//        Gson gson = new GsonBuilder()
-//                .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
-//                .create();
 
         Executor executor = Executors.newCachedThreadPool();
-//        RequestInterceptor requestInterceptor = new RequestInterceptor() {
-//            @Override public void intercept(RequestFacade request) {
-//                request.addHeader("Authorization", "ohmage " + );
-//            }
-//        }
         RestAdapter restAdapter = new RestAdapter.Builder()
                 .setExecutors(executor, executor)
-//                .setConverter(new GsonConverter())
                 .setClient(new OkClient(okHttpClient))
-//                .setClient(new Client() {
-//
-//                    public
-//
-//                    @Override public Response execute(Request request) throws IOException {
-//                        request.
-//                        return null;
-//                    }
-//                })
                 .setErrorHandler(new OhmageErrorHandler())
                 .setServer(Endpoints.API_ROOT)
-//                .setRequestInterceptor(new OhmageAuthenticator())
                 .build();
         return restAdapter.create(OhmageService.class);
 

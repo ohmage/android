@@ -73,7 +73,7 @@ public class Streams extends ArrayList<Stream> {
      * @param streamVersion if given, will query for a specific stream version pair
      */
     public Streams(ContentProviderClient provider, Account account, String streamId,
-                   String streamVersion) {
+            String streamVersion) {
         SelectParamBuilder select = new SelectParamBuilder();
 
         if (account != null) {

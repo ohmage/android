@@ -30,14 +30,14 @@ import com.google.android.gms.plus.PlusClient;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.ohmage.app.R;
-import org.ohmage.test.dagger.InjectedActivityInstrumentationTestCase;
-import org.ohmage.test.dagger.PlusClientFragmentTestModule;
 import org.ohmage.models.AccessToken;
 import org.ohmage.models.User;
 import org.ohmage.requests.AccessTokenRequest;
 import org.ohmage.requests.CreateUserRequest;
 import org.ohmage.test.DeliverVolleyErrorToBus;
 import org.ohmage.test.DeliverVolleyResultToBus;
+import org.ohmage.test.dagger.InjectedActivityInstrumentationTestCase;
+import org.ohmage.test.dagger.PlusClientFragmentTestModule;
 
 import java.util.Arrays;
 import java.util.List;
@@ -69,28 +69,20 @@ import static org.ohmage.test.OhmageViewMatchers.hasError;
  * Functional Tests for the {@link org.ohmage.auth.AuthenticatorActivity}
  */
 @LargeTest
-public class AuthenticatorActivityTest extends InjectedActivityInstrumentationTestCase<AuthenticatorActivity> {
+public class AuthenticatorActivityTest
+        extends InjectedActivityInstrumentationTestCase<AuthenticatorActivity> {
 
     @Inject AuthHelper fakeAuthHelper;
-
     @Inject AccountManager fakeAccountManager;
-
     @Inject RequestQueue fakeRequestQueue;
-
     @Inject PlusClientFragment fakePlusClientFragment;
 
     private static final String fakeGoogleEmail = "fake@gmail.com";
-
     private static final String fakeGoogleToken = "google_token";
-
     private static final String fakeEmail = "fake@email.com";
-
     private static final String fakePassword = "password";
-
     private static final String fakeFullname = "Full Name";
-
     private static final String fakeUsername = "username";
-
     private static final User fakeUser = new User();
 
     {
@@ -99,8 +91,8 @@ public class AuthenticatorActivityTest extends InjectedActivityInstrumentationTe
         fakeUser.username = fakeUsername;
     }
 
-    private static final NetworkResponse fakeNetworkResponse = new NetworkResponse("Horrible Error".getBytes());
-
+    private static final NetworkResponse fakeNetworkResponse =
+            new NetworkResponse("Horrible Error".getBytes());
     private static final ServerError fakeServerError = new ServerError(fakeNetworkResponse);
 
     public AuthenticatorActivityTest() {
@@ -110,7 +102,8 @@ public class AuthenticatorActivityTest extends InjectedActivityInstrumentationTe
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        when(fakeAccountManager.getAccountsByType(AuthUtil.ACCOUNT_TYPE)).thenReturn(new Account[]{});
+        when(fakeAccountManager.getAccountsByType(AuthUtil.ACCOUNT_TYPE))
+                .thenReturn(new Account[]{});
         getActivity();
     }
 
@@ -257,7 +250,8 @@ public class AuthenticatorActivityTest extends InjectedActivityInstrumentationTe
         onView(withId(R.id.create_account_button)).perform(scrollTo(), click());
 
         verify(fakeRequestQueue).add(
-                new CreateUserRequest(AuthUtil.GrantType.CLIENT_CREDENTIALS, fakePassword, fakeUser));
+                new CreateUserRequest(AuthUtil.GrantType.CLIENT_CREDENTIALS, fakePassword,
+                        fakeUser));
     }
 
     public void testCreateAccount_invalidEmail_doesNotPerformNetworkRequest() {
@@ -270,7 +264,8 @@ public class AuthenticatorActivityTest extends InjectedActivityInstrumentationTe
         onView(withId(R.id.create_account_button)).perform(scrollTo(), click());
 
         verify(fakeRequestQueue, never()).add(
-                new CreateUserRequest(AuthUtil.GrantType.CLIENT_CREDENTIALS, fakePassword, fakeUser));
+                new CreateUserRequest(AuthUtil.GrantType.CLIENT_CREDENTIALS, fakePassword,
+                        fakeUser));
     }
 
     public void testCreateAccount_invalidEmail_showsErrorMessage() {
@@ -308,7 +303,8 @@ public class AuthenticatorActivityTest extends InjectedActivityInstrumentationTe
         onView(withId(R.id.create_account_button)).perform(scrollTo(), click());
 
         verify(fakeRequestQueue, never()).add(
-                new CreateUserRequest(AuthUtil.GrantType.CLIENT_CREDENTIALS, fakePassword, fakeUser));
+                new CreateUserRequest(AuthUtil.GrantType.CLIENT_CREDENTIALS, fakePassword,
+                        fakeUser));
     }
 
     public void testCreateAccount_noEmail_showsErrorMessage() {
@@ -344,7 +340,8 @@ public class AuthenticatorActivityTest extends InjectedActivityInstrumentationTe
         onView(withId(R.id.create_account_button)).perform(scrollTo(), click());
 
         verify(fakeRequestQueue, never()).add(
-                new CreateUserRequest(AuthUtil.GrantType.CLIENT_CREDENTIALS, fakePassword, fakeUser));
+                new CreateUserRequest(AuthUtil.GrantType.CLIENT_CREDENTIALS, fakePassword,
+                        fakeUser));
     }
 
     public void testCreateAccount_noPassword_showsErrorMessage() {
@@ -380,7 +377,8 @@ public class AuthenticatorActivityTest extends InjectedActivityInstrumentationTe
         onView(withId(R.id.create_account_button)).perform(scrollTo(), click());
 
         verify(fakeRequestQueue, never()).add(
-                new CreateUserRequest(AuthUtil.GrantType.CLIENT_CREDENTIALS, fakePassword, fakeUser));
+                new CreateUserRequest(AuthUtil.GrantType.CLIENT_CREDENTIALS, fakePassword,
+                        fakeUser));
     }
 
     public void testCreateAccount_noUsername_showsErrorMessage() {
@@ -420,7 +418,8 @@ public class AuthenticatorActivityTest extends InjectedActivityInstrumentationTe
         onView(withId(R.id.create_account_button)).perform(scrollTo(), click());
 
         verify(fakeRequestQueue).add(
-                new CreateUserRequest(AuthUtil.GrantType.CLIENT_CREDENTIALS, fakePassword, fakeUser));
+                new CreateUserRequest(AuthUtil.GrantType.CLIENT_CREDENTIALS, fakePassword,
+                        fakeUser));
     }
 
     public void testCreateAccount_noFullName_fullNameFieldDoesNotHaveError() {
@@ -463,7 +462,8 @@ public class AuthenticatorActivityTest extends InjectedActivityInstrumentationTe
         final AccessToken fakeAccessToken = new AccessToken("token", "refresh", "user");
         setPlusClientFragmentSuccessfullyConnects();
         when(fakeAuthHelper.googleAuthGetToken(fakeGoogleEmail)).thenReturn(fakeGoogleToken);
-        when(fakeRequestQueue.add(new AccessTokenRequest(AuthUtil.GrantType.GOOGLE_OAUTH2, fakeGoogleToken)))
+        when(fakeRequestQueue
+                .add(new AccessTokenRequest(AuthUtil.GrantType.GOOGLE_OAUTH2, fakeGoogleToken)))
                 .then(new DeliverVolleyResultToBus(fakeAccessToken));
 
         onView(withId(R.id.sign_in_google_button)).perform(click());

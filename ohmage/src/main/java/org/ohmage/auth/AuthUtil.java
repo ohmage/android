@@ -49,10 +49,14 @@ public class AuthUtil {
      * GrantType options
      */
     public static enum GrantType {
-        /** Authorize with google */
+        /**
+         * Authorize with google
+         */
         GOOGLE_OAUTH2("google"),
 
-        /** Authorize with ohmage account */
+        /**
+         * Authorize with ohmage account
+         */
         CLIENT_CREDENTIALS("client-credentials");
 
         private String type;

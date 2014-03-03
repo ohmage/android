@@ -76,7 +76,7 @@ public class AuthenticateFragment extends TransitionFragment implements View.OnC
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+            Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_authenticate, container, false);
 
         SignInButton signInButton = (SignInButton) view.findViewById(R.id.sign_in_google_button);
@@ -132,7 +132,8 @@ public class AuthenticateFragment extends TransitionFragment implements View.OnC
 
         if (getActivity().getCurrentFocus() != null) {
             InputMethodManager imm =
-                    (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                    (InputMethodManager) getActivity()
+                            .getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.hideSoftInputFromWindow(getActivity().getCurrentFocus().getWindowToken(), 0);
         }
 
@@ -144,25 +145,27 @@ public class AuthenticateFragment extends TransitionFragment implements View.OnC
 
             mAuthLoadingView.setVisibility(View.VISIBLE);
             mAuthLoadingView.animate()
-                    .setDuration(shortAnimTime)
-                    .alpha(show ? 1 : 0)
-                    .setListener(new AnimatorListenerAdapter() {
-                        @Override
-                        public void onAnimationEnd(Animator animation) {
-                            mAuthLoadingView.setVisibility(mShowProgress ? View.VISIBLE : View.INVISIBLE);
-                        }
-                    });
+                            .setDuration(shortAnimTime)
+                            .alpha(show ? 1 : 0)
+                            .setListener(new AnimatorListenerAdapter() {
+                                @Override
+                                public void onAnimationEnd(Animator animation) {
+                                    mAuthLoadingView.setVisibility(
+                                            mShowProgress ? View.VISIBLE : View.INVISIBLE);
+                                }
+                            });
 
             mAuthButtonsView.setVisibility(View.VISIBLE);
             mAuthButtonsView.animate()
-                    .setDuration(shortAnimTime)
-                    .alpha(show ? 0 : 1)
-                    .setListener(new AnimatorListenerAdapter() {
-                        @Override
-                        public void onAnimationEnd(Animator animation) {
-                            mAuthButtonsView.setVisibility(mShowProgress ? View.INVISIBLE : View.VISIBLE);
-                        }
-                    });
+                            .setDuration(shortAnimTime)
+                            .alpha(show ? 0 : 1)
+                            .setListener(new AnimatorListenerAdapter() {
+                                @Override
+                                public void onAnimationEnd(Animator animation) {
+                                    mAuthButtonsView.setVisibility(
+                                            mShowProgress ? View.INVISIBLE : View.VISIBLE);
+                                }
+                            });
         } else {
             // The ViewPropertyAnimator APIs are not available, so simply showProgress
             // and hide the relevant UI components.

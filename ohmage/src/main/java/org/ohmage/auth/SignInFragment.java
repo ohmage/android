@@ -40,13 +40,12 @@ import javax.inject.Inject;
  */
 public class SignInFragment extends TransitionFragment {
 
-    @Inject RequestQueue requestQueue;
-
     private static final String TAG = SignInFragment.class.getSimpleName();
+
+    @Inject RequestQueue requestQueue;
 
     // UI references.
     private EditText mUsernameView;
-
     private EditText mPasswordView;
 
     /**
@@ -80,7 +79,7 @@ public class SignInFragment extends TransitionFragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+            Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_sign_in_ohmage, container, false);
 
         // Set up the login form.
@@ -102,12 +101,13 @@ public class SignInFragment extends TransitionFragment {
             mUsernameView.setEnabled(false);
         }
 
-        view.findViewById(R.id.sign_in_ohmage_button).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                attemptSignIn();
-            }
-        });
+        view.findViewById(R.id.sign_in_ohmage_button)
+            .setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    attemptSignIn();
+                }
+            });
 
         return view;
     }

@@ -27,9 +27,7 @@ public class AuthenticatorFragmentActivity extends InjectedActionBarActivity {
     public static final String EXTRA_FROM_AUTHENTICATOR = "extra_from_authenticator";
 
     private AccountAuthenticatorResponse mAccountAuthenticatorResponse = null;
-
     private Bundle mResultBundle = null;
-
     private boolean mFromAuthenticator;
 
     @Override

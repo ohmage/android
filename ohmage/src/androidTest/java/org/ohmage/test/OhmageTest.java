@@ -32,7 +32,7 @@ import java.util.concurrent.TimeUnit;
 public class OhmageTest {
 
     public static void assertActivityCreated(ActivityInstrumentationTestCase2 test,
-                                             final Class<? extends Activity> activityClass)
+            final Class<? extends Activity> activityClass)
             throws Exception {
         final CountDownLatch latch = new CountDownLatch(1);
 
@@ -41,8 +41,8 @@ public class OhmageTest {
         test.getActivity().runOnUiThread(new Runnable() {
             @Override public void run() {
                 for (Stage s : stages) {
-                    Collection<Activity> activities = ActivityLifecycleMonitorRegistry.getInstance()
-                            .getActivitiesInStage(s);
+                    Collection<Activity> activities =
+                            ActivityLifecycleMonitorRegistry.getInstance().getActivitiesInStage(s);
                     for (Activity activity : activities) {
                         if (activity.getClass().equals(activityClass)) {
                             latch.countDown();
