@@ -161,6 +161,10 @@ public class OhmageContentProvider extends ContentProvider {
                         Streams.getVersion(uri), new String[]{Streams.getId(uri)}, null, null,
                         sortOrder);
                 break;
+            case MatcherTypes.RESPONSES:
+                cursor = dbHelper.getReadableDatabase().query(Tables.Responses, projection,
+                        selection, selectionArgs, null, null, sortOrder);
+                break;
             default:
                 throw new UnsupportedOperationException("query(): Unknown URI: " + uri);
         }

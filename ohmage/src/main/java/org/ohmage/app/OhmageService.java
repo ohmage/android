@@ -27,6 +27,7 @@ import org.ohmage.models.Stream;
 import org.ohmage.models.Survey;
 import org.ohmage.models.Surveys;
 import org.ohmage.models.User;
+import org.ohmage.sync.ResponseTypedOutput;
 import org.ohmage.sync.StreamWriterOutput;
 
 import retrofit.Callback;
@@ -99,6 +100,11 @@ public interface OhmageService {
     @GET("/surveys/{surveyId}/{surveyVersion}")
     Observable<Survey> getSurvey(@Path("surveyId") String surveyId,
             @Path("surveyVersion") long surveyVersion);
+
+    @POST("/surveys/{surveyId}/{surveyVersion}/data")
+    Response uploadResponse(@Path("surveyId") String surveyId,
+            @Path("surveyVersion") long surveyVersion, @Body ResponseTypedOutput data)
+            throws AuthenticationException;
 
     @GET("/streams/{streamId}/{streamVersion}")
     Observable<Stream> getStream(@Path("streamId") String streamId,

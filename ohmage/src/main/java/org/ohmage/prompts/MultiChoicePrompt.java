@@ -55,9 +55,9 @@ public class MultiChoicePrompt<T> extends ChoicePrompt<ArrayList<T>> {
 
     @Override
     public void addAnswer(JSONObject data, JSONObject extras) throws JSONException {
-        if(value != null) {
+        if (value != null) {
             JSONArray array = new JSONArray();
-            for(T object : (List<T>)value) {
+            for (T object : (List<T>) value) {
                 array.put(object);
             }
             data.put(surveyItemId, array);

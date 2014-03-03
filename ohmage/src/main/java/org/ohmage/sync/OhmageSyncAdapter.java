@@ -46,8 +46,10 @@ import org.ohmage.models.Stream;
 import org.ohmage.models.Survey;
 import org.ohmage.operators.ContentProviderSaver.ContentProviderSaverObserver;
 import org.ohmage.provider.OhmageContract;
+import org.ohmage.provider.OhmageContract.Responses;
 import org.ohmage.provider.OhmageContract.Streams;
 import org.ohmage.provider.OhmageContract.Surveys;
+import org.ohmage.sync.ResponseTypedOutput.ResponseFiles;
 
 import java.io.IOException;
 
@@ -203,6 +205,30 @@ public class OhmageSyncAdapter extends AbstractThreadedSyncAdapter {
             syncResult.stats.numAuthExceptions++;
         } catch (RemoteException e) {
             syncResult.stats.numIoExceptions++;
+        } finally {
+            if (cursor != null)
+                cursor.close();
+        }
+
+
+        // Upload responses
+        cursor = null;
+        try {
+            cursor = provider.query(Responses.CONTENT_URI,
+                    new String[]{Responses.SURVEY_ID, Responses.SURVEY_VERSION,
+                            Responses.RESPONSE_DATA, Responses.RESPONSE_METADATA,
+                            Responses.RESPONSE_EXTRAS}, null, null, null);
+
+            while (cursor.moveToNext()) {
+                ohmageService.uploadResponse(cursor.getString(0), cursor.getLong(1),
+                        new ResponseTypedOutput(cursor.getString(2), cursor.getString(3),
+                                gson.fromJson(cursor.getString(4), ResponseFiles.class)));
+            }
+
+        } catch (RemoteException e) {
+            syncResult.stats.numIoExceptions++;
+        } catch (AuthenticationException e) {
+            syncResult.stats.numAuthExceptions++;
         } finally {
             if (cursor != null)
                 cursor.close();
