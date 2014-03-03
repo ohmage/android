@@ -224,6 +224,10 @@ public class OhmageSyncAdapter extends AbstractThreadedSyncAdapter {
                         new ResponseTypedOutput(cursor.getString(2), cursor.getString(3),
                                 gson.fromJson(cursor.getString(4), ResponseFiles.class)));
             }
+            cursor.close();
+
+            // Delete any uploaded responses
+            provider.delete(Responses.CONTENT_URI, null, null);
 
         } catch (RemoteException e) {
             syncResult.stats.numIoExceptions++;

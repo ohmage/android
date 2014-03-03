@@ -61,7 +61,22 @@ public class OhmageContentProvider extends ContentProvider {
 
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs) {
-        throw new UnsupportedOperationException("insert(): Unknown URI: " + uri);
+        int count = 0;
+
+        switch (sUriMatcher.match(uri)) {
+
+            case MatcherTypes.RESPONSES:
+                count = dbHelper.getWritableDatabase().delete(Tables.Responses, selection,
+                        selectionArgs);
+                break;
+            default:
+                throw new UnsupportedOperationException("insert(): Unknown URI: " + uri);
+        }
+
+        ContentResolver cr = getContext().getContentResolver();
+        cr.notifyChange(uri, null, !isSyncAdapter(uri));
+
+        return count;
     }
 
     @Override
