@@ -119,12 +119,13 @@ public class OhmageContentProvider extends ContentProvider {
             default:
                 throw new UnsupportedOperationException("insert(): Unknown URI: " + uri);
         }
-        if (result != -1 && id != null) {
-            Uri notifyUri = uri.buildUpon().appendPath(id).build();
-            cr.notifyChange(notifyUri, null, !isSyncAdapter(uri));
-            return notifyUri;
+        if (result != -1) {
+            if (id != null) {
+                uri = uri.buildUpon().appendPath(id).build();
+            }
+            cr.notifyChange(uri, null, !isSyncAdapter(uri));
         }
-        return null;
+        return uri;
     }
 
     @Override

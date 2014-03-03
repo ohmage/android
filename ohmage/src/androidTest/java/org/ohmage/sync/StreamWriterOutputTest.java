@@ -121,7 +121,7 @@ public class StreamWriterOutputTest extends AndroidTestCase {
     public void testMoveToNextBatch_hasPointsToDelete_throwsException() throws Exception {
         DeletingCursor fakeCursor = mock(DeletingCursor.class);
         mStreamWriterOutput.setCursor(fakeCursor);
-        when(fakeCursor.hasDeletedPoints()).thenReturn(true);
+        when(fakeCursor.hasPointsToDelete()).thenReturn(true);
 
         try {
             mStreamWriterOutput.moveToNextBatch();
@@ -137,7 +137,7 @@ public class StreamWriterOutputTest extends AndroidTestCase {
 
         mStreamWriterOutput.moveToNextBatch();
 
-        verify(fakeCursor).isLast();
+        verify(fakeCursor).isAfterLast();
     }
 
     public void testMoveToNextBatch_hasCursorNotAtLast_returnsTrue() throws Exception {

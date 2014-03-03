@@ -146,7 +146,7 @@ public class StreamWriterOutput implements TypedOutput {
         ensureNoDanglingPoints();
         reset();
         if (mCursor != null) {
-            return !mCursor.isLast();
+            return !mCursor.isAfterLast();
         }
 
         return false;
@@ -241,7 +241,7 @@ public class StreamWriterOutput implements TypedOutput {
     }
 
     private void ensureNoDanglingPoints() {
-        if (mCursor != null && mCursor.hasDeletedPoints()) {
+        if (mCursor != null && mCursor.hasPointsToDelete()) {
             throw new RuntimeException(
                     "deleteBatch() must be called since there are some points to delete");
         }

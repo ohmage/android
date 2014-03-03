@@ -227,7 +227,7 @@ public class OhmageSyncAdapter extends AbstractThreadedSyncAdapter {
             cursor.close();
 
             // Delete any uploaded responses
-            provider.delete(Responses.CONTENT_URI, null, null);
+            provider.delete(appendSyncAdapterParam(Responses.CONTENT_URI), null, null);
 
         } catch (RemoteException e) {
             syncResult.stats.numIoExceptions++;

@@ -51,10 +51,6 @@ public class OhmageAuthenticator implements OkAuthenticator {
     @Override
     public Credential authenticate(Proxy proxy, URL url, List<Challenge> challenges)
             throws IOException {
-        // We can't retry the stream upload request
-        if (url.getPath().startsWith("/ohmage/streams"))
-            return null;
-
         for (Challenge challenge : challenges) {
             if (challenge.getScheme().equals("ohmage")) {
                 Account[] accounts = accountManager.getAccountsByType(AuthUtil.ACCOUNT_TYPE);
@@ -63,10 +59,15 @@ public class OhmageAuthenticator implements OkAuthenticator {
                             AuthUtil.AUTHTOKEN_TYPE);
                     if (oldToken != null) {
                         accountManager.invalidateAuthToken(AuthUtil.ACCOUNT_TYPE, oldToken);
+
                         try {
                             String token = accountManager.blockingGetAuthToken(accounts[0],
                                     AuthUtil.AUTHTOKEN_TYPE, false);
-                            if (token != null) {
+
+                            // We can't retry the stream upload request automatically
+                            if (url.getPath().startsWith("/ohmage/streams")) {
+                                return null;
+                            } else if (token != null) {
                                 return ohmageToken(token);
                             }
                         } catch (OperationCanceledException e) {

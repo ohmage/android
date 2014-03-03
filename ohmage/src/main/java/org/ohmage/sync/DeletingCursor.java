@@ -138,6 +138,15 @@ public class DeletingCursor extends CursorWrapper {
     }
 
     /**
+     * Check to see if there are points we can delete
+     *
+     * @return true if there are points we can delete
+     */
+    public boolean hasPointsToDelete() {
+        return !ids.isEmpty();
+    }
+
+    /**
      * Delete all points that have been marked so far
      *
      * @param provider
