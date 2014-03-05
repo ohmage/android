@@ -72,8 +72,8 @@ public interface OhmageService {
     @POST("/people") void createUser(@Query("password") String password, @Body User user,
             @Query("user_invitation_id") String inviteCode, CancelableCallback<User> callback);
 
-    @GET("/people/{userId}/ohmlets/")
-    Observable<Ohmlets> getCurrentStateForUser(@Path("userId") String userId)
+    @GET("/people/{userId}/current/")
+    Observable<User> getCurrentStateForUser(@Path("userId") String userId)
             throws AuthenticationException;
 
     @GET("/ohmlets")

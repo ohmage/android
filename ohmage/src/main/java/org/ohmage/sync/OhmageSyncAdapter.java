@@ -41,9 +41,9 @@ import org.ohmage.auth.AuthUtil;
 import org.ohmage.auth.Authenticator;
 import org.ohmage.models.Ohmlet;
 import org.ohmage.models.Ohmlet.Member;
-import org.ohmage.models.Ohmlets;
 import org.ohmage.models.Stream;
 import org.ohmage.models.Survey;
+import org.ohmage.models.User;
 import org.ohmage.operators.ContentProviderSaver.ContentProviderSaverObserver;
 import org.ohmage.provider.OhmageContract;
 import org.ohmage.provider.OhmageContract.Responses;
@@ -183,12 +183,10 @@ public class OhmageSyncAdapter extends AbstractThreadedSyncAdapter {
             // TODO: this probably needs to be in a transaction some how? It needs to deal with the case where it wants to sync an ohmlet that the user is trying to interact with at the same time.
             // TODO: handle errors that occur here using the syncResult
             Observable<Ohmlet> ohmlets = ohmageService.getCurrentStateForUser(userId).flatMap(
-                    new Func1<Ohmlets, Observable<Ohmlet>>() {
+                    new Func1<User, Observable<Ohmlet>>() {
                         @Override
-                        public Observable<Ohmlet> call(
-                                Ohmlets ohmlets) {
-                            return Observable
-                                    .from(ohmlets);
+                        public Observable<Ohmlet> call(User user) {
+                            return Observable.from(user.ohmlets);
                         }
                     }).flatMap(new RefreshOhmlet()).cache();
             ohmlets.subscribe(new ContentProviderSaverObserver(true));

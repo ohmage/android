@@ -33,6 +33,12 @@ public class User {
 
     public Date activationTimestamp;
 
+    public Ohmlets ohmlets;
+
+    public Streams streams;
+
+    public Surveys surveys;
+
     public static class OhmageRegistration {
         public String userId;
 
@@ -50,8 +56,4 @@ public class User {
 
         public String providerId;
     }
-
-    // ohmlets
-    // streams
-    // surveys
 }
