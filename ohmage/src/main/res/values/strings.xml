@@ -66,5 +66,6 @@
     <string name="title_activity_ohmlet">Ohmlet</string>
     <string name="hello_world">Hello world!</string>
     <string name="join">Join</string>
+    <string name="no_surveys">No Surveys</string>
 
 </resources>

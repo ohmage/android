@@ -6,7 +6,8 @@ This is the repository for the ohmage Android application.
 DEPENDENCIES
 ------------
 
-All dependencies are handled by maven through the gradle build system.
+There is a dependency on `ReminderLib` which has not been release yet. To build the project on
+your own now, you will have to remove that library and remove any references to it.
 
 
 HOW TO BUILD THE PROJECT

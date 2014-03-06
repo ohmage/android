@@ -42,6 +42,7 @@ public class Survey implements Savable {
         values.put(OhmageContract.Surveys.SURVEY_ID, schemaId);
         values.put(OhmageContract.Surveys.SURVEY_VERSION, schemaVersion);
         values.put(OhmageContract.Surveys.SURVEY_ITEMS, saver.gson().toJson(surveyItems));
+        values.put(OhmageContract.Surveys.SURVEY_NAME, name);
         return values;
     }
 

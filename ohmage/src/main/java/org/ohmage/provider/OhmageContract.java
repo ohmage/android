@@ -106,6 +106,8 @@ public class OhmageContract {
         String SURVEY_VERSION = "survey_version";
 
         String SURVEY_ITEMS = "survey_items";
+
+        String SURVEY_NAME = "survey_name";
     }
 
     private static final String PATH_SURVEYS = "surveys";
