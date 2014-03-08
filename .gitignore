@@ -10,6 +10,7 @@
 # Local settings
 .idea/workspace.xml
 local.properties
+signing.gradle
 
 # User dictionaries
 .idea/dictionaries/

@@ -19,7 +19,34 @@ HOW TO BUILD THE PROJECT
 This android project uses the gradle build system. You should have the Google Repository component
 of the sdk and the newest version of the build tools. To build a debug version of the app run:
 
-    ./gradlew installDebug
+    ./gradlew assembleDebug
+
+To build the release version of the app add the `signing.gradle` file as described below and run:
+
+    ./gradlew assembleRelease
+
+
+SIGNING
+-------
+
+To create a signed APK to distribute, create `ohmage/signing.gradle` with the the location of your
+keystore and the signing information. It should look something like this:
+
+    android {
+        signingConfigs {
+            release {
+                storeFile new File(System.getProperty('user.home'), '.android/ohmage-key.keystore')
+                storePassword "password"
+                keyAlias "ohm-key"
+                keyPassword "password"
+            }
+        }
+        buildTypes {
+            release {
+                signingConfig signingConfigs.release
+            }
+        }
+    }
 
 CONTRIBUTE
 ----------
