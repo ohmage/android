@@ -33,6 +33,8 @@ dependencies {
     compile 'com.squareup.retrofit:retrofit:1.3.0'
     compile 'com.netflix.rxjava:rxjava-android:0.16.+'
     compile 'org.ohmage:reminder-lib:1.0-SNAPSHOT'
+    compile 'org.ohmage:accelservice:1.0-SNAPSHOT'
+    compile 'org.ohmage:wifigpslocation:1.0-SNAPSHOT'
 
     androidTestCompile 'com.google.dexmaker:dexmaker-mockito:1.0'
     androidTestCompile 'com.google.dexmaker:dexmaker:1.0'
