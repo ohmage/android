@@ -17,9 +17,7 @@ if(gradle.startParameter.taskNames.contains('assembleRelease')) {
 repositories {
     mavenCentral()
     mavenLocal()
-    maven {
-        url "https://oss.sonatype.org/content/repositories/snapshots"
-    }
+    maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
 }
 
 dependencies {
@@ -34,22 +32,22 @@ dependencies {
     compile 'org.ohmage:android-stream-lib:2.0-SNAPSHOT'
     compile 'com.squareup.retrofit:retrofit:1.3.0'
     compile 'com.netflix.rxjava:rxjava-android:0.16.+'
-    compile 'org.ohmage:reminder-lib:1.0-SNAPSHOT@aar'
+    compile 'org.ohmage:reminder-lib:1.0-SNAPSHOT'
 
     androidTestCompile 'com.google.dexmaker:dexmaker-mockito:1.0'
     androidTestCompile 'com.google.dexmaker:dexmaker:1.0'
     androidTestCompile 'org.mockito:mockito-core:1.9.5'
-    androidTestCompile files('libs/hamcrest-library-1.1.jar',
-            'libs/hamcrest-integration-1.1.jar',
-            'libs/testrunner-1.1.jar',
-            'libs/testrunner-runtime-1.1.jar',
-            'libs/espresso-1.1.jar',
-            'libs/espresso-contrib-1.1.jar')
+    androidTestCompile files('libs/hamcrest-library-1.1.jar')
+    androidTestCompile files('libs/hamcrest-integration-1.1.jar')
+    androidTestCompile files('libs/testrunner-1.1.jar')
+    androidTestCompile files('libs/testrunner-runtime-1.1.jar')
+    androidTestCompile files('libs/espresso-1.1.jar')
+    androidTestCompile files('libs/espresso-contrib-1.1.jar')
 }
 
 android {
     compileSdkVersion 19
-    buildToolsVersion "19.0.1"
+    buildToolsVersion '19.0.1'
 
     defaultConfig {
         minSdkVersion 9
