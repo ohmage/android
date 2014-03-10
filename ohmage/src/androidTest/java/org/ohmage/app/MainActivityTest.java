@@ -106,10 +106,11 @@ public class MainActivityTest extends InjectedActivityInstrumentationTestCase<Ma
     public void testDrawer_openAndClickItem_closesDrawer() {
         startActivityWithAccount();
         openDrawer(R.id.drawer_layout);
-        int rowIndex = 2;
+        int rowIndex = 0;
         String rowContents = navigationItems[rowIndex];
 
-        onData(allOf(is(instanceOf(String.class)), is(rowContents))).perform(click());
+        onData(allOf(is(instanceOf(String.class)), is(rowContents))).inAdapterView(
+                withId(R.id.left_drawer)).perform(click());
 
         onView(withId(R.id.drawer_layout)).check(matches(isClosed()));
     }

@@ -19,13 +19,12 @@
 <resources>
     <string-array name="navigation_items">
         <item>@string/home</item>
-        <item>@string/ohmlets</item>
-        <item>@string/streams</item>
-        <item>@string/surveys</item>
-        <item>@string/analytics</item>
-        <item>@string/upload</item>
+        <!--<item>@string/ohmlets</item>-->
+        <!--<item>@string/streams</item>-->
+        <!--<item>@string/surveys</item>-->
+        <!--<item>@string/analytics</item>-->
         <item>@string/reminders</item>
-        <item>@string/profile</item>
+        <!--<item>@string/profile</item>-->
     </string-array>
     <array name="navigation_icons">
         <item>@drawable/ic_home_surveys</item>
@@ -33,7 +32,6 @@
         <item>@drawable/ic_home_streams</item>
         <item>@drawable/ic_home_surveys</item>
         <item>@drawable/ic_home_history</item>
-        <item>@drawable/ic_home_upload</item>
         <item>@drawable/ic_launcher</item>
         <item>@drawable/ic_home_profile</item>
     </array>
@@ -42,7 +40,6 @@
     <string name="streams">Streams</string>
     <string name="surveys">Surveys</string>
     <string name="analytics">Analytics</string>
-    <string name="upload">Upload</string>
     <string name="reminders">Reminders</string>
     <string name="profile">Profile</string>
 </resources>
