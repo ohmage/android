@@ -19,6 +19,7 @@ package org.ohmage.app;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -28,6 +29,7 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.app.LoaderManager.LoaderCallbacks;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -36,6 +38,12 @@ import android.view.animation.AlphaAnimation;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesClient.ConnectionCallbacks;
+import com.google.android.gms.common.GooglePlayServicesClient.OnConnectionFailedListener;
+import com.google.android.gms.location.LocationClient;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.viewpagerindicator.CirclePageIndicator;
@@ -67,7 +75,8 @@ import javax.inject.Inject;
  * Created by cketcham on 12/18/13.
  */
 public class SurveyActivity extends InjectedActionBarActivity
-        implements LoaderCallbacks<ArrayList<Prompt>> {
+        implements LoaderCallbacks<ArrayList<Prompt>>, ConnectionCallbacks,
+        OnConnectionFailedListener {
     private static final String TAG = SurveyActivity.class.getSimpleName();
 
     @Inject
@@ -86,6 +95,16 @@ public class SurveyActivity extends InjectedActionBarActivity
 
     private CirclePageIndicator indicator;
 
+    /**
+     * Location client to get accurate location
+     */
+    private LocationClient mLocationClient;
+
+    private static final LocationRequest REQUEST = LocationRequest.create()
+            .setInterval(5000)         // 5 seconds
+            .setFastestInterval(16)    // 16ms = 60fps
+            .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -99,6 +118,30 @@ public class SurveyActivity extends InjectedActionBarActivity
         indicator = (CirclePageIndicator) findViewById(R.id.titles);
 
         getSupportLoaderManager().initLoader(0, null, this);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        setUpLocationClientIfNeeded();
+        mLocationClient.connect();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (mLocationClient != null) {
+            mLocationClient.disconnect();
+        }
+    }
+
+    private void setUpLocationClientIfNeeded() {
+        if (mLocationClient == null) {
+            mLocationClient = new LocationClient(
+                    getApplicationContext(),
+                    this,  // ConnectionCallbacks
+                    this); // OnConnectionFailedListener
+        }
     }
 
     @Override
@@ -135,7 +178,9 @@ public class SurveyActivity extends InjectedActionBarActivity
             values.put(Responses.SURVEY_ID, Surveys.getId(getIntent().getData()));
             values.put(Responses.SURVEY_VERSION, Surveys.getVersion(getIntent().getData()));
             values.put(Responses.RESPONSE_METADATA,
-                    new StreamPointBuilder().now().withId().getMetadata());
+                    new StreamPointBuilder().now().withId()
+                            .withLocation(mLocationClient.getLastLocation())
+                            .getMetadata());
             mPagerAdapter.buildResponse(values);
             getContentResolver().insert(Responses.CONTENT_URI, values);
             finish();
@@ -143,6 +188,22 @@ public class SurveyActivity extends InjectedActionBarActivity
             e.printStackTrace();
             Toast.makeText(this, "There was an error saving the response", Toast.LENGTH_SHORT);
         }
+    }
+
+    @Override public void onConnected(Bundle bundle) {
+        mLocationClient.requestLocationUpdates(REQUEST, new LocationListener() {
+            @Override public void onLocationChanged(Location location) {
+                Log.d(TAG, "accuracy:"  + location.getAccuracy());
+            }
+        });  // LocationListener
+    }
+
+    @Override public void onDisconnected() {
+
+    }
+
+    @Override public void onConnectionFailed(ConnectionResult connectionResult) {
+
     }
 
     public class PromptFragmentAdapter extends FragmentStatePagerAdapter implements
