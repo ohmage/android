@@ -71,7 +71,7 @@ public class HomeFragment extends GridFragment implements LoaderCallbacks<Cursor
 
     @Override public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         return new CursorLoader(getActivity(), OhmageContract.Surveys.CONTENT_URI, new String[]{
-                Surveys.SURVEY_ID, Surveys.SURVEY_VERSION}, null, null, null);
+                Surveys.SURVEY_ID, Surveys.SURVEY_VERSION, Surveys.SURVEY_NAME }, null, null, null);
     }
 
     @Override public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
@@ -91,12 +91,13 @@ public class HomeFragment extends GridFragment implements LoaderCallbacks<Cursor
 
         public static class Holder {
             TextView name;
+            TextView description;
             Button action;
         }
 
         public SurveyAdapter(Context context, Cursor c) {
             super(context, c, false);
-            mResource = R.layout.list_item_ohmlet;
+            mResource = R.layout.list_item_survey;
             mInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         }
 
@@ -111,10 +112,13 @@ public class HomeFragment extends GridFragment implements LoaderCallbacks<Cursor
                 holder = new Holder();
                 holder.name = (TextView) view.findViewById(R.id.name);
                 holder.action = (Button) view.findViewById(R.id.action);
+                holder.description = (TextView) view.findViewById(R.id.description);
+                holder.action.setVisibility(View.GONE);
                 view.setTag(holder);
             }
 
-            holder.name.setText(cursor.getString(0));
+            holder.name.setText(cursor.getString(2));
+            holder.description.setText(cursor.getString(0));
 //            holder.action.setText(item.isParticipant ? "Leave" : "Join");
         }
 

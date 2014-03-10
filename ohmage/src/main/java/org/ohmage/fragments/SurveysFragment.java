@@ -104,7 +104,7 @@ public class SurveysFragment extends GridFragment implements Callback<Surveys> {
 
         public SurveyAdapter(Context context) {
             super(context, 0);
-            mResource = R.layout.list_item_ohmlet;
+            mResource = R.layout.list_item_survey;
             mInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         }
 

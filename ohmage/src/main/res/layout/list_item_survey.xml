@@ -26,15 +26,22 @@
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
         android:text="Name"
-        android:layout_toRightOf="@id/icon"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        android:paddingBottom="@dimen/gutter"/>
+
+    <TextView
+        android:id="@+id/description"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:text="Description"
+        android:layout_below="@id/name" />
 
     <Button
         android:id="@+id/action"
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"
         android:text="Join"
-        android:layout_below="@id/name"
+        android:layout_below="@id/description"
         android:focusable="false" />
 
 </RelativeLayout>
