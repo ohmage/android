@@ -36,7 +36,7 @@ import java.util.List;
 /**
  * Created by cketcham on 1/24/14.
  */
-public class MultiChoicePrompt<T> extends ChoicePrompt<ArrayList<T>> {
+public class MultiChoicePrompt<T> extends ChoicePrompt<ArrayList<T>, T> {
 
     public Integer minChoices;
 
@@ -86,7 +86,7 @@ public class MultiChoicePrompt<T> extends ChoicePrompt<ArrayList<T>> {
         }
 
         @Override public void onClick(View v) {
-            MultiChoiceDialogFragment.getInstance(this, getPrompt().choices)
+            MultiChoiceDialogFragment.getInstance(this, getPrompt().choices, getPrompt().checkedItems())
                     .show(getFragmentManager(), "dialog");
         }
 
@@ -103,14 +103,25 @@ public class MultiChoicePrompt<T> extends ChoicePrompt<ArrayList<T>> {
         }
     }
 
+    private boolean[] checkedItems() {
+        boolean[] checkedItems = new boolean[choices.size()];
+        if(value != null) {
+            for (int i = 0; i < value.size(); i++) {
+                checkedItems[choices.indexOfValue(value.get(i))] = true;
+            }
+        }
+        return checkedItems;
+    }
+
     public static class MultiChoiceDialogFragment extends DialogFragment {
         private OnMultiChoiceClickListener mListener;
 
         public static <T> DialogFragment getInstance(OnMultiChoiceClickListener l,
-                ArrayList<KLVPair<T>> choices) {
+                ArrayList<KLVPair<T>> choices, boolean[] checkedItems) {
             MultiChoiceDialogFragment fragment = new MultiChoiceDialogFragment();
             Bundle args = new Bundle();
             args.putSerializable("choices", choices);
+            args.putSerializable("checkedItems", checkedItems);
             fragment.setArguments(args);
             fragment.setOnMultiChoiceClickListener(l);
             return fragment;
@@ -125,9 +136,10 @@ public class MultiChoicePrompt<T> extends ChoicePrompt<ArrayList<T>> {
 
             ArrayList<KLVPair> choices =
                     (ArrayList<KLVPair>) getArguments().getSerializable("choices");
+            boolean[] checkedItems = (boolean[]) getArguments().getSerializable("checkedItems");
 
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            builder.setMultiChoiceItems(choices.toArray(new KLVPair[]{}), null, mListener)
+            builder.setMultiChoiceItems(choices.toArray(new KLVPair[]{}), checkedItems, mListener)
                     // Set the action buttons
                     .setPositiveButton(R.string.ok, null)
                     .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {

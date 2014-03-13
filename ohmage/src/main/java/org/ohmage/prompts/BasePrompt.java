@@ -175,8 +175,8 @@ public class BasePrompt implements Prompt {
             map.put("video_prompt", VideoPrompt.class);
             map.put("number_prompt", NumberPrompt.class);
             map.put("remote_activity_prompt", RemotePrompt.class);
-            map.put("number_single_choice_prompt", ChoicePrompt.class);
-            map.put("string_single_choice_prompt", ChoicePrompt.class);
+            map.put("number_single_choice_prompt", SingleChoicePrompt.class);
+            map.put("string_single_choice_prompt", SingleChoicePrompt.class);
             map.put("number_multi_choice_prompt", MultiChoicePrompt.class);
             map.put("string_multi_choice_prompt", MultiChoicePrompt.class);
             map.put("text_prompt", TextPrompt.class);
