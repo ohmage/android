@@ -52,15 +52,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.ohmage.dagger.InjectedActionBarActivity;
 import org.ohmage.prompts.AnswerablePrompt;
-import org.ohmage.prompts.BasePrompt;
 import org.ohmage.prompts.BasePrompt.AnswerablePromptFragment;
-import org.ohmage.prompts.BasePrompt.AnswerablePromptFragment.OnSkipStateChanged;
 import org.ohmage.prompts.Prompt;
 import org.ohmage.provider.OhmageContract;
 import org.ohmage.provider.OhmageContract.Responses;
 import org.ohmage.provider.OhmageContract.Surveys;
 import org.ohmage.streams.StreamPointBuilder;
-import org.ohmage.widget.CompatArrayAdapter;
 import org.ohmage.widget.PromptViewPager;
 
 import java.io.FileDescriptor;
@@ -206,11 +203,10 @@ public class SurveyActivity extends InjectedActionBarActivity
 
     }
 
-    public class PromptFragmentAdapter extends FragmentStatePagerAdapter implements
-            OnSkipStateChanged {
+    public class PromptFragmentAdapter extends FragmentStatePagerAdapter {
         private final List<Prompt> mPrompts;
 
-        int mSelected = 0;
+        int mLastValidPrompt = 0;
 
         /**
          * Keeps track of what fragments have been created
@@ -220,7 +216,7 @@ public class SurveyActivity extends InjectedActionBarActivity
         public PromptFragmentAdapter(FragmentManager fm, List<Prompt> prompts) {
             super(fm);
             mPrompts = prompts;
-            mSelected = mPager.getCurrentItem();
+            mLastValidPrompt = mPager.getCurrentItem();
         }
 
         @Override
@@ -231,34 +227,13 @@ public class SurveyActivity extends InjectedActionBarActivity
             } else {
                 fragment = mPrompts.get(position).getFragment();
                 if (fragment instanceof AnswerablePromptFragment) {
-                    ((AnswerablePromptFragment) fragment).setOnSkipStateChangedListener(this);
+                    ((AnswerablePromptFragment) fragment).setOnValidAnswerStateChangedListener(mPager);
                 }
             }
 
-            if (mSelected == position) {
-                ((BasePromptAdapterFragment) fragment).setEnabled(true);
-            }
-            ((BasePromptAdapterFragment) fragment).setOnClickListener(new View.OnClickListener() {
-                @Override public void onClick(View v) {
-                    boolean canJumpAhead = true;
-                    for (int i = mPager.getCurrentItem(); i < position; i++) {
-                        canJumpAhead &= canPassItem(i);
-                    }
-                    if (canJumpAhead)
-                        mPager.setCurrentItem(position, true);
-                }
-            });
             mFragments.set(position);
 
             return fragment;
-        }
-
-        public boolean canPassItem(int position) {
-            Fragment selectedFragment = getObject(position);
-            if (selectedFragment instanceof BasePrompt.PromptFragment) {
-                return ((BasePrompt.PromptFragment) selectedFragment).getPrompt().isSkippable();
-            }
-            return true;
         }
 
         public Fragment getObject(int position) {
@@ -286,27 +261,6 @@ public class SurveyActivity extends InjectedActionBarActivity
             return 0.1f;
         }
 
-        public void setSelected(int position) {
-            // Only change the selected item if it has changed
-            if (mSelected == position)
-                return;
-
-            // Check to see that the fragments exist
-            if (!mFragments.get(mSelected) || !mFragments.get(position)) {
-                return;
-            }
-
-            Object item = super.instantiateItem(null, mSelected);
-            if (item instanceof BasePromptAdapterFragment) {
-                ((BasePromptAdapterFragment) item).setEnabled(false);
-            }
-            mSelected = position;
-            item = super.instantiateItem(null, mSelected);
-            if (item instanceof BasePromptAdapterFragment) {
-                ((BasePromptAdapterFragment) item).setEnabled(true);
-            }
-        }
-
         @Override
         public Parcelable saveState() {
             Bundle bundle = new Bundle();
@@ -324,8 +278,8 @@ public class SurveyActivity extends InjectedActionBarActivity
             }
         }
 
-        @Override public void onSkipStateChanged(AnswerablePrompt prompt) {
-            mPager.onValueChanged(prompt);
+        public int getPromptPosition(Prompt prompt) {
+            return mPrompts.indexOf(prompt);
         }
 
         public void buildResponse(ContentValues values) throws JSONException {
@@ -344,18 +298,9 @@ public class SurveyActivity extends InjectedActionBarActivity
         }
     }
 
-    public static class PromptAdapter extends CompatArrayAdapter<Prompt> {
-
-        public PromptAdapter(Context context) {
-            super(context, 0);
-        }
-    }
-
     public static class BasePromptAdapterFragment extends Fragment {
 
-        boolean mEnabled = false;
-
-        boolean mSkipped = false;
+        boolean mHidden = true;
 
         private View.OnClickListener mOnClickListener;
 
@@ -365,8 +310,7 @@ public class SurveyActivity extends InjectedActionBarActivity
             setRetainInstance(true);
 
             if (savedInstanceState != null) {
-                mEnabled = savedInstanceState.getBoolean("enabled", false);
-                mSkipped = savedInstanceState.getBoolean("skipped", false);
+                mHidden = savedInstanceState.getBoolean("hidden", false);
             }
         }
 
@@ -375,51 +319,30 @@ public class SurveyActivity extends InjectedActionBarActivity
             super.onViewCreated(view, savedInstanceState);
 
             view.setOnClickListener(mOnClickListener);
-            setEnabled((ViewGroup) view, mEnabled);
-            setSkipped(view, mSkipped, 0);
+            setHidden(view, mHidden, 0);
         }
 
         @Override public void onSaveInstanceState(Bundle outState) {
             super.onSaveInstanceState(outState);
-            outState.putBoolean("enabled", mEnabled);
-            outState.putBoolean("skipped", mSkipped);
+            outState.putBoolean("hidden", mHidden);
         }
 
-        public void setEnabled(boolean enabled) {
-            setEnabled((ViewGroup) getView(), enabled);
+        public void setHidden(boolean hidden) {
+            setHidden(getView(), hidden, 200);
         }
 
-        protected void setEnabled(ViewGroup view, boolean enabled) {
-            mEnabled = enabled;
-//            if (view == null)
-//                return;
-//            ViewGroup container = (ViewGroup) view.getChildAt(0);
-//            for(int i=0;i<container.getChildCount();i++) {
-//                View child = container.getChildAt(i);
-//                child.setEnabled(enabled);
-//                child.setClickable(enabled);
-//                child.setLongClickable(enabled);
-//                child.setFocusable(enabled);
-//            }
+        public void setHidden(boolean hidden, int duration) {
+            setHidden(getView(), hidden, duration);
         }
 
-        public void setSkipped(boolean skipped) {
-            if (mSkipped == skipped)
+        protected void setHidden(View view, boolean hidden, int duration) {
+            if(mHidden == hidden)
                 return;
-            setSkipped(getView(), skipped, 200);
-        }
 
-        public void setSkipped(boolean skipped, int duration) {
-            if (mSkipped == skipped)
-                return;
-            setSkipped(getView(), skipped, duration);
-        }
-
-        protected void setSkipped(View view, boolean skipped, int duration) {
-            mSkipped = skipped;
+            mHidden = hidden;
             if (view == null)
                 return;
-            AlphaAnimation aa = (skipped) ? new AlphaAnimation(1f, 0f) : new AlphaAnimation(0f, 1f);
+            AlphaAnimation aa = (hidden) ? new AlphaAnimation(1f, 0f) : new AlphaAnimation(0f, 1f);
             aa.setFillAfter(true);
             aa.setDuration(duration);
             view.startAnimation(aa);

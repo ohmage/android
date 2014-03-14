@@ -28,6 +28,8 @@ import org.ohmage.app.R;
 import org.ohmage.widget.AudioRecorder;
 import org.ohmage.widget.AudioRecorder.RecordStateListener;
 
+import java.io.File;
+
 /**
  * Created by cketcham on 1/24/14.
  */
@@ -40,6 +42,8 @@ public class AudioPrompt extends MediaPrompt {
 
     public static class AudioPromptFragment extends AnswerablePromptFragment<AudioPrompt>
             implements AudioRecorder.OnErrorListener {
+
+        File mFile;
 
         public static AudioPromptFragment getInstance(AudioPrompt prompt) {
             AudioPromptFragment fragment = new AudioPromptFragment();
@@ -66,11 +70,12 @@ public class AudioPrompt extends MediaPrompt {
             AudioRecorder recorder = (AudioRecorder) view.findViewById(R.id.audio_recorder);
             recorder.setMaxDuration(getPrompt().maxDuration);
             recorder.setMediaRecorderOnInfoListener(this);
-            recorder.setFile(getPrompt().getFile());
+            mFile = MediaPrompt.getTemporaryResponseFile();
+            recorder.setFile(mFile);
             recorder.setRecordStateListener(new RecordStateListener() {
                 @Override public void onRecordStateChanged(AudioRecorder recorder, int state) {
                     if (state == AudioRecorder.STATE_STOPPED) {
-                        notifySkipStateChanged();
+                        setValue(mFile);
 
                         // We can stop listening now since the file will always exist from now on
                         recorder.setRecordStateListener(null);

@@ -36,17 +36,8 @@ public class MediaPrompt extends AnswerablePrompt<File> {
         return skippable || (value != null && value.exists());
     }
 
-    /**
-     * Returns or generates a file to be used for this response
-     *
-     * @return
-     */
-    public File getFile() {
-        if (value != null)
-            return value;
-
-        value = new File(Ohmage.app().getExternalCacheDir(), UUID.randomUUID().toString());
-        return value;
+    public static File getTemporaryResponseFile() {
+        return new File(Ohmage.app().getExternalCacheDir(), UUID.randomUUID().toString());
     }
 
     /**

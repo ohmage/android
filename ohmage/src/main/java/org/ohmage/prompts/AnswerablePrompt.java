@@ -38,6 +38,10 @@ public class AnswerablePrompt<T> extends BasePrompt {
         return skippable || value != null;
     }
 
+    public boolean hasValidResponse() {
+        return value != null;
+    }
+
     public void addAnswer(JSONObject data, JSONObject extras) throws JSONException {
         data.put(surveyItemId, value);
     }

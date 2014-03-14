@@ -25,6 +25,8 @@ import android.view.View;
 
 import org.ohmage.app.R;
 
+import java.io.File;
+
 /**
  * Created by cketcham on 1/24/14.
  */
@@ -41,6 +43,7 @@ public class VideoPrompt extends MediaPrompt {
     public static class VideoPromptFragment extends PromptLauncherFragment<VideoPrompt> {
 
         private static final int REQUEST_CODE = 0;
+        private File mFile;
 
         public static VideoPromptFragment getInstance(VideoPrompt prompt) {
             VideoPromptFragment fragment = new VideoPromptFragment();
@@ -55,7 +58,8 @@ public class VideoPrompt extends MediaPrompt {
         @Override public void onClick(View v) {
             Intent intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
             intent.putExtra(MediaStore.EXTRA_DURATION_LIMIT, getPrompt().maxDuration);
-            intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(getPrompt().getFile()));
+            mFile = MediaPrompt.getTemporaryResponseFile();
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(mFile));
             startActivityForResult(intent, REQUEST_CODE);
         }
 
@@ -63,7 +67,7 @@ public class VideoPrompt extends MediaPrompt {
             super.onActivityResult(requestCode, resultCode, data);
             if (resultCode == Activity.RESULT_OK) {
                 //TODO: handle when video is too large etc..
-                notifySkipStateChanged();
+                setValue(mFile);
             }
         }
     }

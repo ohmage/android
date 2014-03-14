@@ -59,21 +59,6 @@ public class TimestampPrompt extends AnswerablePrompt<Calendar> {
         }
 
         @Override
-        protected void setEnabled(ViewGroup view, boolean enabled) {
-            super.setEnabled(view, enabled);
-            if (view == null)
-                return;
-            View datePicker = view.findViewById(R.id.datePicker);
-            datePicker.setEnabled(enabled);
-            datePicker.setClickable(enabled);
-            datePicker.setLongClickable(enabled);
-            View timePicker = view.findViewById(R.id.timePicker);
-            timePicker.setEnabled(enabled);
-            timePicker.setClickable(enabled);
-            timePicker.setLongClickable(enabled);
-        }
-
-        @Override
         public View onCreateView(LayoutInflater inflater, final ViewGroup container,
                 Bundle savedInstanceState) {
             ViewGroup rootView = (ViewGroup) inflater.inflate(
@@ -85,7 +70,7 @@ public class TimestampPrompt extends AnswerablePrompt<Calendar> {
             DatePicker datePicker = (DatePicker) rootView.findViewById(R.id.datePicker);
             Calendar c = Calendar.getInstance();
             //TODO: is it possible to omit an initial value for this prompt
-            setValue(c);
+//            setValue(c);
             datePicker
                     .init(c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH),
                             new DatePicker.OnDateChangedListener() {

@@ -20,34 +20,26 @@ import android.content.Context;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.PagerAdapter;
 import android.util.AttributeSet;
-import android.view.MotionEvent;
 
 import org.ohmage.app.SurveyActivity;
+import org.ohmage.app.SurveyActivity.BasePromptAdapterFragment;
 import org.ohmage.prompts.AnswerablePrompt;
+import org.ohmage.prompts.BasePrompt.AnswerablePromptFragment;
+import org.ohmage.prompts.BasePrompt.AnswerablePromptFragment.OnValidAnswerStateChangedListener;
 
 /**
  * Created by cketcham on 1/15/14.
  */
-public class PromptViewPager extends VerticalViewPager {
+public class PromptViewPager extends VerticalViewPager implements
+        OnValidAnswerStateChangedListener {
     private static final String TAG = PromptViewPager.class.getSimpleName();
 
     private double mSoftBottomBound = Double.MAX_VALUE;
 
+    private int mLastValidPromptItem = 0;
+
     public PromptViewPager(Context context, AttributeSet attrs) {
         super(context, attrs);
-    }
-
-    @Override
-    public boolean onTouchEvent(MotionEvent ev) {
-        boolean ret = super.onTouchEvent(ev);
-        scrollBack(ev);
-        return ret;
-    }
-
-    public void setAdapter(SurveyActivity.PromptFragmentAdapter adapter) {
-        super.setAdapter(adapter);
-
-        updateSkipped();
     }
 
     @Override
@@ -55,29 +47,11 @@ public class PromptViewPager extends VerticalViewPager {
         if (adapter != null && !(adapter instanceof SurveyActivity.PromptFragmentAdapter))
             throw new RuntimeException("PromptViewPager expects a PromptFragmentAdapter");
         super.setAdapter(adapter);
-
-        updateSkipped();
     }
 
     @Override
     public SurveyActivity.PromptFragmentAdapter getAdapter() {
         return (SurveyActivity.PromptFragmentAdapter) super.getAdapter();
-    }
-
-    //TODO: don't scroll back to the top of the item if the bottom of the item is still on the screen ie. when there is a long prompt
-    private void scrollBack(MotionEvent ev) {
-//        final int action = ev.getAction();
-//
-//        switch (action & MotionEventCompat.ACTION_MASK) {
-//            case MotionEvent.ACTION_UP:
-//                for (int i = 0; i < getCurrentItem(); i++) {
-//                    if(!getAdapter().canPassItem(i)) {
-//                        setCurrentItem(i, true);
-//                        break;
-//                    }
-//                }
-//                break;
-//        }
     }
 
     @Override
@@ -87,64 +61,54 @@ public class PromptViewPager extends VerticalViewPager {
     }
 
     @Override
-    protected void onPageScrolled(int position, double offset, int offsetPixels) {
-        super.onPageScrolled(position, offset, offsetPixels);
-
-        if (offsetPixels < mSoftBottomBound) {
-            getAdapter().setSelected(position);
-        }
-    }
-
-    @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
         super.onLayout(changed, l, t, r, b);
 
-        if (getAdapter() != null)
+        if (getAdapter() != null) {
+            updateLastValidResponse(0);
             calculateBottomBound();
+        }
     }
 
-    public void onValueChanged(AnswerablePrompt prompt) {
-        calculateBottomBound();
-        updateSkipped();
+    private void updateLastValidResponse(int index) {
+        final int N = getAdapter().getCount();
+        for (int i = Math.min(mLastValidPromptItem, index); i < N; i++) {
+            Fragment item = getAdapter().getObject(i);
+            if (item instanceof AnswerablePromptFragment) {
+                if (!((AnswerablePrompt) ((AnswerablePromptFragment) item).getPrompt())
+                        .hasValidResponse()) {
+                    ((AnswerablePromptFragment) item).setHidden(false);
+                    // Hide any prompts which may be after this prompt
+                    hideAllPromptsBetween(i, mLastValidPromptItem);
+                    mLastValidPromptItem = i;
+                    return;
+                }
+            }
+
+            if (item instanceof BasePromptAdapterFragment) {
+                ((BasePromptAdapterFragment) item).setHidden(false);
+            }
+        }
+    }
+
+    private void hideAllPromptsBetween(int start, int end) {
+        for (int i = start+1; i <= end; i++) {
+            Fragment item = getAdapter().getObject(i);
+            if (item instanceof AnswerablePromptFragment) {
+                ((AnswerablePromptFragment) item).setHidden(true);
+            }
+        }
     }
 
     private void calculateBottomBound() {
-        final int N = getAdapter().getCount();
-        for (int i = 0; i < N; i++) {
-            if (!getAdapter().canPassItem(i)) {
-                ItemInfo ii = infoForPosition(i);
-                mSoftBottomBound =
-                        (ii.offset + ii.heightFactor) * getHeight() + getPageMargin() - 1;
-                return;
-            }
-        }
-        mSoftBottomBound = Double.MAX_VALUE;
+        ItemInfo ii = infoForPosition(mLastValidPromptItem);
+        mSoftBottomBound = ii.offset * getHeight();
         return;
     }
 
-    public void finishUpdate() {
+    @Override public void onValidAnswerStateChanged(AnswerablePrompt prompt) {
+        int index = getAdapter().getPromptPosition(prompt);
+        updateLastValidResponse(index);
         calculateBottomBound();
-    }
-
-    //TODO: something should keep track of the pivot position so we don't need to keep calculating it
-    private void updateSkipped() {
-        boolean skippedPivot = false;
-        final int N = getAdapter().getCount();
-        for (int i = Math.max(getCurrentItem() - 1, 0); i < N; i++) {
-            Fragment item = getAdapter().getObject(i);
-            if (item instanceof SurveyActivity.BasePromptAdapterFragment) {
-                ((SurveyActivity.BasePromptAdapterFragment) item).setSkipped(skippedPivot);
-            }
-            skippedPivot |= !getAdapter().canPassItem(i);
-        }
-
-        // Move the current item back to the top of the last item if this item is wrong
-        if (getCurrentItem() > 0 && !getAdapter().canPassItem(getCurrentItem() - 1)) {
-            post(new Runnable() {
-                @Override public void run() {
-                    setCurrentItem(getCurrentItem() - 1, true);
-                }
-            });
-        }
     }
 }

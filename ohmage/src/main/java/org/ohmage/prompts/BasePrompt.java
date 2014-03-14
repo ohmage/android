@@ -145,23 +145,25 @@ public class BasePrompt implements Prompt {
             boolean notify = skippableStateChanged(getPrompt().value, object);
             getPrompt().value = object;
             if (notify) {
-                notifySkipStateChanged();
+                notifyValidAnswerStateChanged();
             }
         }
 
-        public interface OnSkipStateChanged {
-            void onSkipStateChanged(AnswerablePrompt prompt);
+        public interface OnValidAnswerStateChangedListener {
+            void onValidAnswerStateChanged(AnswerablePrompt prompt);
         }
 
-        private OnSkipStateChanged mOnSkipStateChanged;
+        private OnValidAnswerStateChangedListener mOnValidAnswerStateChangedListener;
 
-        public void setOnSkipStateChangedListener(OnSkipStateChanged onSkipStateChanged) {
-            mOnSkipStateChanged = onSkipStateChanged;
+        public void setOnValidAnswerStateChangedListener(
+                OnValidAnswerStateChangedListener onValidAnswerStateChangedListener) {
+            mOnValidAnswerStateChangedListener = onValidAnswerStateChangedListener;
         }
 
-        public void notifySkipStateChanged() {
-            if (mOnSkipStateChanged != null)
-                mOnSkipStateChanged.onSkipStateChanged(getPrompt());
+        private void notifyValidAnswerStateChanged() {
+            if (mOnValidAnswerStateChangedListener != null) {
+                mOnValidAnswerStateChangedListener.onValidAnswerStateChanged(getPrompt());
+            }
         }
     }
 
@@ -198,38 +200,13 @@ public class BasePrompt implements Prompt {
             extends AnswerablePromptFragment<T>
             implements View.OnClickListener {
 
-//            @Override
-//            protected void setEnabled(ViewGroup view, boolean enabled) {
-//                super.setEnabled(view, enabled);
-//                if (view == null)
-//                    return;
-//                View launch = view.findViewById(R.id.launch);
-//                launch.setEnabled(enabled);
-//                launch.setClickable(enabled);
-//                launch.setLongClickable(enabled);
-//                launch.setFocusable(enabled);
-//            }
-
-//            @Override
-//            public View onCreateView(LayoutInflater inflater, final ViewGroup container,
-//            Bundle savedInstanceState) {
-//                ViewGroup view = (ViewGroup) inflater.inflate(R.layout.prompt_launch, container, false);
-//                ((TextView) view.findViewById(R.id.text)).setText(getPrompt().getText());
-//                Button launch = (Button) view.findViewById(R.id.launch);
-//                launch.setText(getLaunchButtonText());
-//                launch.setFragment(this);
-//                return view;
-//            }
-
         @Override
         public void onCreatePromptView(LayoutInflater inflater, ViewGroup container,
                 Bundle savedInstanceState) {
             ViewGroup view = (ViewGroup) inflater.inflate(R.layout.prompt_launch, container, true);
-//            ((TextView) view.findViewById(R.id.text)).setText(getPrompt().getText());
             Button launch = (Button) view.findViewById(R.id.launch);
             launch.setText(getLaunchButtonText());
             launch.setOnClickListener(this);
-//            return view;
         }
 
         protected abstract String getLaunchButtonText();

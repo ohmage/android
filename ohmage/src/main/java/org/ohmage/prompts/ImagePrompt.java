@@ -18,12 +18,13 @@ package org.ohmage.prompts;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.view.View;
 
 import org.ohmage.app.R;
+
+import java.io.File;
 
 /**
  * Created by cketcham on 1/24/14.
@@ -41,6 +42,7 @@ public class ImagePrompt extends MediaPrompt {
     public static class ImagePromptFragment extends PromptLauncherFragment<ImagePrompt> {
 
         private static final int REQUEST_CODE = 0;
+        private File mFile;
 
         public static ImagePromptFragment getInstance(ImagePrompt prompt) {
             ImagePromptFragment fragment = new ImagePromptFragment();
@@ -54,7 +56,8 @@ public class ImagePrompt extends MediaPrompt {
 
         @Override public void onClick(View v) {
             Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(getPrompt().getFile()));
+            mFile = MediaPrompt.getTemporaryResponseFile();
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, mFile);
             startActivityForResult(intent, REQUEST_CODE);
         }
 
@@ -62,7 +65,7 @@ public class ImagePrompt extends MediaPrompt {
             super.onActivityResult(requestCode, resultCode, data);
             if (resultCode == Activity.RESULT_OK) {
                 //TODO: resize image
-                notifySkipStateChanged();
+                setValue(mFile);
             }
         }
     }
