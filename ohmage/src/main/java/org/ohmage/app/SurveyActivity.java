@@ -36,6 +36,7 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -83,7 +84,7 @@ public class SurveyActivity extends InjectedActionBarActivity
      * The pager widget, which handles animation and allows swiping horizontally to access previous
      * and next wizard steps.
      */
-    private PromptViewPager mPager;
+    public PromptViewPager mPager;
 
     /**
      * The pager adapter, which provides the pages to the view pager widget.
@@ -303,6 +304,11 @@ public class SurveyActivity extends InjectedActionBarActivity
         boolean mHidden = true;
 
         private View.OnClickListener mOnClickListener;
+        private View mButtons;
+        private TextView skipButton;
+        private TextView okButton;
+
+        private boolean mOkPressed = false;
 
         @Override
         public void onCreate(Bundle savedInstanceState) {
@@ -311,7 +317,55 @@ public class SurveyActivity extends InjectedActionBarActivity
 
             if (savedInstanceState != null) {
                 mHidden = savedInstanceState.getBoolean("hidden", false);
+                mOkPressed = savedInstanceState.getBoolean("okPressed", false);
             }
+        }
+
+        @Override public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                Bundle savedInstanceState) {
+            ViewGroup view = (ViewGroup) inflater.inflate(R.layout.prompt_basic, container, false);
+            ((TextView) view.findViewById(R.id.text)).setText(getPromptText());
+            mButtons = view.findViewById(R.id.buttons);
+            skipButton = (TextView) view.findViewById(R.id.skip);
+            okButton = (TextView) view.findViewById(R.id.ok);
+
+            okButton.setOnClickListener(new OnClickListener() {
+                @Override public void onClick(View v) {
+                    mOkPressed = true;
+                    onOkPressed();
+                }
+            });
+            skipButton.setOnClickListener(new OnClickListener() {
+                @Override public void onClick(View v) {
+                    mOkPressed = true;
+                    onSkipPressed();
+                }
+            });
+
+            if(isSkippable()) {
+                skipButton.setVisibility(View.VISIBLE);
+            } else {
+                skipButton.setVisibility(View.GONE);
+            }
+
+            if (getOkPressed()) {
+                view.findViewById(R.id.buttons).setVisibility(View.GONE);
+            } else {
+                updateCanContinue();
+            }
+
+            onCreatePromptView(inflater, (ViewGroup) view.findViewById(R.id.content),
+                    savedInstanceState);
+
+            return view;
+        }
+
+        protected void onSkipPressed() {
+
+        }
+
+        protected void onOkPressed() {
+
         }
 
         @Override
@@ -322,9 +376,41 @@ public class SurveyActivity extends InjectedActionBarActivity
             setHidden(view, mHidden, 0);
         }
 
+        protected String getPromptText() {
+            return "";
+        }
+
+        protected boolean canContinue() {
+            return true;
+        }
+
+        protected void updateCanContinue() {
+            if(canContinue()) {
+                okButton.setEnabled(true);
+            } else {
+                okButton.setEnabled(false);
+            }
+        }
+
+        protected boolean isSkippable() {
+            return true;
+        }
+
+        /**
+         * Allow children to inflate their subview into the main view.
+         *
+         * @param inflater
+         * @param container
+         * @param savedInstanceState
+         */
+        public void onCreatePromptView(LayoutInflater inflater, ViewGroup container,
+                Bundle savedInstanceState) {
+        }
+
         @Override public void onSaveInstanceState(Bundle outState) {
             super.onSaveInstanceState(outState);
             outState.putBoolean("hidden", mHidden);
+            outState.putBoolean("okPressed", mOkPressed);
         }
 
         public void setHidden(boolean hidden) {
@@ -351,6 +437,15 @@ public class SurveyActivity extends InjectedActionBarActivity
 
         public void setOnClickListener(View.OnClickListener onClickListener) {
             mOnClickListener = onClickListener;
+        }
+
+        public boolean getOkPressed() {
+            return mOkPressed;
+        }
+
+        public void showButtons(int visibility) {
+            if(mButtons != null)
+                mButtons.setVisibility(visibility);
         }
     }
 

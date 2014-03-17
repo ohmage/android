@@ -95,4 +95,11 @@
     <style name="Signup.Input" parent="Signup">
         <item name="android:textSize">16sp</item>
     </style>
+
+    <style name="Widget.Holo.ButtonBar" parent="android:Widget.Holo">
+        <item name="android:divider">?android:attr/dividerVertical</item>
+    </style>
+
+    <style name="Widget.Holo.ButtonBar.Button" parent="android:Widget.Holo">
+    </style>
 </resources>

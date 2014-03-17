@@ -24,4 +24,5 @@
     <style name="AppBaseTheme" parent="@style/Theme.AppCompat.Light">
         <!-- API 11 theme customizations can go here. -->
     </style>
+
 </resources>

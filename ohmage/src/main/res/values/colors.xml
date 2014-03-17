@@ -21,4 +21,5 @@
     <color name="default_bg">#ffffffff</color>
     <color name="ohmage_dark_blue">#ff0f7aab</color>
     <color name="secondary_text">#ff808080</color>
+    <color name="holo_blue_light">#ff33b5e5</color>
 </resources>

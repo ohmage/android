@@ -23,7 +23,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.TextView;
 
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
@@ -82,12 +81,18 @@ public class BasePrompt implements Prompt {
             return fragment;
         }
 
+        @Override protected String getPromptText() {
+            return getArguments().getString("text");
+        }
+
+        @Override protected void onOkPressed() {
+            super.onOkPressed();
+            ((SurveyActivity)getActivity()).mPager.goToNext();
+        }
+
         @Override
-        public View onCreateView(LayoutInflater inflater, final ViewGroup container,
-                Bundle savedInstanceState) {
-            ViewGroup view = (ViewGroup) inflater.inflate(R.layout.prompt_basic, container, false);
-            ((TextView) view.findViewById(R.id.text)).setText(getArguments().getString("text"));
-            return view;
+        public boolean isSkippable() {
+            return false;
         }
     }
 
@@ -107,24 +112,13 @@ public class BasePrompt implements Prompt {
             return prompt;
         }
 
-        @Override public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                Bundle savedInstanceState) {
-            ViewGroup view = (ViewGroup) inflater.inflate(R.layout.prompt_basic, container, false);
-            ((TextView) view.findViewById(R.id.text)).setText(getPrompt().getText());
-            onCreatePromptView(inflater, (ViewGroup) view.findViewById(R.id.content),
-                    savedInstanceState);
-            return view;
+        @Override
+        protected boolean isSkippable() {
+            return prompt.isSkippable();
         }
 
-        /**
-         * Allow children to inflate their subview into the main view.
-         *
-         * @param inflater
-         * @param container
-         * @param savedInstanceState
-         */
-        public void onCreatePromptView(LayoutInflater inflater, ViewGroup container,
-                Bundle savedInstanceState) {
+        @Override protected String getPromptText() {
+            return prompt.getText();
         }
     }
 
@@ -146,7 +140,7 @@ public class BasePrompt implements Prompt {
             boolean notify = skippableStateChanged(getPrompt().value, object);
             getPrompt().value = object;
             if (notify) {
-                notifyValidAnswerStateChanged();
+                updateCanContinue();
             }
         }
 
@@ -164,6 +158,25 @@ public class BasePrompt implements Prompt {
         private void notifyValidAnswerStateChanged() {
             if (mOnValidAnswerStateChangedListener != null) {
                 mOnValidAnswerStateChangedListener.onValidAnswerStateChanged(getPrompt());
+            }
+        }
+
+        @Override
+        protected boolean canContinue() {
+            return getPrompt().hasValidResponse();
+        }
+
+        @Override protected void onOkPressed() {
+            super.onOkPressed();
+            if(getPrompt().hasValidResponse()) {
+                notifyValidAnswerStateChanged();
+            }
+        }
+
+        @Override protected void onSkipPressed() {
+            super.onSkipPressed();
+            if (getPrompt().isSkippable()) {
+                notifyValidAnswerStateChanged();
             }
         }
     }

@@ -20,6 +20,7 @@ import android.content.Context;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.PagerAdapter;
 import android.util.AttributeSet;
+import android.view.View;
 
 import org.ohmage.app.SurveyActivity;
 import org.ohmage.app.SurveyActivity.BasePromptAdapterFragment;
@@ -73,22 +74,34 @@ public class PromptViewPager extends VerticalViewPager implements
     private void updateLastValidResponse(int index) {
         final int N = getAdapter().getCount();
         for (int i = Math.min(mLastValidPromptItem, index); i < N; i++) {
-            Fragment item = getAdapter().getObject(i);
-            if (item instanceof AnswerablePromptFragment) {
-                if (!((AnswerablePrompt) ((AnswerablePromptFragment) item).getPrompt())
-                        .hasValidResponse()) {
-                    ((AnswerablePromptFragment) item).setHidden(false);
-                    // Hide any prompts which may be after this prompt
-                    hideAllPromptsBetween(i, mLastValidPromptItem);
-                    mLastValidPromptItem = i;
-                    return;
+            BasePromptAdapterFragment item = (BasePromptAdapterFragment) getAdapter().getObject(i);
+            boolean stopHere = false;
+            if (!item.getOkPressed()) {
+                stopHere = true;
+            } else if (item instanceof AnswerablePromptFragment) {
+                AnswerablePromptFragment fragment = (AnswerablePromptFragment) item;
+                AnswerablePrompt prompt = (AnswerablePrompt) fragment.getPrompt();
+                if (!prompt.hasValidResponse() || !fragment.getOkPressed()) {
+                    break;
                 }
             }
 
-            if (item instanceof BasePromptAdapterFragment) {
-                ((BasePromptAdapterFragment) item).setHidden(false);
-            }
+            if(stopHere) {
+            item.setHidden(false);
+            // Show the buttons for this prompt
+            item.showButtons(View.VISIBLE);
+            // Hide any prompts which may be after this prompt
+            hideAllPromptsBetween(i, mLastValidPromptItem);
+                if(mLastValidPromptItem != i)
+                    setCurrentItem(i);
+            mLastValidPromptItem = i;
+                return;
         }
+
+
+                item.setHidden(false);
+                item.showButtons(View.GONE);
+    }
     }
 
     private void hideAllPromptsBetween(int start, int end) {
@@ -109,6 +122,11 @@ public class PromptViewPager extends VerticalViewPager implements
     @Override public void onValidAnswerStateChanged(AnswerablePrompt prompt) {
         int index = getAdapter().getPromptPosition(prompt);
         updateLastValidResponse(index);
+        calculateBottomBound();
+    }
+
+    public void goToNext() {
+        updateLastValidResponse(mLastValidPromptItem+1);
         calculateBottomBound();
     }
 }
