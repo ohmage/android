@@ -231,7 +231,7 @@ public class AudioRecorder extends LinearLayout {
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-        //ensurePlayButtonState();
+        ensurePlayButtonState();
     }
 
     @Override
