@@ -66,42 +66,44 @@ public class PromptViewPager extends VerticalViewPager implements
         super.onLayout(changed, l, t, r, b);
 
         if (getAdapter() != null) {
-            updateLastValidResponse(0);
+            updateLastValidResponse(mLastValidPromptItem);
             calculateBottomBound();
         }
     }
 
     private void updateLastValidResponse(int index) {
         final int N = getAdapter().getCount();
-        for (int i = Math.min(mLastValidPromptItem, index); i < N; i++) {
-            BasePromptAdapterFragment item = (BasePromptAdapterFragment) getAdapter().getObject(i);
-            boolean stopHere = false;
+        BasePromptAdapterFragment item = null;
+        int i;
+        for (i = Math.min(mLastValidPromptItem, index); i < N; i++) {
+            item = (BasePromptAdapterFragment) getAdapter().getObject(i);
             if (!item.getOkPressed()) {
-                stopHere = true;
+                break;
             } else if (item instanceof AnswerablePromptFragment) {
                 AnswerablePromptFragment fragment = (AnswerablePromptFragment) item;
                 AnswerablePrompt prompt = (AnswerablePrompt) fragment.getPrompt();
-                if (!prompt.hasValidResponse() || !fragment.getOkPressed()) {
+                if (!prompt.hasValidResponse() && !prompt.isSkippable()) {
                     break;
                 }
             }
 
-            if(stopHere) {
+            item.setHidden(false);
+            item.showButtons(View.GONE);
+        }
+
+        //Go back if you went all the way to the end.. probably should refactor this
+        if(i == N) {
+            i--;
+        }
+
+        if(item != null) {
             item.setHidden(false);
             // Show the buttons for this prompt
             item.showButtons(View.VISIBLE);
             // Hide any prompts which may be after this prompt
             hideAllPromptsBetween(i, mLastValidPromptItem);
-                if(mLastValidPromptItem != i)
-                    setCurrentItem(i);
             mLastValidPromptItem = i;
-                return;
         }
-
-
-                item.setHidden(false);
-                item.showButtons(View.GONE);
-    }
     }
 
     private void hideAllPromptsBetween(int start, int end) {
@@ -116,7 +118,6 @@ public class PromptViewPager extends VerticalViewPager implements
     private void calculateBottomBound() {
         ItemInfo ii = infoForPosition(mLastValidPromptItem);
         mSoftBottomBound = ii.offset * getHeight();
-        return;
     }
 
     @Override public void onValidAnswerStateChanged(AnswerablePrompt prompt) {
