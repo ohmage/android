@@ -328,17 +328,18 @@ public class SurveyActivity extends InjectedActionBarActivity
         }
 
         public void setHidden(boolean hidden) {
+            if(mHidden == hidden)
+                return;
             setHidden(getView(), hidden, 200);
         }
 
         public void setHidden(boolean hidden, int duration) {
+            if(mHidden == hidden)
+                return;
             setHidden(getView(), hidden, duration);
         }
 
         protected void setHidden(View view, boolean hidden, int duration) {
-            if(mHidden == hidden)
-                return;
-
             mHidden = hidden;
             if (view == null)
                 return;
