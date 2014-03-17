@@ -24,7 +24,6 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.TextView;
 
 import org.ohmage.app.R;
 
@@ -68,8 +67,6 @@ public class TextPrompt extends AnswerablePrompt<String> {
             ViewGroup rootView = (ViewGroup) inflater.inflate(
                     R.layout.prompt_text, container, true);
 
-            TextView text = (TextView) rootView.findViewById(R.id.text);
-            text.setText(getPrompt().text);
             EditText input = (EditText) rootView.findViewById(R.id.input);
             input.addTextChangedListener(new TextWatcher() {
                 @Override

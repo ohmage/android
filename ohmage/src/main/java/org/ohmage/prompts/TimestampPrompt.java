@@ -19,10 +19,8 @@ package org.ohmage.prompts;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.DatePicker;
-import android.widget.TextView;
 import android.widget.TimePicker;
 
 import org.json.JSONException;
@@ -59,15 +57,11 @@ public class TimestampPrompt extends AnswerablePrompt<Calendar> {
         }
 
         @Override
-        public View onCreateView(LayoutInflater inflater, final ViewGroup container,
+        public void onCreatePromptView(LayoutInflater inflater, final ViewGroup container,
                 Bundle savedInstanceState) {
-            ViewGroup rootView = (ViewGroup) inflater.inflate(
-                    R.layout.prompt_timestamp, container, false);
+            ViewGroup view = (ViewGroup) inflater.inflate(R.layout.prompt_timestamp, container, true);
 
-            TextView text = (TextView) rootView.findViewById(R.id.text);
-            text.setText(getPrompt().text);
-
-            DatePicker datePicker = (DatePicker) rootView.findViewById(R.id.datePicker);
+            DatePicker datePicker = (DatePicker) view.findViewById(R.id.datePicker);
             Calendar c = Calendar.getInstance();
             //TODO: is it possible to omit an initial value for this prompt
 //            setValue(c);
@@ -88,7 +82,7 @@ public class TimestampPrompt extends AnswerablePrompt<Calendar> {
                                     setValue(c);
                                 }
                             });
-            TimePicker timePicker = (TimePicker) rootView.findViewById(R.id.timePicker);
+            TimePicker timePicker = (TimePicker) view.findViewById(R.id.timePicker);
             timePicker.setOnTimeChangedListener(new TimePicker.OnTimeChangedListener() {
                 @Override public void onTimeChanged(TimePicker view, int hourOfDay, int minute) {
                     Calendar c = getPrompt().value;
@@ -101,8 +95,6 @@ public class TimestampPrompt extends AnswerablePrompt<Calendar> {
                     setValue(c);
                 }
             });
-
-            return rootView;
         }
     }
 }

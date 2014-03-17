@@ -20,7 +20,6 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import org.ohmage.app.R;
 import org.ohmage.widget.NumberPicker;
@@ -55,7 +54,6 @@ public class NumberPrompt extends AnswerablePrompt {
                 Bundle savedInstanceState) {
             ViewGroup view = (ViewGroup) inflater.inflate(R.layout.prompt_number, container, true);
 
-            ((TextView) view.findViewById(R.id.text)).setText(getPrompt().getText());
             NumberPicker numberPicker = (NumberPicker) view.findViewById(R.id.number_picker);
             numberPicker.setRange(((NumberPrompt) getPrompt()).min,
                     ((NumberPrompt) getPrompt()).max);
