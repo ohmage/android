@@ -16,18 +16,15 @@
 
 package org.ohmage.prompts;
 
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.content.DialogInterface;
-import android.content.DialogInterface.OnClickListener;
 import android.os.Bundle;
-import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.CheckedTextView;
+import android.widget.LinearLayout;
 
 import org.ohmage.app.R;
-
-import java.util.ArrayList;
 
 /**
  * Created by cketcham on 1/24/14.
@@ -47,8 +44,7 @@ public class SingleChoicePrompt<T> extends ChoicePrompt<T, T> {
      * A fragment which just shows the text of the message
      */
     public static class SingleChoicePromptFragment<T>
-            extends PromptLauncherFragment<SingleChoicePrompt<T>>
-            implements OnClickListener {
+            extends AnswerablePromptFragment<SingleChoicePrompt<T>> {
 
         public static SingleChoicePromptFragment getInstance(SingleChoicePrompt prompt) {
             SingleChoicePromptFragment fragment = new SingleChoicePromptFragment();
@@ -56,59 +52,38 @@ public class SingleChoicePrompt<T> extends ChoicePrompt<T, T> {
             return fragment;
         }
 
-        @Override protected String getLaunchButtonText() {
-            return getString(R.string.show_choices);
-        }
-
-        @Override public void onClick(View v) {
-            SingleChoiceDialogFragment
-                    .getInstance(this, getPrompt().choices, getPrompt().getCheckedItem())
-                    .show(getFragmentManager(), "dialog");
-        }
-
-        @Override public void onClick(DialogInterface dialog, int which) {
-            Object selected = getPrompt().choices.get(which).value;
-            ((AlertDialog) dialog).getListView().setItemChecked(which, !selected.equals(getPrompt().value));
-            setValue((selected.equals(getPrompt().value)) ? null : selected);
-        }
-    }
-
-    public static class SingleChoiceDialogFragment extends DialogFragment {
-
-        private OnClickListener mListener;
-
-        public static <T> DialogFragment getInstance(OnClickListener l,
-                ArrayList<KLVPair<T>> choices, int checkedItem) {
-            SingleChoiceDialogFragment fragment = new SingleChoiceDialogFragment();
-            Bundle args = new Bundle();
-            args.putSerializable("choices", choices);
-            args.putInt("checkedItem", checkedItem);
-            fragment.setArguments(args);
-            fragment.setOnClickListener(l);
-            return fragment;
-        }
-
-        public void setOnClickListener(OnClickListener listener) {
-            mListener = listener;
-        }
-
         @Override
-        public Dialog onCreateDialog(Bundle savedInstanceState) {
+        public void onCreatePromptView(LayoutInflater inflater, ViewGroup container,
+                Bundle savedInstanceState) {
+            ViewGroup view = (ViewGroup) inflater.inflate(R.layout.prompt_choice, container, true);
+            final LinearLayout choiceContainer = (LinearLayout) view.findViewById(R.id.list);
 
-            ArrayList<KLVPair> choices =
-                    (ArrayList<KLVPair>) getArguments().getSerializable("choices");
-            int checkedItem = getArguments().getInt("checkedItem");
+            for(int i=0;i<getPrompt().choices.size();i++) {
+                CheckedTextView v = (CheckedTextView) inflater.inflate(android.R.layout.simple_list_item_single_choice, choiceContainer, false);
+                v.setText(getPrompt().choices.get(i));
 
-            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            builder.setSingleChoiceItems(choices.toArray(new KLVPair[]{}), checkedItem, mListener)
-                    // Set the action buttons
-                    .setPositiveButton(R.string.ok, null)
-                    .setNegativeButton(R.string.cancel, new OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int id) {
+                if(getPrompt().getCheckedItem() == i) {
+                    v.setChecked(true);
+                }
+
+                final int position = i;
+                v.setOnClickListener(new View.OnClickListener() {
+                    @Override public void onClick(View v) {
+                        if(getPrompt().value != null) {
+                            View previous = choiceContainer.getChildAt(
+                                    getPrompt().choices.indexOfValue(getPrompt().value));
+                            if(previous instanceof CheckedTextView) {
+                                ((CheckedTextView) previous).setChecked(false);
+                            }
                         }
-                    });
-            return builder.create();
+
+                        Object selected = getPrompt().choices.get(position).value;
+                        ((CheckedTextView)v).setChecked(!selected.equals(getPrompt().value));
+                        setValue((selected.equals(getPrompt().value)) ? null : selected);
+                    }
+                });
+                choiceContainer.addView(v);
+            }
         }
     }
 }

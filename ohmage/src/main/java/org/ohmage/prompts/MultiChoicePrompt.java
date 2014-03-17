@@ -16,14 +16,13 @@
 
 package org.ohmage.prompts;
 
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.content.DialogInterface;
-import android.content.DialogInterface.OnMultiChoiceClickListener;
 import android.os.Bundle;
-import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.CheckedTextView;
+import android.widget.LinearLayout;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -72,8 +71,7 @@ public class MultiChoicePrompt<T> extends ChoicePrompt<ArrayList<T>, T> {
      * A fragment which just shows the text of the message
      */
     public static class MultiChoicePromptFragment<T>
-            extends PromptLauncherFragment<MultiChoicePrompt<T>>
-            implements OnMultiChoiceClickListener {
+            extends AnswerablePromptFragment<MultiChoicePrompt<T>> {
 
         public static MultiChoicePromptFragment getInstance(MultiChoicePrompt prompt) {
             MultiChoicePromptFragment fragment = new MultiChoicePromptFragment();
@@ -81,31 +79,50 @@ public class MultiChoicePrompt<T> extends ChoicePrompt<ArrayList<T>, T> {
             return fragment;
         }
 
-        @Override protected String getLaunchButtonText() {
-            return getString(R.string.show_choices);
-        }
+        @Override
+        public void onCreatePromptView(LayoutInflater inflater, ViewGroup container,
+                Bundle savedInstanceState) {
+            ViewGroup view = (ViewGroup) inflater.inflate(R.layout.prompt_choice, container, true);
+            LinearLayout choiceContainer = (LinearLayout) view.findViewById(R.id.list);
 
-        @Override public void onClick(View v) {
-            MultiChoiceDialogFragment.getInstance(this, getPrompt().choices, getPrompt().checkedItems())
-                    .show(getFragmentManager(), "dialog");
-        }
+            for (int i = 0; i < getPrompt().choices.size(); i++) {
+                CheckedTextView v = (CheckedTextView) inflater
+                        .inflate(android.R.layout.simple_list_item_multiple_choice, choiceContainer,
+                                false);
+                v.setText(getPrompt().choices.get(i));
 
-        @Override public void onClick(DialogInterface dialog, int which, boolean isChecked) {
-            List answer = getPrompt().getNewList();
-            if (getPrompt().value != null)
-                answer.addAll((List) getPrompt().value);
-            if (isChecked) {
-                answer.add(getPrompt().choices.get(which).value);
-            } else {
-                answer.remove(getPrompt().choices.get(which).value);
+                if (getPrompt().positionIsChecked(i)) {
+                    v.setChecked(true);
+                }
+
+                final int position = i;
+                v.setOnClickListener(new View.OnClickListener() {
+                    @Override public void onClick(View v) {
+                        List answer = getPrompt().getNewList();
+                        if (getPrompt().value != null) {
+                            answer.addAll((List) getPrompt().value);
+                        }
+
+                        T item = (T) getPrompt().choices.get(position);
+                        if (!answer.contains(item)) {
+                            answer.add(item);
+                            ((CheckedTextView) v).setChecked(true);
+                        } else {
+                            answer.remove(item);
+                            ((CheckedTextView) v).setChecked(false);
+                        }
+                        setValue(answer);
+                    }
+                });
+
+                choiceContainer.addView(v);
             }
-            setValue(answer);
         }
     }
 
     private boolean[] checkedItems() {
         boolean[] checkedItems = new boolean[choices.size()];
-        if(value != null) {
+        if (value != null) {
             for (int i = 0; i < value.size(); i++) {
                 checkedItems[choices.indexOfValue(value.get(i))] = true;
             }
@@ -113,42 +130,7 @@ public class MultiChoicePrompt<T> extends ChoicePrompt<ArrayList<T>, T> {
         return checkedItems;
     }
 
-    public static class MultiChoiceDialogFragment extends DialogFragment {
-        private OnMultiChoiceClickListener mListener;
-
-        public static <T> DialogFragment getInstance(OnMultiChoiceClickListener l,
-                ArrayList<KLVPair<T>> choices, boolean[] checkedItems) {
-            MultiChoiceDialogFragment fragment = new MultiChoiceDialogFragment();
-            Bundle args = new Bundle();
-            args.putSerializable("choices", choices);
-            args.putSerializable("checkedItems", checkedItems);
-            fragment.setArguments(args);
-            fragment.setOnMultiChoiceClickListener(l);
-            return fragment;
-        }
-
-        public void setOnMultiChoiceClickListener(OnMultiChoiceClickListener listener) {
-            mListener = listener;
-        }
-
-        @Override
-        public Dialog onCreateDialog(Bundle savedInstanceState) {
-
-            ArrayList<KLVPair> choices =
-                    (ArrayList<KLVPair>) getArguments().getSerializable("choices");
-            boolean[] checkedItems = (boolean[]) getArguments().getSerializable("checkedItems");
-
-            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            builder.setMultiChoiceItems(choices.toArray(new KLVPair[]{}), checkedItems, mListener)
-                    // Set the action buttons
-                    .setPositiveButton(R.string.ok, null)
-                    .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int id) {
-                        }
-                    });
-            return builder.create();
-        }
+    private boolean positionIsChecked(int position) {
+        return value != null && value.contains(choices.get(position));
     }
-
 }
