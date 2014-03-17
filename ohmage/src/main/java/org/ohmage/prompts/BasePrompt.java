@@ -111,7 +111,8 @@ public class BasePrompt implements Prompt {
                 Bundle savedInstanceState) {
             ViewGroup view = (ViewGroup) inflater.inflate(R.layout.prompt_basic, container, false);
             ((TextView) view.findViewById(R.id.text)).setText(getPrompt().getText());
-            onCreatePromptView(inflater, view, savedInstanceState);
+            onCreatePromptView(inflater, (ViewGroup) view.findViewById(R.id.content),
+                    savedInstanceState);
             return view;
         }
 
