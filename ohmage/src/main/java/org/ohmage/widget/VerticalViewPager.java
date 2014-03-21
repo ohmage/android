@@ -1559,17 +1559,17 @@ public class VerticalViewPager extends ViewGroup {
 
                     int childLeft = paddingLeft;
 
-                    int childTop = paddingTop = loff;
+                    int childTop = loff;
 
                     if (lp.needsMeasure) {
                         // This was added during layout and needs measurement.
                         // Do it now that we know what we're working with.
                         lp.needsMeasure = false;
                         final int widthSpec = MeasureSpec.makeMeasureSpec(
-                                (int) ((width - paddingLeft - paddingRight) * lp.heightFactor),
+                                (int) (width - paddingLeft - paddingRight),
                                 MeasureSpec.EXACTLY);
                         final int heightSpec = MeasureSpec.makeMeasureSpec(
-                                (int) (height - paddingTop - paddingBottom),
+                                (int) ((height - paddingTop - paddingBottom) * lp.heightFactor),
                                 MeasureSpec.EXACTLY);
                         child.measure(widthSpec, heightSpec);
                     }
