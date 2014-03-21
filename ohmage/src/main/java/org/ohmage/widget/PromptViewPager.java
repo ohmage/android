@@ -62,13 +62,41 @@ public class PromptViewPager extends VerticalViewPager implements
     }
 
     @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        if(getAdapter() != null) {
+            calculateLastValidResponse();
+            calculateBottomBound();
+        }
+    }
+
+    @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
         super.onLayout(changed, l, t, r, b);
 
         if (getAdapter() != null) {
-            updateLastValidResponse(mLastValidPromptItem);
-            calculateBottomBound();
+            showValidPrompts();
         }
+    }
+
+    private void calculateLastValidResponse() {
+        final int N = getAdapter().getCount();
+        for (int i = 0; i < N; i++) {
+            mLastValidPromptItem = i;
+            BasePromptAdapterFragment item = (BasePromptAdapterFragment) getAdapter().getObject(i);
+            if(item != null) {
+                if (!item.getOkPressed()) {
+                    break;
+                } else if (item instanceof AnswerablePromptFragment) {
+                    AnswerablePromptFragment fragment = (AnswerablePromptFragment) item;
+                    AnswerablePrompt prompt = (AnswerablePrompt) fragment.getPrompt();
+                    if (!prompt.hasValidResponse() && !prompt.isSkippable()) {
+                        break;
+                    }
+                }
+            }
+        }
+        setMaximumPage(mLastValidPromptItem);
     }
 
     private void updateLastValidResponse(int index) {
@@ -77,18 +105,20 @@ public class PromptViewPager extends VerticalViewPager implements
         int i;
         for (i = Math.min(mLastValidPromptItem, index); i < N; i++) {
             item = (BasePromptAdapterFragment) getAdapter().getObject(i);
-            if (!item.getOkPressed()) {
-                break;
-            } else if (item instanceof AnswerablePromptFragment) {
-                AnswerablePromptFragment fragment = (AnswerablePromptFragment) item;
-                AnswerablePrompt prompt = (AnswerablePrompt) fragment.getPrompt();
-                if (!prompt.hasValidResponse() && !prompt.isSkippable()) {
+            if(item != null) {
+                if (!item.getOkPressed()) {
                     break;
+                } else if (item instanceof AnswerablePromptFragment) {
+                    AnswerablePromptFragment fragment = (AnswerablePromptFragment) item;
+                    AnswerablePrompt prompt = (AnswerablePrompt) fragment.getPrompt();
+                    if (!prompt.hasValidResponse() && !prompt.isSkippable()) {
+                        break;
+                    }
                 }
-            }
 
-            item.setHidden(false);
-            item.showButtons(View.GONE);
+                item.showButtons(View.GONE);
+                item.setHidden(false);
+            }
         }
 
         //Go back if you went all the way to the end.. probably should refactor this
@@ -106,6 +136,21 @@ public class PromptViewPager extends VerticalViewPager implements
         }
     }
 
+    private void showValidPrompts() {
+        for (int i = 0; i < mLastValidPromptItem; i++) {
+            BasePromptAdapterFragment item = (BasePromptAdapterFragment) getAdapter().getObject(i);
+            if (item != null) {
+                item.setHidden(false);
+                item.showButtons(View.GONE);
+            }
+        }
+        BasePromptAdapterFragment item =
+                (BasePromptAdapterFragment) getAdapter().getObject(mLastValidPromptItem);
+        if(item != null) {
+            item.setHidden(false);
+        }
+    }
+
     private void hideAllPromptsBetween(int start, int end) {
         for (int i = start+1; i <= end; i++) {
             Fragment item = getAdapter().getObject(i);
@@ -117,7 +162,8 @@ public class PromptViewPager extends VerticalViewPager implements
 
     private void calculateBottomBound() {
         ItemInfo ii = infoForPosition(mLastValidPromptItem);
-        mSoftBottomBound = ii.offset * getHeight();
+        if(ii != null)
+            mSoftBottomBound = ii.offset * getHeight();
     }
 
     @Override public void onValidAnswerStateChanged(AnswerablePrompt prompt) {
