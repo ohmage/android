@@ -218,6 +218,10 @@ public class VerticalViewPager extends ViewGroup {
     private ArrayList<View> mDrawingOrderedChildren;
     private static final ViewPositionComparator sPositionComparator = new ViewPositionComparator();
 
+    // Only show pages less than the specified maximum
+    // TODO: maybe the adapter should handle this?
+    private int mMaximumPage = 0;
+
     /**
      * Indicates that the pager is in an idle, settled state. The current page
      * is fully in view and no animation is in progress.
@@ -2158,9 +2162,16 @@ public class VerticalViewPager extends ViewGroup {
 
             // Only let the user target pages we have items for
             targetPage = Math.max(firstItem.position, Math.min(targetPage, lastItem.position));
+
+            if(targetPage > mMaximumPage)
+                targetPage = mMaximumPage;
         }
 
         return targetPage;
+    }
+
+    public void setMaximumPage(int page) {
+        mMaximumPage = page;
     }
 
     @Override
