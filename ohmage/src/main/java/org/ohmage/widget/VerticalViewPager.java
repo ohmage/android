@@ -58,6 +58,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 
 /**
  * Layout manager that allows the user to flip left and right
@@ -960,7 +961,7 @@ public class VerticalViewPager extends ViewGroup {
                         mAdapter.destroyItem(this, pos, ii.object);
                         if (DEBUG) {
                             Log.i(TAG, "populate() - destroyItem() with pos: " + pos +
-                                       " view: " + ((View) ii.object));
+                                       " view: " + (ii.object));
                         }
                         itemIndex--;
                         curIndex--;
@@ -992,7 +993,7 @@ public class VerticalViewPager extends ViewGroup {
                             mAdapter.destroyItem(this, pos, ii.object);
                             if (DEBUG) {
                                 Log.i(TAG, "populate() - destroyItem() with pos: " + pos +
-                                           " view: " + ((View) ii.object));
+                                           " view: " + (ii.object));
                             }
                             ii = itemIndex < mItems.size() ? mItems.get(itemIndex) : null;
                         }
@@ -1386,6 +1387,9 @@ public class VerticalViewPager extends ViewGroup {
 
         // Page views next.
         size = getChildCount();
+        double offset = 0;
+        int start = size;
+        HashMap<Integer,Double> updateOffsets = new HashMap<Integer, Double>();
         for (int i = 0; i < size; ++i) {
             final View child = getChildAt(i);
             if (child.getVisibility() != GONE) {
@@ -1404,10 +1408,31 @@ public class VerticalViewPager extends ViewGroup {
                     if (lp.height == LayoutParams.WRAP_CONTENT) {
                         lp.heightFactor = child.getMeasuredHeight() / new Float(measuredHeight);
                         ItemInfo ii = infoForChild(child);
-                        if (ii != null)
+                        if (ii != null) {
+                            double tmp = ii.heightFactor;
                             ii.heightFactor = lp.heightFactor;
+                            //TODO: fix this by using some initial value rather than 0.1
+                            if(Math.abs(tmp-0.1) > 0.000001 && tmp != lp.heightFactor) {
+                                start = ii.position;
+                                updateOffsets.put(ii.position, lp.heightFactor-tmp);
+                            }
+                        }
                     }
                 }
+            }
+        }
+
+        // Update the offsets of any views which appeared after the ones that changed
+        int last = 0;
+        for(int i=0;i<mItems.size();i++) {
+            last = Math.max(mItems.get(i).position, last);
+        }
+
+        for(int i=start+1;i<=last;i++) {
+            offset += (updateOffsets.containsKey(i-1)) ? updateOffsets.get(i-1) : 0;
+            ItemInfo ii = infoForPosition(i);
+            if(ii != null) {
+                ii.offset += offset;
             }
         }
     }
