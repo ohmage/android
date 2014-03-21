@@ -263,20 +263,25 @@ public class SurveyActivity extends InjectedActionBarActivity
         }
 
         @Override
-        public Parcelable saveState() {
-            Bundle bundle = new Bundle();
-            bundle.putSerializable("fragments", mFragments);
-            bundle.putParcelable("superstate", super.saveState());
-            return bundle;
-        }
-
-        @Override
         public void restoreState(Parcelable state, ClassLoader loader) {
+            // Hijack the fragment state from our parent
             if (state != null) {
                 Bundle bundle = (Bundle) state;
-                mFragments = (BitSet) bundle.getSerializable("fragments");
-                super.restoreState(bundle.getParcelable("superstate"), loader);
+                mFragments.clear();
+                Iterable<String> keys = bundle.keySet();
+                for (String key : keys) {
+                    if (key.startsWith("f")) {
+                        int index = Integer.parseInt(key.substring(1));
+                        Fragment f = getSupportFragmentManager().getFragment(bundle, key);
+                        if (f != null) {
+                            mFragments.set(index, true);
+                        } else {
+                            Log.w(TAG, "Bad fragment at key " + key);
+                        }
+                    }
+                }
             }
+            super.restoreState(state, loader);
         }
 
         public int getPromptPosition(Prompt prompt) {
