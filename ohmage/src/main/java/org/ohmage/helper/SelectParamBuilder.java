@@ -28,6 +28,7 @@ public class SelectParamBuilder {
 
     public final static String AND = " AND ";
     public final static String OR = " OR ";
+    private boolean mNegate = false;
 
     public SelectParamBuilder() {
         selection = new StringBuilder();
@@ -42,15 +43,16 @@ public class SelectParamBuilder {
 
     /**
      * Convenience method to add a the first value since it wont be an AND or an OR. Calling
-     * either {@link #and(String, String)} or {@link #or(String, String)} has the same effect.
+     * either {@link #and(String, Object)} or {@link #or(String, Object)} has the same effect.
      *
      * @param key
      * @param value
      * @return
      */
     public SelectParamBuilder start(String key, String value) {
-        if (size() > 0)
+        if (size() > 0) {
             throw new RuntimeException("start must be called before and() or or()");
+        }
         append("", key, value);
         return this;
     }
@@ -62,7 +64,7 @@ public class SelectParamBuilder {
      * @param value
      * @return
      */
-    public SelectParamBuilder and(String key, String value) {
+    public SelectParamBuilder and(String key, Object value) {
         return append(AND, key, value);
     }
 
@@ -73,14 +75,54 @@ public class SelectParamBuilder {
      * @param value
      * @return
      */
-    public SelectParamBuilder or(String key, String value) {
+    public SelectParamBuilder or(String key, Object value) {
         return append(OR, key, value);
     }
 
-    private SelectParamBuilder append(String operator, String key, String value) {
-        if (selection.length() != 0) selection.append(operator);
+    private SelectParamBuilder append(String operator, String key, Object value) {
+        if (selection.length() != 0) {
+            selection.append(operator);
+        }
         selection.append(key).append("=?");
-        params.add(value);
+        params.add(value.toString());
+        return this;
+    }
+
+    /**
+     * Append an AND subselection surrounded by parenthesis
+     *
+     * @param subSelect
+     * @return
+     */
+    public SelectParamBuilder andSubSelect(SelectParamBuilder subSelect) {
+        return appendSubSelect(AND, subSelect);
+    }
+
+    /**
+     * Append an OR subselection surrounded by parenthesis
+     *
+     * @param subSelect
+     * @return
+     */
+    public SelectParamBuilder orSubSelect(SelectParamBuilder subSelect) {
+        return appendSubSelect(OR, subSelect);
+    }
+
+    private SelectParamBuilder appendSubSelect(String operator, SelectParamBuilder subSelect) {
+        if (selection.length() != 0) {
+            selection.append(operator);
+        }
+        selection.append("(").append(subSelect.buildSelection()).append(")");
+        params.addAll(subSelect.params);
+        return this;
+    }
+
+    public SelectParamBuilder negate() {
+        return negate(true);
+    }
+
+    public SelectParamBuilder negate(boolean negate) {
+        mNegate = negate;
         return this;
     }
 
@@ -90,6 +132,9 @@ public class SelectParamBuilder {
      * @return
      */
     public String buildSelection() {
+        if(mNegate && selection.length() > 0) {
+            selection.insert(0, "NOT (").append(")");
+        }
         return selection.toString();
     }
 

@@ -20,8 +20,10 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
 
+import org.ohmage.helper.SelectParamBuilder;
 import org.ohmage.operators.ContentProviderSaver;
 import org.ohmage.operators.ContentProviderSaver.Savable;
+import org.ohmage.operators.ContentProviderStateSync.Syncable;
 import org.ohmage.provider.ContentProviderReader;
 import org.ohmage.provider.ContentProviderReader.Readable;
 import org.ohmage.provider.OhmageContract;
@@ -31,7 +33,7 @@ import java.util.ArrayList;
 /**
  * Basic Ohmlet class
  */
-public class Ohmlet implements Savable, Readable {
+public class Ohmlet implements Savable, Readable, Syncable {
     public String ohmletId;
     public String name;
     public String description;
@@ -118,6 +120,12 @@ public class Ohmlet implements Savable, Readable {
             return ordinal() > role.ordinal();
         }
 
+    }
+
+    @Override public SelectParamBuilder select() {
+        SelectParamBuilder select = new SelectParamBuilder();
+        select.and(OhmageContract.Ohmlets.OHMLET_ID, ohmletId);
+        return select;
     }
 
     @Override

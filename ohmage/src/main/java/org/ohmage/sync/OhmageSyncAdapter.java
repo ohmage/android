@@ -45,7 +45,9 @@ import org.ohmage.models.Stream;
 import org.ohmage.models.Survey;
 import org.ohmage.models.User;
 import org.ohmage.operators.ContentProviderSaver.ContentProviderSaverObserver;
+import org.ohmage.operators.ContentProviderStateSync.ContentProviderStateSyncObserver;
 import org.ohmage.provider.OhmageContract;
+import org.ohmage.provider.OhmageContract.Ohmlets;
 import org.ohmage.provider.OhmageContract.Responses;
 import org.ohmage.provider.OhmageContract.Streams;
 import org.ohmage.provider.OhmageContract.Surveys;
@@ -190,12 +192,17 @@ public class OhmageSyncAdapter extends AbstractThreadedSyncAdapter {
                         }
                     }).flatMap(new RefreshOhmlet()).cache();
             ohmlets.subscribe(new ContentProviderSaverObserver(true));
-            ohmlets.flatMap(new SurveysFromOhmlet()).filter(new FilterUpToDateSurveys(provider))
-                    .flatMap(new RefreshSurvey()).subscribe(new ContentProviderSaverObserver(true));
-            ohmlets.flatMap(new StreamsFromOhmlet()).filter(new FilterUpToDateStreams(provider))
-                    .flatMap(new RefreshStream()).subscribe(new ContentProviderSaverObserver(true));
+            ohmlets.toList().subscribe(new ContentProviderStateSyncObserver(Ohmlets.CONTENT_URI, true));
 
-            // TODO: clean up old ohmlets
+            Observable<Survey> surveys = ohmlets.flatMap(new SurveysFromOhmlet()).cache();
+            surveys.filter(new FilterUpToDateSurveys(provider)).flatMap(
+                    new RefreshSurvey()).subscribe(new ContentProviderSaverObserver(true));
+            surveys.toList().subscribe(new ContentProviderStateSyncObserver(Surveys.CONTENT_URI, true));
+
+            Observable<Stream> streams = ohmlets.flatMap(new StreamsFromOhmlet()).cache();
+            streams.filter(new FilterUpToDateStreams(provider)).flatMap(new RefreshStream())
+                    .subscribe(new ContentProviderSaverObserver(true));
+            streams.toList().subscribe(new ContentProviderStateSyncObserver(Streams.CONTENT_URI, true));
 
             // TODO: download streams and surveys that are not part of ohmlets
 

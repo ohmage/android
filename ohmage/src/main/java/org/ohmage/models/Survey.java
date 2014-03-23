@@ -19,8 +19,10 @@ package org.ohmage.models;
 import android.content.ContentValues;
 import android.net.Uri;
 
+import org.ohmage.helper.SelectParamBuilder;
 import org.ohmage.operators.ContentProviderSaver;
 import org.ohmage.operators.ContentProviderSaver.Savable;
+import org.ohmage.operators.ContentProviderStateSync.Syncable;
 import org.ohmage.prompts.Prompt;
 import org.ohmage.provider.OhmageContract;
 
@@ -29,7 +31,7 @@ import java.util.ArrayList;
 /**
  * Created by cketcham on 12/18/13.
  */
-public class Survey implements Savable {
+public class Survey implements Savable, Syncable {
     public String schemaId;
 
     public long schemaVersion;
@@ -48,5 +50,12 @@ public class Survey implements Savable {
 
     @Override public Uri getUrl() {
         return OhmageContract.Surveys.CONTENT_URI;
+    }
+
+    @Override public SelectParamBuilder select() {
+        SelectParamBuilder select = new SelectParamBuilder();
+        select.and(OhmageContract.Surveys.SURVEY_ID, schemaId);
+        select.and(OhmageContract.Surveys.SURVEY_VERSION, schemaVersion);
+        return select;
     }
 }

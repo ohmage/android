@@ -64,7 +64,18 @@ public class OhmageContentProvider extends ContentProvider {
         int count = 0;
 
         switch (sUriMatcher.match(uri)) {
-
+            case MatcherTypes.OHMLETS:
+                count = dbHelper.getWritableDatabase().delete(Tables.Ohmlets, selection,
+                        selectionArgs);
+                break;
+            case MatcherTypes.SURVEYS:
+                count = dbHelper.getWritableDatabase().delete(Tables.Surveys, selection,
+                        selectionArgs);
+                break;
+            case MatcherTypes.STREAMS:
+                count = dbHelper.getWritableDatabase().delete(Tables.Streams, selection,
+                        selectionArgs);
+                break;
             case MatcherTypes.RESPONSES:
                 count = dbHelper.getWritableDatabase().delete(Tables.Responses, selection,
                         selectionArgs);
