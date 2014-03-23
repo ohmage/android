@@ -195,7 +195,7 @@ public class MainActivity extends InjectedActionBarActivity
             if (campaignUrn == null) {
                 Toast.makeText(this, R.string.no_surveys, Toast.LENGTH_SHORT).show();
             } else {
-                Intent intent = new Intent("org.ohmage.reminders.VIEW_REMINDERS");
+                Intent intent = new Intent(this, TriggerListActivity.class);
                 intent.putExtra(TriggerListActivity.EXTRA_CAMPAIGN_URN, campaignUrn);
                 intent.putExtra(TriggerListActivity.EXTRA_NAME, "Reminders");
                 intent.putExtra(TriggerListActivity.EXTRA_ACTIONS, actions);
