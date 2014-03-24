@@ -136,9 +136,14 @@
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
                 <data
-                    android:pathPattern="/ohmage/ohmlets/.*/join"
-                    android:host="ohmage.org"
+                    android:pathPattern="/ohmage/ohmlets/.*/invitation"
+                    android:host="*.ohmage.org"
+                    android:scheme="http" />
+                <data
+                    android:pathPattern="/ohmage/ohmlets/.*/invitation"
+                    android:host="*.ohmage.org"
                     android:scheme="https" />
             </intent-filter>
 

@@ -450,8 +450,12 @@ public class AuthenticatorActivity extends AuthenticatorFragmentActivity impleme
 
     public void createAccount(User user, String password) {
         // Join ohmlet if applicable
-        if (mJoinOhmletId != null && user.registration != null) {
-            autoJoinOhmlet(user.registration.userId);
+        if (mJoinOhmletId != null) {
+            if (user.registration != null) {
+                autoJoinOhmlet(user.registration.userId);
+            } else {
+                autoJoinOhmlet("me");
+            }
         }
 
         // Add the account or find an existing account
@@ -519,7 +523,7 @@ public class AuthenticatorActivity extends AuthenticatorFragmentActivity impleme
         o.ohmletId = mJoinOhmletId;
         o.people = new Member.List();
         Member m = new Member();
-        m.memberId = userId;
+        m.memberId = TextUtils.isEmpty(userId) ? "me" : userId;
         m.role = Role.MEMBER;
         m.code = getIntent().getStringExtra(OhmletFragment.EXTRA_OHMLET_INVITATION_ID);
         o.people.add(m);

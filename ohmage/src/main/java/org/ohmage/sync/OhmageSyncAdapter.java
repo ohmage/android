@@ -140,7 +140,12 @@ public class OhmageSyncAdapter extends AbstractThreadedSyncAdapter {
 
             while (cursor.moveToNext()) {
                 Member.List members = gson.fromJson(cursor.getString(1), Member.List.class);
-                final Member localMember = members.getMember(userId);
+                Member m = members.getMember(userId);
+                if(m == null) {
+                    m = members.getMember("me");
+                    m.memberId = userId;
+                }
+                final Member localMember = m;
 
                 ohmageService.getOhmlet(cursor.getString(0)).first(
                         new Func1<Ohmlet, Boolean>() {

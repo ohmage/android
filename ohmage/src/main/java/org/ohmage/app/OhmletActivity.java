@@ -74,9 +74,9 @@ public class OhmletActivity extends InjectedActionBarActivity {
         String action = getIntent().getAction();
         Bundle extras = new Bundle();
         Uri data = getIntent().getData();
-        if (data.getScheme().equals("https")) {
+        if (data.getScheme().equals("https") || data.getScheme().equals("http")) {
             if (data.getPathSegments().size() > 3) {
-                if (data.getPathSegments().get(3).equals("join")) {
+                if (data.getPathSegments().get(3).equals("invitation")) {
                     action = OhmletFragment.ACTION_JOIN;
                 }
             }
@@ -131,7 +131,6 @@ public class OhmletActivity extends InjectedActionBarActivity {
             OhmletFragment fragment = new OhmletFragment();
             extras.putString("action", action);
             extras.putParcelable("uri", uri);
-            extras.putBundle("extras", extras);
             fragment.setArguments(extras);
             return fragment;
         }
@@ -181,7 +180,10 @@ public class OhmletActivity extends InjectedActionBarActivity {
             if (accounts.length == 0) {
                 if (ACTION_JOIN.equals(action)) {
                     Intent intent = new Intent(getActivity(), AuthenticatorActivity.class);
-                    intent.putExtras(getArguments().getBundle("extras"));
+                    Bundle extras = new Bundle(getArguments());
+                    extras.remove("uri");
+                    extras.remove("action");
+                    intent.putExtras(extras);
                     intent.putExtra(AuthenticatorActivity.EXTRA_JOIN_OHMLET_ID, ohmletId);
                     startActivity(intent);
                 }
