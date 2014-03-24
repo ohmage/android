@@ -2728,6 +2728,21 @@ public class VerticalViewPager extends ViewGroup {
         return new LayoutParams(getContext(), attrs);
     }
 
+    /**
+     * Brings the specified position up so it is entirely visible on the screen if possible
+     * @param i
+     */
+    public void bringPositionUpOnScreen(int i) {
+        ItemInfo ii = infoForPosition(i);
+        if(getScrollY() + getHeight() < (ii.offset + ii.heightFactor) * getHeight()) {
+            int minOffset = (int)((ii.offset + ii.heightFactor - 1) * getHeight()) + getPageMargin()*2;
+            while(ii != null && ii.offset *  getHeight() >= minOffset) {
+                ii = infoForPosition(--i);
+            }
+            setCurrentItem(i+1);
+        }
+    }
+
     class MyAccessibilityDelegate extends AccessibilityDelegateCompat {
 
         @Override

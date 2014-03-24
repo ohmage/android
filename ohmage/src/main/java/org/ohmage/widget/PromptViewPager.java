@@ -133,6 +133,11 @@ public class PromptViewPager extends VerticalViewPager implements
             // Hide any prompts which may be after this prompt
             hideAllPromptsBetween(i, mLastValidPromptItem);
             mLastValidPromptItem = i;
+            post(new Runnable() {
+                @Override public void run() {
+                    bringPositionUpOnScreen(mLastValidPromptItem);
+                }
+            });
         }
     }
 
