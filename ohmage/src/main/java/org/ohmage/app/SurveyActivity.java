@@ -35,6 +35,8 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.view.animation.Animation.AnimationListener;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -430,13 +432,29 @@ public class SurveyActivity extends InjectedActionBarActivity
             setHidden(getView(), hidden, duration);
         }
 
-        protected void setHidden(View view, boolean hidden, int duration) {
+        protected void setHidden(final View view, final boolean hidden, int duration) {
             mHidden = hidden;
             if (view == null)
                 return;
-            AlphaAnimation aa = (hidden) ? new AlphaAnimation(1f, 0f) : new AlphaAnimation(0f, 1f);
-            aa.setFillAfter(true);
+            AlphaAnimation aa = (hidden) ? new AlphaAnimation(1f, 0.0f) : new AlphaAnimation(0.0f, 1f);
             aa.setDuration(duration);
+            aa.setAnimationListener(new AnimationListener() {
+                @Override public void onAnimationStart(Animation animation) {
+                    if(!hidden) {
+                        view.setVisibility(View.VISIBLE);
+                    }
+                }
+
+                @Override public void onAnimationEnd(Animation animation) {
+                    if(hidden) {
+                        view.setVisibility(View.GONE);
+                    }
+                }
+
+                @Override public void onAnimationRepeat(Animation animation) {
+
+                }
+            });
             view.startAnimation(aa);
         }
 
