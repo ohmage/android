@@ -190,19 +190,22 @@ public class OhmageSyncAdapter extends AbstractThreadedSyncAdapter {
                         public Observable<Ohmlet> call(User user) {
                             return Observable.from(user.ohmlets);
                         }
-                    }).flatMap(new RefreshOhmlet()).cache();
-            ohmlets.subscribe(new ContentProviderSaverObserver(true));
-            ohmlets.toList().subscribe(new ContentProviderStateSyncObserver(Ohmlets.CONTENT_URI, true));
+                    }).cache();
+            ohmlets.flatMap(new RefreshOhmlet()).subscribe(new ContentProviderSaverObserver(true));
+            ohmlets.toList().subscribe(
+                    new ContentProviderStateSyncObserver(Ohmlets.CONTENT_URI, true));
 
             Observable<Survey> surveys = ohmlets.flatMap(new SurveysFromOhmlet()).cache();
             surveys.filter(new FilterUpToDateSurveys(provider)).flatMap(
                     new RefreshSurvey()).subscribe(new ContentProviderSaverObserver(true));
-            surveys.toList().subscribe(new ContentProviderStateSyncObserver(Surveys.CONTENT_URI, true));
+            surveys.toList().subscribe(
+                    new ContentProviderStateSyncObserver(Surveys.CONTENT_URI, true));
 
             Observable<Stream> streams = ohmlets.flatMap(new StreamsFromOhmlet()).cache();
             streams.filter(new FilterUpToDateStreams(provider)).flatMap(new RefreshStream())
                     .subscribe(new ContentProviderSaverObserver(true));
-            streams.toList().subscribe(new ContentProviderStateSyncObserver(Streams.CONTENT_URI, true));
+            streams.toList().subscribe(
+                    new ContentProviderStateSyncObserver(Streams.CONTENT_URI, true));
 
             // TODO: download streams and surveys that are not part of ohmlets
 
