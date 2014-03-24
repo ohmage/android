@@ -539,8 +539,30 @@ public class VerticalViewPager extends ViewGroup {
         int destY = 0;
         if (curInfo != null) {
             final int height = getHeight();
+
             destY = (int) (height * Math.max(mFirstOffset,
                     Math.min(curInfo.offset, mLastOffset)));
+
+            final double scrollY = getScrollY() / new Double(getHeight());
+            final double pageMargin = getPageMargin()/new Double(getHeight());
+            final double heightFactor = curInfo.heightFactor + pageMargin*2;
+            final double itemHeight = curInfo.offset + heightFactor;
+
+            //Logic for pages which are larger than the screen height
+            if(heightFactor > 1) {
+                if(curInfo.offset < scrollY && itemHeight > scrollY + 1) {
+                    // We are already on the item since it is larger than one page so scroll inside
+                    double factor = Math.min(1, Math.max(Math.abs(velocity) - 1000, 0) / 5000.0);
+                    if(velocity > 0)
+                        destY = (int)(((curInfo.offset) * factor + scrollY * (1 - factor)) * height);
+                    else
+                        destY = (int)(((itemHeight - 1) * factor + scrollY * (1 - factor)) * height);
+
+                } else if(itemHeight > scrollY && itemHeight < scrollY+1) {
+                    // Scroll to the bottom of the item in this case
+                    destY = (int) ((itemHeight-1) * height);
+                }
+            }
         }
         if (smoothScroll) {
             smoothScrollTo(0, destY, velocity);
@@ -2736,9 +2758,10 @@ public class VerticalViewPager extends ViewGroup {
         ItemInfo ii = infoForPosition(i);
         if(getScrollY() + getHeight() < (ii.offset + ii.heightFactor) * getHeight()) {
             int minOffset = (int)((ii.offset + ii.heightFactor - 1) * getHeight()) + getPageMargin()*2;
-            while(ii != null && ii.offset *  getHeight() >= minOffset) {
+
+            do {
                 ii = infoForPosition(--i);
-            }
+            } while(ii != null && ii.offset *  getHeight() >= minOffset);
             setCurrentItem(i+1);
         }
     }

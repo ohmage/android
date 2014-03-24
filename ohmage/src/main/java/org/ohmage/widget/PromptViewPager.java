@@ -168,7 +168,7 @@ public class PromptViewPager extends VerticalViewPager implements
     private void calculateBottomBound() {
         ItemInfo ii = infoForPosition(mLastValidPromptItem);
         if(ii != null)
-            mSoftBottomBound = ii.offset * getHeight();
+            mSoftBottomBound = (ii.offset + Math.max(0,ii.heightFactor - 1 + getPageMargin()/new Double(getHeight()) * 2)) * getHeight();
     }
 
     @Override public void onValidAnswerStateChanged(AnswerablePrompt prompt) {
