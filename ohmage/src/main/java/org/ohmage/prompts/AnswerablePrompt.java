@@ -107,5 +107,10 @@ public abstract class AnswerablePrompt<T> extends BasePrompt {
         @Override public boolean isAnswered() {
             return super.isAnswered() && (getPrompt().hasValidResponse() || getPrompt().isSkippable());
         }
+
+        @Override
+        public T getPrompt() {
+            return super.getPrompt();
+        }
     }
 }

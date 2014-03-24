@@ -50,7 +50,6 @@ import com.viewpagerindicator.CirclePageIndicator;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.ohmage.dagger.InjectedActionBarActivity;
-import org.ohmage.prompts.AnswerablePrompt;
 import org.ohmage.prompts.AnswerablePrompt.AnswerablePromptFragment;
 import org.ohmage.prompts.Prompt;
 import org.ohmage.prompts.SurveyItemFragment;
@@ -293,9 +292,8 @@ public class SurveyActivity extends InjectedActionBarActivity
             for (int i = 0; i < getCount(); i++) {
                 Fragment item = getItem(i);
                 if (item instanceof AnswerablePromptFragment) {
-                    //TODO: remove some casting?
-                    ((AnswerablePrompt) ((AnswerablePromptFragment) item).getPrompt()).addAnswer(
-                            data, extras);
+                    if(((AnswerablePromptFragment) item).getPrompt().hasValidResponse())
+                        ((AnswerablePromptFragment) item).getPrompt().addAnswer( data, extras);
                 }
             }
             values.put(Responses.RESPONSE_EXTRAS, extras.toString());
