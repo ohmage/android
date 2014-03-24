@@ -20,7 +20,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.provider.MediaStore;
-import android.support.v4.app.Fragment;
 import android.view.View;
 
 import org.ohmage.app.R;
@@ -33,7 +32,7 @@ import java.io.File;
 public class VideoPrompt extends MediaPrompt {
 
     @Override
-    public Fragment getFragment() {
+    public SurveyItemFragment getFragment() {
         return VideoPromptFragment.getInstance(this);
     }
 

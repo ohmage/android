@@ -16,8 +16,6 @@
 
 package org.ohmage.prompts;
 
-import android.support.v4.app.Fragment;
-
 /**
  * Created by cketcham on 12/19/13.
  */
@@ -28,5 +26,5 @@ public interface Prompt {
 
     public String getText();
 
-    public Fragment getFragment();
+    public SurveyItemFragment getFragment();
 }

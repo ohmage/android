@@ -16,20 +16,27 @@
 
 package org.ohmage.prompts;
 
-import org.ohmage.app.SurveyActivity;
-
 /**
  * Created by cketcham on 1/23/14.
  */
-public class PromptFragment extends SurveyActivity.BasePromptAdapterFragment {
+public class PromptFragment<T extends Prompt> extends SurveyItemFragment {
 
-    private Prompt prompt;
+    private T prompt;
 
-    public void setPrompt(Prompt prompt) {
+    public void setPrompt(T prompt) {
         this.prompt = prompt;
     }
 
-    public Prompt getPrompt() {
+    public T getPrompt() {
         return prompt;
+    }
+
+    @Override
+    protected boolean isSkippable() {
+        return prompt.isSkippable();
+    }
+
+    @Override protected String getPromptText() {
+        return prompt.getText();
     }
 }

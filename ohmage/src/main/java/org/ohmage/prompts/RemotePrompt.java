@@ -20,7 +20,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.View;
 
@@ -38,7 +37,7 @@ public class RemotePrompt extends AnswerablePrompt {
     String uri;
 
     @Override
-    public Fragment getFragment() {
+    public SurveyItemFragment getFragment() {
         return RemotePromptFragment.getInstance(this);
     }
 

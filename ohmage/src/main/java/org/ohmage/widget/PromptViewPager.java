@@ -17,16 +17,14 @@
 package org.ohmage.widget;
 
 import android.content.Context;
-import android.support.v4.app.Fragment;
 import android.support.v4.view.PagerAdapter;
 import android.util.AttributeSet;
 import android.view.View;
 
 import org.ohmage.app.SurveyActivity;
-import org.ohmage.app.SurveyActivity.BasePromptAdapterFragment;
 import org.ohmage.prompts.AnswerablePrompt;
-import org.ohmage.prompts.BasePrompt.AnswerablePromptFragment;
-import org.ohmage.prompts.BasePrompt.AnswerablePromptFragment.OnValidAnswerStateChangedListener;
+import org.ohmage.prompts.AnswerablePrompt.AnswerablePromptFragment.OnValidAnswerStateChangedListener;
+import org.ohmage.prompts.SurveyItemFragment;
 
 /**
  * Created by cketcham on 1/15/14.
@@ -83,17 +81,9 @@ public class PromptViewPager extends VerticalViewPager implements
         final int N = getAdapter().getCount();
         for (int i = 0; i < N; i++) {
             mLastValidPromptItem = i;
-            BasePromptAdapterFragment item = (BasePromptAdapterFragment) getAdapter().getObject(i);
-            if(item != null) {
-                if (!item.getOkPressed()) {
-                    break;
-                } else if (item instanceof AnswerablePromptFragment) {
-                    AnswerablePromptFragment fragment = (AnswerablePromptFragment) item;
-                    AnswerablePrompt prompt = (AnswerablePrompt) fragment.getPrompt();
-                    if (!prompt.hasValidResponse() && !prompt.isSkippable()) {
-                        break;
-                    }
-                }
+            SurveyItemFragment item = getAdapter().getObject(i);
+            if(item != null && !item.isAnswered()) {
+                break;
             }
         }
         setMaximumPage(mLastValidPromptItem);
@@ -101,19 +91,13 @@ public class PromptViewPager extends VerticalViewPager implements
 
     private void updateLastValidResponse(int index) {
         final int N = getAdapter().getCount();
-        BasePromptAdapterFragment item = null;
+        SurveyItemFragment item = null;
         int i;
         for (i = Math.min(mLastValidPromptItem, index); i < N; i++) {
-            item = (BasePromptAdapterFragment) getAdapter().getObject(i);
+            item = getAdapter().getObject(i);
             if(item != null) {
-                if (!item.getOkPressed()) {
+                if(item != null && !item.isAnswered()) {
                     break;
-                } else if (item instanceof AnswerablePromptFragment) {
-                    AnswerablePromptFragment fragment = (AnswerablePromptFragment) item;
-                    AnswerablePrompt prompt = (AnswerablePrompt) fragment.getPrompt();
-                    if (!prompt.hasValidResponse() && !prompt.isSkippable()) {
-                        break;
-                    }
                 }
 
                 item.showButtons(View.GONE);
@@ -143,14 +127,13 @@ public class PromptViewPager extends VerticalViewPager implements
 
     private void showValidPrompts() {
         for (int i = 0; i < mLastValidPromptItem; i++) {
-            BasePromptAdapterFragment item = (BasePromptAdapterFragment) getAdapter().getObject(i);
+            SurveyItemFragment item = getAdapter().getObject(i);
             if (item != null) {
                 item.setHidden(false);
                 item.showButtons(View.GONE);
             }
         }
-        BasePromptAdapterFragment item =
-                (BasePromptAdapterFragment) getAdapter().getObject(mLastValidPromptItem);
+        SurveyItemFragment item = getAdapter().getObject(mLastValidPromptItem);
         if(item != null) {
             item.setHidden(false);
         }
@@ -158,9 +141,9 @@ public class PromptViewPager extends VerticalViewPager implements
 
     private void hideAllPromptsBetween(int start, int end) {
         for (int i = start+1; i <= end; i++) {
-            Fragment item = getAdapter().getObject(i);
-            if (item instanceof AnswerablePromptFragment) {
-                ((AnswerablePromptFragment) item).setHidden(true);
+            SurveyItemFragment item = getAdapter().getObject(i);
+            if (item != null) {
+                item.setHidden(true);
             }
         }
     }

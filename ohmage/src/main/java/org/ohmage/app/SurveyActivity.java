@@ -34,11 +34,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.view.animation.AlphaAnimation;
-import android.view.animation.Animation;
-import android.view.animation.Animation.AnimationListener;
 import android.widget.Button;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -55,8 +51,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.ohmage.dagger.InjectedActionBarActivity;
 import org.ohmage.prompts.AnswerablePrompt;
-import org.ohmage.prompts.BasePrompt.AnswerablePromptFragment;
+import org.ohmage.prompts.AnswerablePrompt.AnswerablePromptFragment;
 import org.ohmage.prompts.Prompt;
+import org.ohmage.prompts.SurveyItemFragment;
 import org.ohmage.provider.OhmageContract;
 import org.ohmage.provider.OhmageContract.Responses;
 import org.ohmage.provider.OhmageContract.Surveys;
@@ -223,8 +220,8 @@ public class SurveyActivity extends InjectedActionBarActivity
         }
 
         @Override
-        public Fragment getItem(final int position) {
-            Fragment fragment = null;
+        public SurveyItemFragment getItem(final int position) {
+            SurveyItemFragment fragment = null;
             if (position == getCount() - 1) {
                 fragment = new SubmitResponseFragment();
             } else {
@@ -239,9 +236,9 @@ public class SurveyActivity extends InjectedActionBarActivity
             return fragment;
         }
 
-        public Fragment getObject(int position) {
+        public SurveyItemFragment getObject(int position) {
             if (mFragments.get(position)) {
-                return (Fragment) super.instantiateItem(null, position);
+                return (SurveyItemFragment) super.instantiateItem(null, position);
             }
             return null;
         }
@@ -279,8 +276,8 @@ public class SurveyActivity extends InjectedActionBarActivity
                             mFragments.set(index, true);
                         } else {
                             Log.w(TAG, "Bad fragment at key " + key);
-                        }
-                    }
+            }
+        }
                 }
             }
             super.restoreState(state, loader);
@@ -306,173 +303,7 @@ public class SurveyActivity extends InjectedActionBarActivity
         }
     }
 
-    public static class BasePromptAdapterFragment extends Fragment {
-
-        boolean mHidden = true;
-
-        private View.OnClickListener mOnClickListener;
-        private View mButtons;
-        private TextView skipButton;
-        private TextView okButton;
-
-        private boolean mOkPressed = false;
-
-        @Override
-        public void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-            setRetainInstance(true);
-
-            if (savedInstanceState != null) {
-                mHidden = savedInstanceState.getBoolean("hidden", false);
-                mOkPressed = savedInstanceState.getBoolean("okPressed", false);
-            }
-        }
-
-        @Override public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                Bundle savedInstanceState) {
-            ViewGroup view = (ViewGroup) inflater.inflate(R.layout.prompt_basic, container, false);
-            ((TextView) view.findViewById(R.id.text)).setText(getPromptText());
-            mButtons = view.findViewById(R.id.buttons);
-            skipButton = (TextView) view.findViewById(R.id.skip);
-            okButton = (TextView) view.findViewById(R.id.ok);
-
-            okButton.setOnClickListener(new OnClickListener() {
-                @Override public void onClick(View v) {
-                    mOkPressed = true;
-                    onOkPressed();
-                }
-            });
-            skipButton.setOnClickListener(new OnClickListener() {
-                @Override public void onClick(View v) {
-                    mOkPressed = true;
-                    onSkipPressed();
-                }
-            });
-
-            if(isSkippable()) {
-                skipButton.setVisibility(View.VISIBLE);
-            } else {
-                skipButton.setVisibility(View.GONE);
-            }
-
-            if (getOkPressed()) {
-                view.findViewById(R.id.buttons).setVisibility(View.GONE);
-            } else {
-                updateCanContinue();
-            }
-
-            onCreatePromptView(inflater, (ViewGroup) view.findViewById(R.id.content),
-                    savedInstanceState);
-
-            return view;
-        }
-
-        protected void onSkipPressed() {
-
-        }
-
-        protected void onOkPressed() {
-
-        }
-
-        @Override
-        public void onViewCreated(View view, Bundle savedInstanceState) {
-            super.onViewCreated(view, savedInstanceState);
-
-            view.setOnClickListener(mOnClickListener);
-            setHidden(view, mHidden, 0);
-        }
-
-        protected String getPromptText() {
-            return "";
-        }
-
-        protected boolean canContinue() {
-            return true;
-        }
-
-        protected void updateCanContinue() {
-            if(canContinue()) {
-                okButton.setEnabled(true);
-            } else {
-                okButton.setEnabled(false);
-            }
-        }
-
-        protected boolean isSkippable() {
-            return true;
-        }
-
-        /**
-         * Allow children to inflate their subview into the main view.
-         *
-         * @param inflater
-         * @param container
-         * @param savedInstanceState
-         */
-        public void onCreatePromptView(LayoutInflater inflater, ViewGroup container,
-                Bundle savedInstanceState) {
-        }
-
-        @Override public void onSaveInstanceState(Bundle outState) {
-            super.onSaveInstanceState(outState);
-            outState.putBoolean("hidden", mHidden);
-            outState.putBoolean("okPressed", mOkPressed);
-        }
-
-        public void setHidden(boolean hidden) {
-            if(mHidden == hidden)
-                return;
-            setHidden(getView(), hidden, 200);
-        }
-
-        public void setHidden(boolean hidden, int duration) {
-            if(mHidden == hidden)
-                return;
-            setHidden(getView(), hidden, duration);
-        }
-
-        protected void setHidden(final View view, final boolean hidden, int duration) {
-            mHidden = hidden;
-            if (view == null)
-                return;
-            AlphaAnimation aa = (hidden) ? new AlphaAnimation(1f, 0.0f) : new AlphaAnimation(0.0f, 1f);
-            aa.setDuration(duration);
-            aa.setAnimationListener(new AnimationListener() {
-                @Override public void onAnimationStart(Animation animation) {
-                    if(!hidden) {
-                        view.setVisibility(View.VISIBLE);
-                    }
-                }
-
-                @Override public void onAnimationEnd(Animation animation) {
-                    if(hidden) {
-                        view.setVisibility(View.GONE);
-                    }
-                }
-
-                @Override public void onAnimationRepeat(Animation animation) {
-
-                }
-            });
-            view.startAnimation(aa);
-        }
-
-        public void setOnClickListener(View.OnClickListener onClickListener) {
-            mOnClickListener = onClickListener;
-        }
-
-        public boolean getOkPressed() {
-            return mOkPressed;
-        }
-
-        public void showButtons(int visibility) {
-            if(mButtons != null)
-                mButtons.setVisibility(visibility);
-        }
-    }
-
-    public static class SubmitResponseFragment extends BasePromptAdapterFragment {
+    public static class SubmitResponseFragment extends SurveyItemFragment {
 
         @Override
         public View onCreateView(LayoutInflater inflater, final ViewGroup container,

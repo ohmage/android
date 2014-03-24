@@ -17,19 +17,13 @@
 package org.ohmage.prompts;
 
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.text.TextUtils;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
 
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import org.ohmage.app.R;
 import org.ohmage.app.SurveyActivity;
 
 import java.lang.reflect.Type;
@@ -61,14 +55,14 @@ public class BasePrompt implements Prompt {
     }
 
     @Override
-    public Fragment getFragment() {
+    public SurveyItemFragment getFragment() {
         return MessagePromptFragment.getInstance(getText());
     }
 
     /**
      * A fragment which just shows the text of the message
      */
-    public static class MessagePromptFragment extends SurveyActivity.BasePromptAdapterFragment {
+    public static class MessagePromptFragment extends PromptFragment<BasePrompt> {
 
         public static MessagePromptFragment getInstance(String text) {
             if (TextUtils.isEmpty(text))
@@ -93,91 +87,6 @@ public class BasePrompt implements Prompt {
         @Override
         public boolean isSkippable() {
             return false;
-        }
-    }
-
-    /**
-     * A fragment which holds an instance of a prompt
-     */
-    public static class PromptFragment<T extends Prompt>
-            extends SurveyActivity.BasePromptAdapterFragment {
-
-        private T prompt;
-
-        public void setPrompt(T prompt) {
-            this.prompt = prompt;
-        }
-
-        public T getPrompt() {
-            return prompt;
-        }
-
-        @Override
-        protected boolean isSkippable() {
-            return prompt.isSkippable();
-        }
-
-        @Override protected String getPromptText() {
-            return prompt.getText();
-        }
-    }
-
-    public static class AnswerablePromptFragment<T extends AnswerablePrompt>
-            extends PromptFragment<T> {
-
-        /**
-         * Calculates if the skippable state between two objects might have changed. Typically this occurs when a value is set or cleared.
-         *
-         * @param o
-         * @param n
-         * @return
-         */
-        protected boolean skippableStateChanged(Object o, Object n) {
-            return (o != null && !o.equals(n)) || (n != null && !n.equals(o));
-        }
-
-        protected void setValue(Object object) {
-            boolean notify = skippableStateChanged(getPrompt().value, object);
-            getPrompt().value = object;
-            if (notify) {
-                updateCanContinue();
-            }
-        }
-
-        public interface OnValidAnswerStateChangedListener {
-            void onValidAnswerStateChanged(AnswerablePrompt prompt);
-        }
-
-        private OnValidAnswerStateChangedListener mOnValidAnswerStateChangedListener;
-
-        public void setOnValidAnswerStateChangedListener(
-                OnValidAnswerStateChangedListener onValidAnswerStateChangedListener) {
-            mOnValidAnswerStateChangedListener = onValidAnswerStateChangedListener;
-        }
-
-        private void notifyValidAnswerStateChanged() {
-            if (mOnValidAnswerStateChangedListener != null) {
-                mOnValidAnswerStateChangedListener.onValidAnswerStateChanged(getPrompt());
-            }
-        }
-
-        @Override
-        protected boolean canContinue() {
-            return getPrompt().hasValidResponse();
-        }
-
-        @Override protected void onOkPressed() {
-            super.onOkPressed();
-            if(getPrompt().hasValidResponse()) {
-                notifyValidAnswerStateChanged();
-            }
-        }
-
-        @Override protected void onSkipPressed() {
-            super.onSkipPressed();
-            if (getPrompt().isSkippable()) {
-                notifyValidAnswerStateChanged();
-            }
         }
     }
 
@@ -210,19 +119,4 @@ public class BasePrompt implements Prompt {
         }
     }
 
-    public abstract static class PromptLauncherFragment<T extends AnswerablePrompt>
-            extends AnswerablePromptFragment<T>
-            implements View.OnClickListener {
-
-        @Override
-        public void onCreatePromptView(LayoutInflater inflater, ViewGroup container,
-                Bundle savedInstanceState) {
-            ViewGroup view = (ViewGroup) inflater.inflate(R.layout.prompt_launch, container, true);
-            Button launch = (Button) view.findViewById(R.id.launch);
-            launch.setText(getLaunchButtonText());
-            launch.setOnClickListener(this);
-        }
-
-        protected abstract String getLaunchButtonText();
-    }
 }

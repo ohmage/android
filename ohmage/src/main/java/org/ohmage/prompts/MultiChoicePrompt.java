@@ -17,7 +17,6 @@
 package org.ohmage.prompts;
 
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -48,7 +47,7 @@ public class MultiChoicePrompt<T> extends ChoicePrompt<ArrayList<T>, T> {
     }
 
     @Override
-    public Fragment getFragment() {
+    public SurveyItemFragment getFragment() {
         return MultiChoicePromptFragment.getInstance(this);
     }
 

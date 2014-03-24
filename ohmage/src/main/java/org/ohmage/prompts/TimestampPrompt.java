@@ -17,7 +17,6 @@
 package org.ohmage.prompts;
 
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.widget.DatePicker;
@@ -39,7 +38,7 @@ public class TimestampPrompt extends AnswerablePrompt<Calendar> {
 
 
     @Override
-    public Fragment getFragment() {
+    public SurveyItemFragment getFragment() {
         return TimestampPromptFragment.getInstance(this);
     }
 

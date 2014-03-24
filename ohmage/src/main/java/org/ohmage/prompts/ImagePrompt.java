@@ -19,7 +19,6 @@ package org.ohmage.prompts;
 import android.app.Activity;
 import android.content.Intent;
 import android.provider.MediaStore;
-import android.support.v4.app.Fragment;
 import android.view.View;
 
 import org.ohmage.app.R;
@@ -32,7 +31,7 @@ import java.io.File;
 public class ImagePrompt extends MediaPrompt {
 
     @Override
-    public Fragment getFragment() {
+    public SurveyItemFragment getFragment() {
         return ImagePromptFragment.getInstance(this);
     }
 

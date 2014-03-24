@@ -17,7 +17,6 @@
 package org.ohmage.prompts;
 
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -35,7 +34,7 @@ public class TextPrompt extends AnswerablePrompt<String> {
     public int max;
 
     @Override
-    public Fragment getFragment() {
+    public SurveyItemFragment getFragment() {
         return TextPromptFragment.getInstance(this);
     }
 

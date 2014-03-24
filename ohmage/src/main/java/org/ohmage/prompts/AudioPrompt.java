@@ -18,7 +18,6 @@ package org.ohmage.prompts;
 
 import android.media.MediaRecorder;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,7 +35,7 @@ import java.io.File;
 public class AudioPrompt extends MediaPrompt {
 
     @Override
-    public Fragment getFragment() {
+    public SurveyItemFragment getFragment() {
         return AudioPromptFragment.getInstance(this);
     }
 
@@ -50,17 +49,6 @@ public class AudioPrompt extends MediaPrompt {
             fragment.setPrompt(prompt);
             return fragment;
         }
-
-//        @Override
-//        protected void setEnabled(ViewGroup view, boolean enabled) {
-//            super.setEnabled(view, enabled);
-//            if (view == null)
-//                return;
-//            AudioRecorder recorder = (AudioRecorder) view.findViewById(R.id.audio_recorder);
-//            recorder.setEnabled(enabled);
-//            recorder.setClickable(enabled);
-//            recorder.setLongClickable(enabled);
-//        }
 
         @Override
         public void onCreatePromptView(LayoutInflater inflater, ViewGroup container,
