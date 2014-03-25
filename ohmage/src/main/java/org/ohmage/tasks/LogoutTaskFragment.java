@@ -26,6 +26,7 @@ import android.os.Bundle;
 import org.ohmage.app.R;
 import org.ohmage.auth.AuthUtil;
 import org.ohmage.dagger.InjectedDialogFragment;
+import org.ohmage.provider.OhmageDbHelper;
 
 import javax.inject.Inject;
 
@@ -59,6 +60,8 @@ public class LogoutTaskFragment extends InjectedDialogFragment {
         Account[] accounts = accountManager.getAccountsByType(AuthUtil.ACCOUNT_TYPE);
         //TODO: handle more than one account correctly
         if (accounts.length > 0) {
+            OhmageDbHelper db = new OhmageDbHelper(getActivity());
+            db.clearAll();
             res = accountManager.removeAccount(accounts[0], null, null);
         }
     }
