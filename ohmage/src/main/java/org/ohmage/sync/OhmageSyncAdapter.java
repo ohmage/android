@@ -54,12 +54,14 @@ import org.ohmage.provider.OhmageContract.Surveys;
 import org.ohmage.sync.ResponseTypedOutput.ResponseFiles;
 
 import java.io.IOException;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
 import retrofit.RetrofitError;
 import rx.Observable;
-import rx.observables.BlockingObservable;
+import rx.util.functions.Action0;
 import rx.util.functions.Func1;
 
 /**
@@ -121,9 +123,9 @@ public class OhmageSyncAdapter extends AbstractThreadedSyncAdapter {
             return;
 
         Log.d(TAG, "state of ohmlets sync");
+        final CountDownLatch upload;
+        final CountDownLatch download = new CountDownLatch(1);
         final String userId = am.getUserData(account, Authenticator.USER_ID);
-
-        // TODO: add modififed flag and timestamp to know which things to upload to the server
 
         // First, sync ohmlet join state. As described by the people field.
         Cursor cursor = null;
@@ -134,11 +136,13 @@ public class OhmageSyncAdapter extends AbstractThreadedSyncAdapter {
                             OhmageContract.Ohmlets.OHMLET_MEMBERS},
                     null, null, null);
 
+            upload = new CountDownLatch(cursor.getCount());
+
             while (cursor.moveToNext()) {
                 Member.List members = gson.fromJson(cursor.getString(1), Member.List.class);
                 final Member localMember = members.getMember(userId);
 
-                BlockingObservable.from(ohmageService.getOhmlet(cursor.getString(0))).first(
+                ohmageService.getOhmlet(cursor.getString(0)).first(
                         new Func1<Ohmlet, Boolean>() {
                             @Override public Boolean call(Ohmlet ohmlet) {
                                 Member remoteMember = ohmlet.people.getMember(userId);
@@ -161,11 +165,6 @@ public class OhmageSyncAdapter extends AbstractThreadedSyncAdapter {
                                     if (localMember == null && remoteMember != null) {
                                         ohmageService.removeUserFromOhmlet(ohmlet.ohmletId, userId);
                                     }
-
-                                    if (localMember == null && remoteMember != null) {
-                                    } else if (remoteMember != null) {
-
-                                    }
                                 } catch (AuthenticationException e) {
                                     syncResult.stats.numAuthExceptions++;
                                 } catch (RetrofitError e) {
@@ -173,7 +172,12 @@ public class OhmageSyncAdapter extends AbstractThreadedSyncAdapter {
                                 }
                                 return true;
                             }
-                        });
+                        }
+                ).finallyDo(new Action0() {
+                    @Override public void call() {
+                        upload.countDown();
+                    }
+                }).subscribe();
             }
             cursor.close();
 
@@ -181,31 +185,59 @@ public class OhmageSyncAdapter extends AbstractThreadedSyncAdapter {
             if (syncResult.stats.numIoExceptions > 0 || syncResult.stats.numAuthExceptions > 0)
                 return;
 
+            try {
+                // Wait for the upload sync operation to finish before downloading the user state
+                upload.await(5, TimeUnit.MINUTES);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
             // Second, synchronize all data
-            // TODO: this probably needs to be in a transaction some how? It needs to deal with the case where it wants to sync an ohmlet that the user is trying to interact with at the same time.
-            // TODO: handle errors that occur here using the syncResult
-            Observable<Ohmlet> ohmlets = ohmageService.getCurrentStateForUser(userId).flatMap(
+
+            Observable<Ohmlet> current = ohmageService.getCurrentStateForUser(userId).flatMap(
                     new Func1<User, Observable<Ohmlet>>() {
                         @Override
                         public Observable<Ohmlet> call(User user) {
                             return Observable.from(user.ohmlets);
                         }
                     }).cache();
-            ohmlets.flatMap(new RefreshOhmlet()).subscribe(new ContentProviderSaverObserver(true));
-            ohmlets.toList().subscribe(
+            current.toList().subscribe(
                     new ContentProviderStateSyncObserver(Ohmlets.CONTENT_URI, true));
 
-            Observable<Survey> surveys = ohmlets.flatMap(new SurveysFromOhmlet()).cache();
-            surveys.filter(new FilterUpToDateSurveys(provider)).flatMap(
-                    new RefreshSurvey()).subscribe(new ContentProviderSaverObserver(true));
-            surveys.toList().subscribe(
-                    new ContentProviderStateSyncObserver(Surveys.CONTENT_URI, true));
+            Observable<Ohmlet> refreshedOhmlets = current.flatMap(new RefreshOhmlet());
+            refreshedOhmlets.subscribe(new ContentProviderSaverObserver(true));
 
-            Observable<Stream> streams = ohmlets.flatMap(new StreamsFromOhmlet()).cache();
-            streams.filter(new FilterUpToDateStreams(provider)).flatMap(new RefreshStream())
-                    .subscribe(new ContentProviderSaverObserver(true));
+
+            Observable<Survey> surveys = current.flatMap(new SurveysFromOhmlet());
+            surveys.toList()
+                    .subscribe(new ContentProviderStateSyncObserver(Surveys.CONTENT_URI, true));
+
+
+            Observable<Survey> refreshedSurveys =
+                    surveys.filter(new FilterUpToDateSurveys(provider)).flatMap(
+                            new RefreshSurvey());
+            refreshedSurveys.subscribe(new ContentProviderSaverObserver(true));
+
+
+
+            Observable<Stream> streams = current.flatMap(new StreamsFromOhmlet());
             streams.toList().subscribe(
                     new ContentProviderStateSyncObserver(Streams.CONTENT_URI, true));
+
+
+            Observable<Stream> refreshedStreams =
+                    streams.filter(new FilterUpToDateStreams(provider))
+                            .flatMap(new RefreshStream());
+            refreshedStreams.subscribe(new ContentProviderSaverObserver(true));
+
+
+            Observable.merge(current, refreshedStreams, refreshedSurveys, refreshedOhmlets).last()
+                    .finallyDo(new Action0() {
+                @Override public void call() {
+                    download.countDown();
+                }
+            }).subscribe();
+
 
             // TODO: download streams and surveys that are not part of ohmlets
 
@@ -244,6 +276,13 @@ public class OhmageSyncAdapter extends AbstractThreadedSyncAdapter {
         } finally {
             if (cursor != null)
                 cursor.close();
+        }
+
+        // Wait for any async download operations to finish
+        try {
+            download.await(5, TimeUnit.MINUTES);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 

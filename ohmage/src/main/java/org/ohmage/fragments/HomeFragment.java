@@ -16,15 +16,19 @@
 
 package org.ohmage.fragments;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SyncStatusObserver;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.LoaderManager.LoaderCallbacks;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.CursorAdapter;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,13 +38,41 @@ import android.widget.ListAdapter;
 import android.widget.TextView;
 
 import org.ohmage.app.R;
+import org.ohmage.auth.AuthUtil;
 import org.ohmage.provider.OhmageContract;
 import org.ohmage.provider.OhmageContract.Surveys;
+
+import javax.inject.Inject;
+
+import uk.co.senab.actionbarpulltorefresh.extras.actionbarcompat.PullToRefreshLayout;
+import uk.co.senab.actionbarpulltorefresh.library.ActionBarPullToRefresh;
+import uk.co.senab.actionbarpulltorefresh.library.listeners.OnRefreshListener;
+import uk.co.senab.actionbarpulltorefresh.library.viewdelegates.AbsListViewDelegate;
+import uk.co.senab.actionbarpulltorefresh.library.viewdelegates.ViewDelegate;
 
 /**
  * Created by cketcham on 7/31/13.
  */
-public class HomeFragment extends GridFragment implements LoaderCallbacks<Cursor> {
+public class HomeFragment extends GridFragment implements LoaderCallbacks<Cursor>,
+        OnRefreshListener, SyncStatusObserver {
+
+    @Inject AccountManager am;
+
+    private static final String TAG = HomeFragment.class.getSimpleName();
+    private PullToRefreshLayout mPullToRefreshLayout;
+
+    private Object syncObserverHandle;
+    private Handler mHandler = new Handler();
+    private Runnable mRefreshCompleteRunnable = new Runnable() {
+        @Override public void run() {
+            setEmptyText("No Surveys");
+            mPullToRefreshLayout.setRefreshComplete();
+        }
+    };
+
+    @Override public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+    }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
@@ -48,10 +80,49 @@ public class HomeFragment extends GridFragment implements LoaderCallbacks<Cursor
 
         setEmptyText("No surveys");
 
+        setGridShown(false);
+
         ListAdapter adapter = new SurveyAdapter(getActivity(), null);
         setListAdapter(adapter);
 
         getLoaderManager().initLoader(0, null, this);
+
+        syncObserverHandle = getActivity().getContentResolver().addStatusChangeListener(
+                ContentResolver.SYNC_OBSERVER_TYPE_PENDING |
+                ContentResolver.SYNC_OBSERVER_TYPE_ACTIVE, this);
+    }
+
+    @Override public void onDestroy() {
+        super.onDestroy();
+        if(syncObserverHandle != null)
+            getActivity().getContentResolver().removeStatusChangeListener(syncObserverHandle);
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+            Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.refreshable_grid_layout, container, false);
+
+        // Now find the PullToRefreshLayout to setup
+        mPullToRefreshLayout = (PullToRefreshLayout) view.findViewById(R.id.ptr_layout);
+
+        // Now setup the PullToRefreshLayout
+        ActionBarPullToRefresh.from(getActivity())
+                // Mark All Children as pullable
+                .allChildrenArePullable()
+                        // Set the OnRefreshListener
+                .listener(this)
+                .theseChildrenArePullable(R.id.grid, R.id.internalEmpty)
+                .useViewDelegate(TextView.class, new ViewDelegate() {
+                    @Override public boolean isReadyForPull(View view, float v, float v2) {
+                        return true;
+                    }
+                })
+                .useViewDelegate(GridView.class, new AbsListViewDelegate())
+                        // Finally commit the setup to our PullToRefreshLayout
+                .setup(mPullToRefreshLayout);
+
+        return view;
     }
 
     @Override
@@ -61,7 +132,6 @@ public class HomeFragment extends GridFragment implements LoaderCallbacks<Cursor
 
     @Override
     public void onGridItemClick(GridView g, View v, int position, long id) {
-        Log.d("blah", "list item clicked");
         Cursor cursor = (Cursor) getListAdapter().getItem(position);
         if (cursor != null) {
             startActivity(new Intent(Intent.ACTION_VIEW, OhmageContract.Surveys
@@ -75,12 +145,47 @@ public class HomeFragment extends GridFragment implements LoaderCallbacks<Cursor
     }
 
     @Override public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        setGridShown(true);
         getListAdapter().changeCursor(data);
+        if(data.getCount() > 0)
+            setGridShown(true);
     }
 
     @Override public void onLoaderReset(Loader<Cursor> loader) {
         getListAdapter().changeCursor(null);
+    }
+
+    @Override public void onRefreshStarted(View view) {
+        Account[] accounts = am.getAccountsByType(AuthUtil.ACCOUNT_TYPE);
+        for (Account account : accounts) {
+            Bundle bundle = new Bundle();
+            bundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
+            getActivity().getContentResolver()
+                    .requestSync(account, OhmageContract.CONTENT_AUTHORITY, bundle);
+        }
+    }
+
+    @Override public void onStatusChanged(int which) {
+        Account[] accounts = am.getAccountsByType(AuthUtil.ACCOUNT_TYPE);
+        if(accounts.length == 0) {
+            return;
+        }
+
+        ContentResolver cr = getActivity().getContentResolver();
+
+        mHandler.removeCallbacks(mRefreshCompleteRunnable);
+        if(cr.isSyncActive(accounts[0], OhmageContract.CONTENT_AUTHORITY) ||
+           cr.isSyncPending(accounts[0], OhmageContract.CONTENT_AUTHORITY)) {
+            getActivity().runOnUiThread(new Runnable() {
+                @Override public void run() {
+                    if(getListAdapter().isEmpty()) {
+                        mPullToRefreshLayout.setRefreshing(true);
+                        setEmptyText("Please wait for Surveys to Synchronize...");
+                    }
+                }
+            });
+        } else {
+            mHandler.postDelayed(mRefreshCompleteRunnable, 500);
+        }
     }
 
     public static class SurveyAdapter extends CursorAdapter {
