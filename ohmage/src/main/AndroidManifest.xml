@@ -18,8 +18,8 @@
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.ohmage.app"
-    android:versionCode="21"
-    android:versionName="3.0.2">
+    android:versionCode="22"
+    android:versionName="3.0.3">
 
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="android.permission.USE_CREDENTIALS" />
