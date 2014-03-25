@@ -141,7 +141,8 @@ public class HomeFragment extends GridFragment implements LoaderCallbacks<Cursor
 
     @Override public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         return new CursorLoader(getActivity(), OhmageContract.Surveys.CONTENT_URI, new String[]{
-                Surveys.SURVEY_ID, Surveys.SURVEY_VERSION, Surveys.SURVEY_NAME }, null, null, null);
+                Surveys.SURVEY_ID, Surveys.SURVEY_VERSION, Surveys.SURVEY_NAME,
+                Surveys.SURVEY_DESCRIPTION}, null, null, null);
     }
 
     @Override public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
@@ -223,7 +224,7 @@ public class HomeFragment extends GridFragment implements LoaderCallbacks<Cursor
             }
 
             holder.name.setText(cursor.getString(2));
-            holder.description.setText(cursor.getString(0));
+            holder.description.setText(cursor.getString(3));
 //            holder.action.setText(item.isParticipant ? "Leave" : "Join");
         }
 

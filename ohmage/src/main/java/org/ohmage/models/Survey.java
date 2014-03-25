@@ -36,6 +36,7 @@ public class Survey implements Savable, Syncable {
 
     public long schemaVersion;
     public String name;
+    public String description;
 
     public ArrayList<Prompt> surveyItems;
 
@@ -45,6 +46,7 @@ public class Survey implements Savable, Syncable {
         values.put(OhmageContract.Surveys.SURVEY_VERSION, schemaVersion);
         values.put(OhmageContract.Surveys.SURVEY_ITEMS, saver.gson().toJson(surveyItems));
         values.put(OhmageContract.Surveys.SURVEY_NAME, name);
+        values.put(OhmageContract.Surveys.SURVEY_DESCRIPTION, description);
         return values;
     }
 

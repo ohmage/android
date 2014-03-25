@@ -105,9 +105,20 @@ public class OhmageContract {
          */
         String SURVEY_VERSION = "survey_version";
 
+        /**
+         * A JSON array of survey items
+         */
         String SURVEY_ITEMS = "survey_items";
 
+        /**
+         * The name of the survey
+         */
         String SURVEY_NAME = "survey_name";
+
+        /**
+         * The description of the survey
+         */
+        String SURVEY_DESCRIPTION = "survey_description";
     }
 
     private static final String PATH_SURVEYS = "surveys";
