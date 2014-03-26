@@ -68,5 +68,6 @@
     <string name="join">Join</string>
     <string name="no_surveys">No Surveys</string>
     <string name="skip">Skip</string>
+    <string name="responses">Responses</string>
 
 </resources>

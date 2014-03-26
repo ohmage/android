@@ -48,10 +48,8 @@ import org.ohmage.operators.ContentProviderSaver.ContentProviderSaverObserver;
 import org.ohmage.operators.ContentProviderStateSync.ContentProviderStateSyncObserver;
 import org.ohmage.provider.OhmageContract;
 import org.ohmage.provider.OhmageContract.Ohmlets;
-import org.ohmage.provider.OhmageContract.Responses;
 import org.ohmage.provider.OhmageContract.Streams;
 import org.ohmage.provider.OhmageContract.Surveys;
-import org.ohmage.sync.ResponseTypedOutput.ResponseFiles;
 
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
@@ -119,8 +117,9 @@ public class OhmageSyncAdapter extends AbstractThreadedSyncAdapter {
 
         // If the token wasn't found or there was a problem, we can stop now
         if (token == null || syncResult.stats.numSkippedEntries > 0 ||
-            syncResult.stats.numIoExceptions > 0 || syncResult.stats.numAuthExceptions > 0)
+            syncResult.stats.numIoExceptions > 0 || syncResult.stats.numAuthExceptions > 0) {
             return;
+        }
 
         Log.d(TAG, "state of ohmlets sync");
         final CountDownLatch upload;
@@ -134,7 +133,8 @@ public class OhmageSyncAdapter extends AbstractThreadedSyncAdapter {
                     new String[]{
                             OhmageContract.Ohmlets.OHMLET_ID,
                             OhmageContract.Ohmlets.OHMLET_MEMBERS},
-                    null, null, null);
+                    null, null, null
+            );
 
             upload = new CountDownLatch(cursor.getCount());
 
@@ -187,8 +187,9 @@ public class OhmageSyncAdapter extends AbstractThreadedSyncAdapter {
             cursor.close();
 
             // Don't continue if there are errors above
-            if (syncResult.stats.numIoExceptions > 0 || syncResult.stats.numAuthExceptions > 0)
+            if (syncResult.stats.numIoExceptions > 0 || syncResult.stats.numAuthExceptions > 0) {
                 return;
+            }
 
             try {
                 // Wait for the upload sync operation to finish before downloading the user state
@@ -205,7 +206,8 @@ public class OhmageSyncAdapter extends AbstractThreadedSyncAdapter {
                         public Observable<Ohmlet> call(User user) {
                             return Observable.from(user.ohmlets);
                         }
-                    }).cache();
+                    }
+            ).cache();
             current.toList().subscribe(
                     new ContentProviderStateSyncObserver(Ohmlets.CONTENT_URI, true));
 
@@ -224,7 +226,6 @@ public class OhmageSyncAdapter extends AbstractThreadedSyncAdapter {
             refreshedSurveys.subscribe(new ContentProviderSaverObserver(true));
 
 
-
             Observable<Stream> streams = current.flatMap(new StreamsFromOhmlet());
             streams.toList().subscribe(
                     new ContentProviderStateSyncObserver(Streams.CONTENT_URI, true));
@@ -238,10 +239,10 @@ public class OhmageSyncAdapter extends AbstractThreadedSyncAdapter {
 
             Observable.merge(current, refreshedStreams, refreshedSurveys, refreshedOhmlets).last()
                     .finallyDo(new Action0() {
-                @Override public void call() {
-                    download.countDown();
-                }
-            }).subscribe();
+                        @Override public void call() {
+                            download.countDown();
+                        }
+                    }).subscribe();
 
 
             // TODO: download streams and surveys that are not part of ohmlets
@@ -251,41 +252,14 @@ public class OhmageSyncAdapter extends AbstractThreadedSyncAdapter {
         } catch (RemoteException e) {
             syncResult.stats.numIoExceptions++;
         } finally {
-            if (cursor != null)
+            if (cursor != null) {
                 cursor.close();
-        }
-
-
-        // Upload responses
-        cursor = null;
-        try {
-            cursor = provider.query(Responses.CONTENT_URI,
-                    new String[]{Responses.SURVEY_ID, Responses.SURVEY_VERSION,
-                            Responses.RESPONSE_DATA, Responses.RESPONSE_METADATA,
-                            Responses.RESPONSE_EXTRAS}, null, null, null);
-
-            while (cursor.moveToNext()) {
-                ohmageService.uploadResponse(cursor.getString(0), cursor.getLong(1),
-                        new ResponseTypedOutput(cursor.getString(2), cursor.getString(3),
-                                gson.fromJson(cursor.getString(4), ResponseFiles.class)));
             }
-            cursor.close();
-
-            // Delete any uploaded responses
-            provider.delete(appendSyncAdapterParam(Responses.CONTENT_URI), null, null);
-
-        } catch (RemoteException e) {
-            syncResult.stats.numIoExceptions++;
-        } catch (AuthenticationException e) {
-            syncResult.stats.numAuthExceptions++;
-        } finally {
-            if (cursor != null)
-                cursor.close();
         }
 
         // Wait for any async download operations to finish
         try {
-            download.await(5, TimeUnit.MINUTES);
+            download.await();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

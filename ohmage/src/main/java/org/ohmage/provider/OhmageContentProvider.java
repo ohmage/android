@@ -40,7 +40,6 @@ public class OhmageContentProvider extends ContentProvider {
         int SURVEY_ID = 3;
         int STREAMS = 4;
         int STREAM_ID = 5;
-        int RESPONSES = 6;
     }
 
     private OhmageDbHelper dbHelper;
@@ -56,7 +55,6 @@ public class OhmageContentProvider extends ContentProvider {
         sUriMatcher.addURI(OhmageContract.CONTENT_AUTHORITY, "surveys/*/*", MatcherTypes.SURVEY_ID);
         sUriMatcher.addURI(OhmageContract.CONTENT_AUTHORITY, "streams", MatcherTypes.STREAMS);
         sUriMatcher.addURI(OhmageContract.CONTENT_AUTHORITY, "streams/*/*", MatcherTypes.STREAM_ID);
-        sUriMatcher.addURI(OhmageContract.CONTENT_AUTHORITY, "responses", MatcherTypes.RESPONSES);
     }
 
     @Override
@@ -74,10 +72,6 @@ public class OhmageContentProvider extends ContentProvider {
                 break;
             case MatcherTypes.STREAMS:
                 count = dbHelper.getWritableDatabase().delete(Tables.Streams, selection,
-                        selectionArgs);
-                break;
-            case MatcherTypes.RESPONSES:
-                count = dbHelper.getWritableDatabase().delete(Tables.Responses, selection,
                         selectionArgs);
                 break;
             default:
@@ -98,6 +92,8 @@ public class OhmageContentProvider extends ContentProvider {
                 return OhmageContract.Ohmlets.CONTENT_ITEM_TYPE;
             case MatcherTypes.SURVEY_ID:
                 return OhmageContract.Surveys.CONTENT_ITEM_TYPE;
+            case MatcherTypes.STREAM_ID:
+                return OhmageContract.Streams.CONTENT_ITEM_TYPE;
             default:
                 throw new UnsupportedOperationException("getType(): Unknown URI: " + uri);
         }
@@ -123,9 +119,6 @@ public class OhmageContentProvider extends ContentProvider {
                 break;
             case MatcherTypes.STREAMS:
                 result = db.replace(Tables.Streams, null, values);
-                break;
-            case MatcherTypes.RESPONSES:
-                result = db.insert(Tables.Responses, null, values);
                 break;
             default:
                 throw new UnsupportedOperationException("insert(): Unknown URI: " + uri);
@@ -187,10 +180,6 @@ public class OhmageContentProvider extends ContentProvider {
                         Streams.STREAM_ID + "=? AND " + Streams.STREAM_VERSION + "=" +
                         Streams.getVersion(uri), new String[]{Streams.getId(uri)}, null, null,
                         sortOrder);
-                break;
-            case MatcherTypes.RESPONSES:
-                cursor = dbHelper.getReadableDatabase().query(Tables.Responses, projection,
-                        selection, selectionArgs, null, null, sortOrder);
                 break;
             default:
                 throw new UnsupportedOperationException("query(): Unknown URI: " + uri);

@@ -46,6 +46,7 @@ import org.ohmage.prompts.PromptFragment;
 import org.ohmage.provider.ContentProviderReader;
 import org.ohmage.provider.StreamContentProvider;
 import org.ohmage.sync.OhmageSyncAdapter;
+import org.ohmage.sync.ResponseSyncAdapter;
 import org.ohmage.sync.StreamSyncAdapter;
 import org.ohmage.sync.StreamSyncAdapterTest;
 import org.ohmage.tasks.LogoutTaskFragment;
@@ -87,7 +88,8 @@ import static org.mockito.Mockito.mock;
                 HomeFragment.class,
                 SurveyActivity.class,
                 PromptFragment.class,
-                SurveyPromptLoader.class
+                SurveyPromptLoader.class,
+                ResponseSyncAdapter.class
         },
         complete = false,
         library = true,

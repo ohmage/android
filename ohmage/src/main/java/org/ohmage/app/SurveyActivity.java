@@ -54,8 +54,8 @@ import org.ohmage.prompts.AnswerablePrompt.AnswerablePromptFragment;
 import org.ohmage.prompts.Prompt;
 import org.ohmage.prompts.SurveyItemFragment;
 import org.ohmage.provider.OhmageContract;
-import org.ohmage.provider.OhmageContract.Responses;
 import org.ohmage.provider.OhmageContract.Surveys;
+import org.ohmage.provider.ResponseContract.Responses;
 import org.ohmage.streams.StreamPointBuilder;
 import org.ohmage.widget.PromptViewPager;
 
@@ -176,7 +176,8 @@ public class SurveyActivity extends InjectedActionBarActivity
             values.put(Responses.RESPONSE_METADATA,
                     new StreamPointBuilder().now().withId()
                             .withLocation(mLocationClient.getLastLocation())
-                            .getMetadata());
+                            .getMetadata()
+            );
             mPagerAdapter.buildResponse(values);
             getContentResolver().insert(Responses.CONTENT_URI, values);
             finish();
@@ -189,7 +190,7 @@ public class SurveyActivity extends InjectedActionBarActivity
     @Override public void onConnected(Bundle bundle) {
         mLocationClient.requestLocationUpdates(REQUEST, new LocationListener() {
             @Override public void onLocationChanged(Location location) {
-                Log.d(TAG, "accuracy:"  + location.getAccuracy());
+                Log.d(TAG, "accuracy:" + location.getAccuracy());
             }
         });  // LocationListener
     }
@@ -226,7 +227,8 @@ public class SurveyActivity extends InjectedActionBarActivity
             } else {
                 fragment = mPrompts.get(position).getFragment();
                 if (fragment instanceof AnswerablePromptFragment) {
-                    ((AnswerablePromptFragment) fragment).setOnValidAnswerStateChangedListener(mPager);
+                    ((AnswerablePromptFragment) fragment)
+                            .setOnValidAnswerStateChangedListener(mPager);
                 }
             }
 
@@ -255,8 +257,9 @@ public class SurveyActivity extends InjectedActionBarActivity
 
         @Override
         public float getPageWidth(int position) {
-            if (position == getCount() - 1)
+            if (position == getCount() - 1) {
                 return 1.0f;
+            }
             return 0.1f;
         }
 
@@ -275,8 +278,8 @@ public class SurveyActivity extends InjectedActionBarActivity
                             mFragments.set(index, true);
                         } else {
                             Log.w(TAG, "Bad fragment at key " + key);
-            }
-        }
+                        }
+                    }
                 }
             }
             super.restoreState(state, loader);
@@ -292,8 +295,9 @@ public class SurveyActivity extends InjectedActionBarActivity
             for (int i = 0; i < getCount(); i++) {
                 Fragment item = getItem(i);
                 if (item instanceof AnswerablePromptFragment) {
-                    if(((AnswerablePromptFragment) item).getPrompt().hasValidResponse())
-                        ((AnswerablePromptFragment) item).getPrompt().addAnswer( data, extras);
+                    if (((AnswerablePromptFragment) item).getPrompt().hasValidResponse()) {
+                        ((AnswerablePromptFragment) item).getPrompt().addAnswer(data, extras);
+                    }
                 }
             }
             values.put(Responses.RESPONSE_EXTRAS, extras.toString());

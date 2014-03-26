@@ -23,9 +23,9 @@ import android.provider.BaseColumns;
 
 import org.ohmage.models.Ohmlet.PrivacyState;
 import org.ohmage.provider.OhmageContract.Ohmlets;
-import org.ohmage.provider.OhmageContract.Responses;
 import org.ohmage.provider.OhmageContract.Streams;
 import org.ohmage.provider.OhmageContract.Surveys;
+import org.ohmage.provider.ResponseContract.Responses;
 import org.ohmage.streams.StreamContract;
 
 public class OhmageDbHelper extends SQLiteOpenHelper {
