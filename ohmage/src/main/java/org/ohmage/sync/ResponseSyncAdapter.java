@@ -23,13 +23,17 @@ import android.accounts.OperationCanceledException;
 import android.annotation.TargetApi;
 import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
+import android.content.ContentProviderOperation;
+import android.content.ContentUris;
 import android.content.Context;
+import android.content.OperationApplicationException;
 import android.content.SyncResult;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.RemoteException;
+import android.provider.BaseColumns;
 
 import com.google.gson.Gson;
 
@@ -37,12 +41,20 @@ import org.apache.http.auth.AuthenticationException;
 import org.ohmage.app.Ohmage;
 import org.ohmage.app.OhmageService;
 import org.ohmage.auth.AuthUtil;
+import org.ohmage.provider.ResponseContract;
 import org.ohmage.provider.ResponseContract.Responses;
 import org.ohmage.sync.ResponseTypedOutput.ResponseFiles;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import javax.inject.Inject;
+
+import retrofit.client.Response;
+import rx.Observable;
+import rx.Observer;
+import rx.util.functions.Action1;
+import rx.util.functions.Func1;
 
 /**
  * Handle the transfer of data between a server the ohmage app using the Android sync adapter
@@ -103,30 +115,107 @@ public class ResponseSyncAdapter extends AbstractThreadedSyncAdapter {
             return;
 
         // Upload responses
+        Observable<Long> toDelete = null;
+        Observable<ResponseFiles> filesToDelete = null;
+
         Cursor cursor = null;
+
         try {
             cursor = provider.query(Responses.CONTENT_URI,
-                    new String[]{Responses.SURVEY_ID, Responses.SURVEY_VERSION,
+                    new String[]{BaseColumns._ID, Responses.SURVEY_ID, Responses.SURVEY_VERSION,
                             Responses.RESPONSE_DATA, Responses.RESPONSE_METADATA,
                             Responses.RESPONSE_EXTRAS}, null, null, null);
 
             while (cursor.moveToNext()) {
-                ohmageService.uploadResponse(cursor.getString(0), cursor.getLong(1),
-                        new ResponseTypedOutput(cursor.getString(2), cursor.getString(3),
-                                gson.fromJson(cursor.getString(4), ResponseFiles.class)));
+                final ResponseFiles files = gson.fromJson(cursor.getString(5), ResponseFiles.class);
+                try {
+                    // Make the call to upload responses
+                    Observable<Response> uploadResponse =
+                            ohmageService.uploadResponse(cursor.getString(1), cursor.getLong(2),
+                                    new ResponseTypedOutput(cursor.getString(3),
+                                            cursor.getString(4), files)).cache();
+
+                    // Map the data for the upload response to the local id in the db
+                    final long localResponseId = cursor.getLong(0);
+                    Observable<Long> responseId = uploadResponse.map(new Func1<Response, Long>() {
+                        @Override public Long call(Response response) {
+                            return localResponseId;
+                        }
+                    });
+
+                    if(toDelete == null) {
+                        toDelete = responseId;
+                    } else {
+                        toDelete = Observable.mergeDelayError(responseId, toDelete);
+                    }
+
+                    // Map the data for the upload response to the files in the db
+                    Observable<ResponseFiles> responseFiles = uploadResponse.map(new Func1<Response, ResponseFiles>() {
+                        @Override public ResponseFiles call(Response response) {
+                            return files;
+                        }
+                    });
+
+                    if(filesToDelete == null) {
+                        filesToDelete = responseFiles;
+                    } else {
+                        filesToDelete = Observable.mergeDelayError(responseFiles, filesToDelete);
+                    }
+                } catch (AuthenticationException e) {
+                    syncResult.stats.numAuthExceptions++;
+                }
             }
             cursor.close();
 
-            // Delete any uploaded responses
-            provider.delete(appendSyncAdapterParam(Responses.CONTENT_URI), null, null);
+
 
         } catch (RemoteException e) {
             syncResult.stats.numIoExceptions++;
-        } catch (AuthenticationException e) {
-            syncResult.stats.numAuthExceptions++;
         } finally {
             if (cursor != null)
                 cursor.close();
+        }
+
+        if(toDelete != null) {
+            toDelete.flatMap(new Func1<Long, Observable<ContentProviderOperation>>() {
+                @Override public Observable<ContentProviderOperation> call(Long aLong) {
+                    return Observable.from(ContentProviderOperation.newDelete(appendSyncAdapterParam(
+                            ContentUris.withAppendedId(Responses.CONTENT_URI, aLong))).build());
+                }
+            }).subscribe(new Observer<ContentProviderOperation>() {
+                ArrayList<ContentProviderOperation> toDelete =
+                        new ArrayList<ContentProviderOperation>();
+
+                @Override public void onCompleted() {
+                    try {
+                        getContext().getContentResolver()
+                                .applyBatch(ResponseContract.CONTENT_AUTHORITY, toDelete);
+                    } catch (RemoteException e) {
+                        syncResult.stats.numIoExceptions++;
+                    } catch (OperationApplicationException e) {
+                        syncResult.stats.numIoExceptions++;
+                    }
+                }
+
+                @Override public void onError(Throwable e) {
+                    // Delete the successful ones
+                    onCompleted();
+                }
+
+                @Override public void onNext(ContentProviderOperation args) {
+                    toDelete.add(args);
+                }
+            });
+        }
+
+        if(filesToDelete != null) {
+            filesToDelete.doOnNext(new Action1<ResponseFiles>() {
+                @Override public void call(ResponseFiles responseFiles) {
+                    for (String s : responseFiles.getIds()) {
+                        responseFiles.getFile(s).delete();
+                    }
+                }
+            }).subscribe();
         }
     }
 

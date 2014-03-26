@@ -18,6 +18,7 @@ package org.ohmage.provider;
 
 import android.content.ContentProvider;
 import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
@@ -26,13 +27,14 @@ import android.net.Uri;
 
 import org.ohmage.provider.OhmageDbHelper.Tables;
 import org.ohmage.provider.ResponseContract.Responses;
-import org.ohmage.sync.OhmageSyncAdapter;
+import org.ohmage.sync.ResponseSyncAdapter;
 
 public class ResponseContentProvider extends ContentProvider {
 
     // enum of the URIs we can match using sUriMatcher
     private interface MatcherTypes {
         int RESPONSES = 0;
+        int RESPONSE_ID = 1;
     }
 
     private OhmageDbHelper dbHelper;
@@ -42,6 +44,7 @@ public class ResponseContentProvider extends ContentProvider {
     {
         sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
         sUriMatcher.addURI(ResponseContract.CONTENT_AUTHORITY, "responses", MatcherTypes.RESPONSES);
+        sUriMatcher.addURI(ResponseContract.CONTENT_AUTHORITY, "responses/*", MatcherTypes.RESPONSE_ID);
     }
 
     @Override
@@ -52,6 +55,11 @@ public class ResponseContentProvider extends ContentProvider {
             case MatcherTypes.RESPONSES:
                 count = dbHelper.getWritableDatabase().delete(Tables.Responses, selection,
                         selectionArgs);
+                break;
+            case MatcherTypes.RESPONSE_ID:
+                long id = ContentUris.parseId(uri);
+                count = dbHelper.getWritableDatabase().delete(Tables.Responses, Responses._ID + "=?",
+                        new String[] {String.valueOf(id)});
                 break;
             default:
                 throw new UnsupportedOperationException("insert(): Unknown URI: " + uri);
@@ -129,6 +137,6 @@ public class ResponseContentProvider extends ContentProvider {
     }
 
     private boolean isSyncAdapter(Uri uri) {
-        return uri.getQueryParameter(OhmageSyncAdapter.IS_SYNCADAPTER) != null;
+        return uri.getQueryParameter(ResponseSyncAdapter.IS_SYNCADAPTER) != null;
     }
 }

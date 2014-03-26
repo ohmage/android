@@ -102,7 +102,7 @@ public interface OhmageService {
             @Path("surveyVersion") long surveyVersion);
 
     @POST("/surveys/{surveyId}/{surveyVersion}/data")
-    Response uploadResponse(@Path("surveyId") String surveyId,
+    Observable<Response> uploadResponse(@Path("surveyId") String surveyId,
             @Path("surveyVersion") long surveyVersion, @Body ResponseTypedOutput data)
             throws AuthenticationException;
 
