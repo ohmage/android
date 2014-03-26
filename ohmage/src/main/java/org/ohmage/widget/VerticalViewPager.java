@@ -1082,11 +1082,11 @@ public class VerticalViewPager extends ViewGroup {
         if (hasFocus()) {
             View currentFocused = findFocus();
             ItemInfo ii = currentFocused != null ? infoForAnyChild(currentFocused) : null;
-            if (ii == null || ii.position != mCurItem) {
+            if (ii == null || !infoIsOnScreen(ii)) {
                 for (int i = 0; i < getChildCount(); i++) {
                     View child = getChildAt(i);
                     ii = infoForChild(child);
-                    if (ii != null && ii.position == mCurItem) {
+                    if (ii != null && infoIsOnScreen(ii)) {
                         if (child.requestFocus(FOCUS_FORWARD)) {
                             break;
                         }
@@ -1094,6 +1094,13 @@ public class VerticalViewPager extends ViewGroup {
                 }
             }
         }
+    }
+
+    public boolean infoIsOnScreen(ItemInfo ii) {
+        double scrollY = getScrollY() / new Double(getHeight());
+        double bottom = ii.offset + ii.heightFactor;
+        return (ii != null && ((ii.offset >= scrollY && ii.offset < scrollY + 1) ||
+                               (bottom > scrollY && bottom < scrollY + 1)));
     }
 
     private void calculatePageOffsets(ItemInfo curItem, int curIndex, ItemInfo oldCurInfo) {
