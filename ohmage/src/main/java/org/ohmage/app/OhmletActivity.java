@@ -29,6 +29,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager.LoaderCallbacks;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -163,18 +164,10 @@ public class OhmletActivity extends InjectedActionBarActivity {
             action = getArguments().getString("action");
             uri = getArguments().getParcelable("uri");
             ohmletId = uri.getLastPathSegment();
-
-            if (savedInstanceState == null) {
-                if (ACTION_JOIN.equals(action)) {
-                    mJoinDialog = JoinOhmletDialog.getInstance(null, userId);
-                    mJoinDialog.show(getFragmentManager(), "join_dialog");
-                }
-            }
         }
 
         @Override public void onActivityCreated(Bundle savedInstanceState) {
             super.onActivityCreated(savedInstanceState);
-
 
             Account[] accounts = am.getAccountsByType(AuthUtil.ACCOUNT_TYPE);
             if (accounts.length == 0) {
@@ -192,6 +185,13 @@ public class OhmletActivity extends InjectedActionBarActivity {
             }
 
             userId = am.getUserData(accounts[0], Authenticator.USER_ID);
+
+            if (savedInstanceState == null) {
+                if (ACTION_JOIN.equals(action)) {
+                    mJoinDialog = JoinOhmletDialog.getInstance(null, userId);
+                    mJoinDialog.show(getFragmentManager(), "join_dialog");
+                }
+            }
 
             getLoaderManager().initLoader(0, null, this);
         }
@@ -299,11 +299,12 @@ public class OhmletActivity extends InjectedActionBarActivity {
         }
 
         @Override public void onClick(DialogInterface dialog, int which) {
-            if (mOhmlet.isMember(userId)) {
-                mOhmlet.people.removeMember(userId);
+            String id = TextUtils.isEmpty(userId) ? "me" : userId;
+            if (mOhmlet.isMember(id)) {
+                mOhmlet.people.removeMember(id);
             } else {
                 Member m = new Member();
-                m.memberId = userId;
+                m.memberId = id;
                 m.role = Role.MEMBER;
                 mOhmlet.people.add(m);
             }
