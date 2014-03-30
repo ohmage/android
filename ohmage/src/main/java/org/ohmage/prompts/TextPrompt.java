@@ -141,6 +141,7 @@ public class TextPrompt extends AnswerablePrompt<String> {
 
             mInput = (EditText) rootView.findViewById(R.id.input);
             mInput.requestFocus();
+            mInput.setText(getPrompt().defaultResponse);
             mInput.setOnEditorActionListener(new TextView.OnEditorActionListener() {
                 @Override
                 public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {

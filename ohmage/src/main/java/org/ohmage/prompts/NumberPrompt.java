@@ -58,8 +58,7 @@ public class NumberPrompt extends AnswerablePrompt<BigDecimal> {
             numberPicker = (NumberPicker) view.findViewById(R.id.number_picker);
             numberPicker.setRange(getPrompt().min, getPrompt().max);
             numberPicker.setWholeNumbers(getPrompt().wholeNumbersOnly);
-            if(getPrompt().defaultResponse != null)
-                numberPicker.setCurrent(getPrompt().defaultResponse);
+            numberPicker.setCurrent(getPrompt().defaultResponse);
             numberPicker.setOnChangeListener(new OnChangedListener() {
                 @Override
                 public void onChanged(NumberPicker picker, BigDecimal oldVal, BigDecimal newVal) {

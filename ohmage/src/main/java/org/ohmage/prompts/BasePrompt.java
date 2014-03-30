@@ -113,7 +113,11 @@ public class BasePrompt implements Prompt {
             JsonObject object = json.getAsJsonObject();
             String type = object.get("survey_item_type").getAsString();
             if (map.containsKey(type)) {
-                return context.deserialize(json, map.get(type));
+                BasePrompt prompt = context.deserialize(json, map.get(type));
+                if(prompt instanceof AnswerablePrompt) {
+                    ((AnswerablePrompt) prompt).value = ((AnswerablePrompt) prompt).defaultResponse;
+                }
+                return prompt;
             }
             return null;
         }

@@ -298,9 +298,11 @@ public class NumberPicker extends LinearLayout {
      *                                  of of the number picker
      */
     public void setCurrent(BigDecimal current) {
-        if (current.compareTo(mStart) < 0 || current.compareTo(mEnd) > 0) {
-            throw new IllegalArgumentException(
-                    "current should be >= start and <= end");
+        if (current != null) {
+            if (current.compareTo(mStart) < 0 || current.compareTo(mEnd) > 0) {
+                throw new IllegalArgumentException(
+                        "current should be >= start and <= end");
+            }
         }
         mCurrent = current;
         updateView();

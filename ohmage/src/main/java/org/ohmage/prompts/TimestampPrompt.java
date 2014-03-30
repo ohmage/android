@@ -31,8 +31,6 @@ import java.util.Calendar;
 
 /**
  * Created by cketcham on 1/23/14.
- * TODO: how to reset the value to nothing?
- * TODO: how to allow scrolling of the card easily
  */
 public class TimestampPrompt extends AnswerablePrompt<Calendar> {
 
@@ -62,8 +60,7 @@ public class TimestampPrompt extends AnswerablePrompt<Calendar> {
 
             DatePicker datePicker = (DatePicker) view.findViewById(R.id.datePicker);
             Calendar c = Calendar.getInstance();
-            //TODO: is it possible to omit an initial value for this prompt
-//            setValue(c);
+            setValue(c);
             datePicker
                     .init(c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH),
                             new DatePicker.OnDateChangedListener() {
@@ -71,10 +68,6 @@ public class TimestampPrompt extends AnswerablePrompt<Calendar> {
                                 public void onDateChanged(DatePicker view, int year,
                                         int monthOfYear, int dayOfMonth) {
                                     Calendar c = getPrompt().value;
-                                    if (c == null) {
-                                        c = Calendar.getInstance();
-                                        c.clear();
-                                    }
                                     c.set(Calendar.YEAR, year);
                                     c.set(Calendar.MONTH, monthOfYear);
                                     c.set(Calendar.DAY_OF_MONTH, dayOfMonth);
@@ -85,10 +78,6 @@ public class TimestampPrompt extends AnswerablePrompt<Calendar> {
             timePicker.setOnTimeChangedListener(new TimePicker.OnTimeChangedListener() {
                 @Override public void onTimeChanged(TimePicker view, int hourOfDay, int minute) {
                     Calendar c = getPrompt().value;
-                    if (c == null) {
-                        c = Calendar.getInstance();
-                        c.clear();
-                    }
                     c.set(Calendar.HOUR_OF_DAY, hourOfDay);
                     c.set(Calendar.MINUTE, minute);
                     setValue(c);
