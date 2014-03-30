@@ -6,7 +6,7 @@ This is the repository for the ohmage Android application.
 DEPENDENCIES
 ------------
 
-There is a dependency on `ReminderLib` which has not been release yet. To build the project on
+There is a dependency on `ReminderLib` which has not been released yet. To build the project on
 your own now, you will have to remove that library and remove any references to it.
 
 
