@@ -18,6 +18,7 @@ package org.ohmage.prompts;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.net.Uri;
 import android.provider.MediaStore;
 import android.view.View;
 
@@ -56,7 +57,7 @@ public class ImagePrompt extends MediaPrompt {
         @Override public void onClick(View v) {
             Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
             mFile = MediaPrompt.getTemporaryResponseFile();
-            intent.putExtra(MediaStore.EXTRA_OUTPUT, mFile);
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(mFile));
             startActivityForResult(intent, REQUEST_CODE);
         }
 
