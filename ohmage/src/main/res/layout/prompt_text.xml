@@ -22,8 +22,9 @@
         android:id="@+id/input"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="bottom"
-        android:layout_below="@id/text"
-        android:layout_alignParentBottom="true" />
+        android:inputType="text"
+        android:imeActionLabel="@android:string/ok"
+        android:imeActionId="@+id/submit_prompt"
+        android:imeOptions="actionUnspecified" />
 
 </merge>

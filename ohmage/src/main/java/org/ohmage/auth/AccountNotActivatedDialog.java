@@ -42,7 +42,7 @@ public class AccountNotActivatedDialog extends ActionBarActivity {
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
             builder.setTitle(R.string.title_account_not_activated)
                     .setMessage(R.string.message_account_not_activated)
-                    .setPositiveButton(R.string.ok, null);
+                    .setPositiveButton(android.R.string.ok, null);
             return builder.create();
         }
 

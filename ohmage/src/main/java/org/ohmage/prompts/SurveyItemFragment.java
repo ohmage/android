@@ -114,6 +114,10 @@ public class SurveyItemFragment extends Fragment {
         // Sub-classes should handle the ok pressed event
     }
 
+    public void dispatchOkPressed() {
+        okButton.performClick();
+    }
+
     /**
      * Sub-classes should return the text to show for this prompt if they don't create their
      * @return

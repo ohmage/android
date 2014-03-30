@@ -289,6 +289,14 @@ public class SurveyActivity extends InjectedActionBarActivity
             return mPrompts.indexOf(prompt);
         }
 
+        public Prompt getPromptAt(int position) {
+            return mPrompts.get(position);
+        }
+
+        public int getPromptCount() {
+            return mPrompts.size();
+        }
+
         public void buildResponse(ContentValues values) throws JSONException {
             JSONObject extras = new JSONObject();
             JSONObject data = new JSONObject();
