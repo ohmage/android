@@ -16,12 +16,15 @@
 
 package org.ohmage.prompts;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 
 /**
  * Created by cketcham on 1/24/14.
  */
-public class ChoicePrompt<T,V> extends AnswerablePrompt<T> {
+public class ChoicePrompt<T, V> extends AnswerablePrompt<T> {
 
     public ChoiceArray<V> choices;
 
@@ -32,6 +35,11 @@ public class ChoicePrompt<T,V> extends AnswerablePrompt<T> {
             tmp.value = object;
             return super.indexOf(tmp);
         }
+    }
+
+    @Override public void addAnswer(JSONObject data, JSONObject extras) throws JSONException {
+        super.addAnswer(data, extras);
+        data.put(surveyItemId, value);
     }
 
     public static class KLVPair<T> implements CharSequence {
