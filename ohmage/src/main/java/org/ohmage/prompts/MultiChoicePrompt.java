@@ -72,6 +72,8 @@ public class MultiChoicePrompt<T> extends ChoicePrompt<ArrayList<T>, T> {
     public static class MultiChoicePromptFragment<T>
             extends AnswerablePromptFragment<MultiChoicePrompt<T>> {
 
+        private LinearLayout mChoiceContainer;
+
         public static MultiChoicePromptFragment getInstance(MultiChoicePrompt prompt) {
             MultiChoicePromptFragment fragment = new MultiChoicePromptFragment();
             fragment.setPrompt(prompt);
@@ -82,12 +84,12 @@ public class MultiChoicePrompt<T> extends ChoicePrompt<ArrayList<T>, T> {
         public void onCreatePromptView(LayoutInflater inflater, ViewGroup container,
                 Bundle savedInstanceState) {
             ViewGroup view = (ViewGroup) inflater.inflate(R.layout.prompt_choice, container, true);
-            LinearLayout choiceContainer = (LinearLayout) view.findViewById(R.id.list);
+            mChoiceContainer = (LinearLayout) view.findViewById(R.id.list);
 
             for (int i = 0; i < getPrompt().choices.size(); i++) {
                 CheckedTextView v = (CheckedTextView) inflater
-                        .inflate(android.R.layout.simple_list_item_multiple_choice, choiceContainer,
-                                false);
+                        .inflate(android.R.layout.simple_list_item_multiple_choice,
+                                mChoiceContainer, false);
                 v.setText(getPrompt().choices.get(i));
 
                 if (getPrompt().positionIsChecked(i)) {
@@ -114,7 +116,14 @@ public class MultiChoicePrompt<T> extends ChoicePrompt<ArrayList<T>, T> {
                     }
                 });
 
-                choiceContainer.addView(v);
+                mChoiceContainer.addView(v);
+            }
+        }
+
+        @Override protected void onSkipPressed() {
+            super.onSkipPressed();
+            for(int i=0;i < mChoiceContainer.getChildCount();i++) {
+                ((CheckedTextView) mChoiceContainer.getChildAt(i)).setChecked(false);
             }
         }
     }

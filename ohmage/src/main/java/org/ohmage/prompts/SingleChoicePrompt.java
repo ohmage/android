@@ -45,6 +45,8 @@ public class SingleChoicePrompt<T> extends ChoicePrompt<T, T> {
     public static class SingleChoicePromptFragment<T>
             extends AnswerablePromptFragment<SingleChoicePrompt<T>> {
 
+        private LinearLayout mChoiceContainer;
+
         public static SingleChoicePromptFragment getInstance(SingleChoicePrompt prompt) {
             SingleChoicePromptFragment fragment = new SingleChoicePromptFragment();
             fragment.setPrompt(prompt);
@@ -55,10 +57,11 @@ public class SingleChoicePrompt<T> extends ChoicePrompt<T, T> {
         public void onCreatePromptView(LayoutInflater inflater, ViewGroup container,
                 Bundle savedInstanceState) {
             ViewGroup view = (ViewGroup) inflater.inflate(R.layout.prompt_choice, container, true);
-            final LinearLayout choiceContainer = (LinearLayout) view.findViewById(R.id.list);
+            mChoiceContainer = (LinearLayout) view.findViewById(R.id.list);
 
             for(int i=0;i<getPrompt().choices.size();i++) {
-                CheckedTextView v = (CheckedTextView) inflater.inflate(android.R.layout.simple_list_item_single_choice, choiceContainer, false);
+                CheckedTextView v = (CheckedTextView) inflater.inflate(android.R.layout.simple_list_item_single_choice,
+                        mChoiceContainer, false);
                 v.setText(getPrompt().choices.get(i));
 
                 if(getPrompt().getCheckedItem() == i) {
@@ -69,7 +72,7 @@ public class SingleChoicePrompt<T> extends ChoicePrompt<T, T> {
                 v.setOnClickListener(new View.OnClickListener() {
                     @Override public void onClick(View v) {
                         if(getPrompt().value != null) {
-                            View previous = choiceContainer.getChildAt(
+                            View previous = mChoiceContainer.getChildAt(
                                     getPrompt().choices.indexOfValue(getPrompt().value));
                             if(previous instanceof CheckedTextView) {
                                 ((CheckedTextView) previous).setChecked(false);
@@ -81,7 +84,14 @@ public class SingleChoicePrompt<T> extends ChoicePrompt<T, T> {
                         setValue((selected.equals(getPrompt().value)) ? null : selected);
                     }
                 });
-                choiceContainer.addView(v);
+                mChoiceContainer.addView(v);
+            }
+        }
+
+        @Override protected void onSkipPressed() {
+            super.onSkipPressed();
+            for(int i=0;i < mChoiceContainer.getChildCount();i++) {
+                ((CheckedTextView) mChoiceContainer.getChildAt(i)).setChecked(false);
             }
         }
     }

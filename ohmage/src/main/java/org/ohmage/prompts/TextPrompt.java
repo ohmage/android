@@ -82,6 +82,7 @@ public class TextPrompt extends AnswerablePrompt<String> {
 
         @Override protected void onSkipPressed() {
             hideKeyboard();
+            mInput.setText("");
             super.onSkipPressed();
         }
 

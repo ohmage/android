@@ -42,6 +42,8 @@ public class NumberPrompt extends AnswerablePrompt<BigDecimal> {
 
     public static class NumberPromptFragment extends AnswerablePromptFragment<NumberPrompt> {
 
+        private NumberPicker numberPicker;
+
         public static NumberPromptFragment getInstance(NumberPrompt prompt) {
             NumberPromptFragment fragment = new NumberPromptFragment();
             fragment.setPrompt(prompt);
@@ -53,7 +55,7 @@ public class NumberPrompt extends AnswerablePrompt<BigDecimal> {
                 Bundle savedInstanceState) {
             ViewGroup view = (ViewGroup) inflater.inflate(R.layout.prompt_number, container, true);
 
-            NumberPicker numberPicker = (NumberPicker) view.findViewById(R.id.number_picker);
+            numberPicker = (NumberPicker) view.findViewById(R.id.number_picker);
             numberPicker.setRange(getPrompt().min, getPrompt().max);
             numberPicker.setWholeNumbers(getPrompt().wholeNumbersOnly);
             if(getPrompt().defaultResponse != null)
@@ -64,6 +66,11 @@ public class NumberPrompt extends AnswerablePrompt<BigDecimal> {
                     setValue(newVal);
                 }
             });
+        }
+
+        @Override protected void onSkipPressed() {
+            super.onSkipPressed();
+            numberPicker.setCurrent(null);
         }
     }
 }

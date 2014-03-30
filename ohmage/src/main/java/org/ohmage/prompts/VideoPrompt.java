@@ -69,5 +69,12 @@ public class VideoPrompt extends MediaPrompt {
                 setValue(mFile);
             }
         }
+
+        @Override protected void onSkipPressed() {
+            super.onSkipPressed();
+            if(mFile != null) {
+                mFile.delete();
+            }
+        }
     }
 }

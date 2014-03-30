@@ -90,5 +90,12 @@ public class AudioPrompt extends MediaPrompt {
             if (msg != -1)
                 Toast.makeText(getActivity(), getString(msg), Toast.LENGTH_SHORT).show();
         }
+
+        @Override protected void onSkipPressed() {
+            super.onSkipPressed();
+            if(mFile != null) {
+                mFile.delete();
+            }
+        }
     }
 }

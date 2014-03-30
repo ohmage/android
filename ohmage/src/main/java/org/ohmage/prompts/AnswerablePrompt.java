@@ -100,6 +100,7 @@ public abstract class AnswerablePrompt<T> extends BasePrompt {
         @Override protected void onSkipPressed() {
             super.onSkipPressed();
             if (getPrompt().isSkippable()) {
+                getPrompt().value=null;
                 notifyValidAnswerStateChanged();
             }
         }
