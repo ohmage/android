@@ -30,7 +30,7 @@ import java.math.BigDecimal;
  * Created by cketcham on 1/24/14.
  * TODO:can this be combined with textprompt? because the json is the same
  */
-public class NumberPrompt extends AnswerablePrompt {
+public class NumberPrompt extends AnswerablePrompt<BigDecimal> {
     public BigDecimal min;
     public BigDecimal max;
     public boolean wholeNumbersOnly;
@@ -40,7 +40,7 @@ public class NumberPrompt extends AnswerablePrompt {
         return NumberPromptFragment.getInstance(this);
     }
 
-    public static class NumberPromptFragment extends AnswerablePromptFragment {
+    public static class NumberPromptFragment extends AnswerablePromptFragment<NumberPrompt> {
 
         public static NumberPromptFragment getInstance(NumberPrompt prompt) {
             NumberPromptFragment fragment = new NumberPromptFragment();
@@ -54,8 +54,8 @@ public class NumberPrompt extends AnswerablePrompt {
             ViewGroup view = (ViewGroup) inflater.inflate(R.layout.prompt_number, container, true);
 
             NumberPicker numberPicker = (NumberPicker) view.findViewById(R.id.number_picker);
-            numberPicker.setRange(((NumberPrompt) getPrompt()).min,
-                    ((NumberPrompt) getPrompt()).max);
+            numberPicker.setRange(getPrompt().min, getPrompt().max);
+            numberPicker.setWholeNumbers(getPrompt().wholeNumbersOnly);
             numberPicker.setOnChangeListener(new OnChangedListener() {
                 @Override
                 public void onChanged(NumberPicker picker, BigDecimal oldVal, BigDecimal newVal) {
