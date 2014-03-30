@@ -74,6 +74,22 @@ public class HomeFragment extends GridFragment implements LoaderCallbacks<Cursor
         super.onCreate(savedInstanceState);
     }
 
+    @Override public void onResume() {
+        super.onResume();
+
+        syncObserverHandle = getActivity().getContentResolver().addStatusChangeListener(
+                ContentResolver.SYNC_OBSERVER_TYPE_PENDING |
+                ContentResolver.SYNC_OBSERVER_TYPE_ACTIVE, this);
+    }
+
+    @Override public void onPause() {
+        super.onPause();
+        if(syncObserverHandle != null) {
+            getActivity().getContentResolver().removeStatusChangeListener(syncObserverHandle);
+            syncObserverHandle = null;
+        }
+    }
+
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
@@ -87,15 +103,7 @@ public class HomeFragment extends GridFragment implements LoaderCallbacks<Cursor
 
         getLoaderManager().initLoader(0, null, this);
 
-        syncObserverHandle = getActivity().getContentResolver().addStatusChangeListener(
-                ContentResolver.SYNC_OBSERVER_TYPE_PENDING |
-                ContentResolver.SYNC_OBSERVER_TYPE_ACTIVE, this);
-    }
 
-    @Override public void onDestroy() {
-        super.onDestroy();
-        if(syncObserverHandle != null)
-            getActivity().getContentResolver().removeStatusChangeListener(syncObserverHandle);
     }
 
     @Override
