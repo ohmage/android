@@ -315,14 +315,20 @@ public class SurveyActivity extends InjectedActionBarActivity
 
     public static class SubmitResponseFragment extends SurveyItemFragment {
 
+        boolean submitted = false;
+
         @Override
         public View onCreateView(LayoutInflater inflater, final ViewGroup container,
                 Bundle savedInstanceState) {
             View view = inflater.inflate(R.layout.prompt_submit, container, false);
-            Button submit = (Button) view.findViewById(R.id.submit);
+            final Button submit = (Button) view.findViewById(R.id.submit);
             submit.setOnClickListener(new OnClickListener() {
                 @Override public void onClick(View v) {
-                    ((SurveyActivity) getActivity()).submit();
+                    submit.setEnabled(false);
+                    if(!submitted) {
+                        submitted = true;
+                        ((SurveyActivity) getActivity()).submit();
+                    }
                 }
             });
             return view;
