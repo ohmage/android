@@ -35,7 +35,7 @@ public abstract class AnswerablePrompt<T> extends BasePrompt {
     }
 
     public boolean isSkippable() {
-        return skippable || value != null;
+        return skippable;
     }
 
     public boolean hasValidResponse() {
