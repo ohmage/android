@@ -18,6 +18,7 @@ package org.ohmage.auth;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -49,6 +50,7 @@ import org.ohmage.models.Ohmlet.Role;
 import org.ohmage.models.User;
 import org.ohmage.operators.ContentProviderSaver;
 import org.ohmage.provider.OhmageContract;
+import org.ohmage.provider.ResponseContract;
 import org.ohmage.streams.StreamContract;
 
 import java.io.IOException;
@@ -485,17 +487,17 @@ public class AuthenticatorActivity extends AuthenticatorFragmentActivity impleme
             am.addAccountExplicitly(account, password, null);
 
             // Turn on automatic syncing for this account
-            getContentResolver()
-                    .setSyncAutomatically(account, StreamContract.CONTENT_AUTHORITY, true);
-            getContentResolver()
-                    .addPeriodicSync(account, StreamContract.CONTENT_AUTHORITY, new Bundle(),
-                            AuthUtil.SYNC_INTERVAL);
-            getContentResolver()
-                    .setSyncAutomatically(account, OhmageContract.CONTENT_AUTHORITY, true);
-            getContentResolver()
-                    .addPeriodicSync(account, StreamContract.CONTENT_AUTHORITY, new Bundle(),
-                            AuthUtil.SYNC_INTERVAL);
+            ContentResolver.setSyncAutomatically(account, OhmageContract.CONTENT_AUTHORITY, true);
+            ContentResolver.addPeriodicSync(account, StreamContract.CONTENT_AUTHORITY, new Bundle(),
+                    AuthUtil.SYNC_INTERVAL);
 
+            ContentResolver.setSyncAutomatically(account, StreamContract.CONTENT_AUTHORITY, true);
+            ContentResolver.addPeriodicSync(account, StreamContract.CONTENT_AUTHORITY, new Bundle(),
+                    AuthUtil.SYNC_INTERVAL);
+
+            ContentResolver.setSyncAutomatically(account, ResponseContract.CONTENT_AUTHORITY, true);
+            ContentResolver.addPeriodicSync(account, ResponseContract.CONTENT_AUTHORITY,
+                    new Bundle(), AuthUtil.SYNC_INTERVAL);
         } else {
             am.setPassword(accounts[0], password);
         }
