@@ -55,8 +55,8 @@ public class MultiChoicePrompt<T> extends ChoicePrompt<ArrayList<T>, T> {
     public void addAnswer(JSONObject data, JSONObject extras) throws JSONException {
         if (value != null) {
             JSONArray array = new JSONArray();
-            for (KLVPair object : (List<KLVPair>) value) {
-                array.put(object.value);
+            for (T object : value) {
+                array.put(object);
             }
             data.put(surveyItemId, array);
         }
@@ -104,7 +104,7 @@ public class MultiChoicePrompt<T> extends ChoicePrompt<ArrayList<T>, T> {
                             answer.addAll((List) getPrompt().value);
                         }
 
-                        T item = (T) getPrompt().choices.get(position);
+                        T item = getPrompt().choices.get(position).value;
                         if (!answer.contains(item)) {
                             answer.add(item);
                             ((CheckedTextView) v).setChecked(true);
@@ -139,6 +139,6 @@ public class MultiChoicePrompt<T> extends ChoicePrompt<ArrayList<T>, T> {
     }
 
     private boolean positionIsChecked(int position) {
-        return value != null && value.contains(choices.get(position));
+        return value != null && value.contains(choices.get(position).value);
     }
 }
