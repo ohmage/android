@@ -190,9 +190,8 @@ public class SurveyActivity extends InjectedActionBarActivity
     @Override public void onConnected(Bundle bundle) {
         mLocationClient.requestLocationUpdates(REQUEST, new LocationListener() {
             @Override public void onLocationChanged(Location location) {
-                Log.d(TAG, "accuracy:" + location.getAccuracy());
             }
-        });  // LocationListener
+        });
     }
 
     @Override public void onDisconnected() {
