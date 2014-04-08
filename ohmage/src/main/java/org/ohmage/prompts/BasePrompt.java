@@ -16,7 +16,6 @@
 
 package org.ohmage.prompts;
 
-import android.os.Bundle;
 import android.text.TextUtils;
 
 import com.google.gson.JsonDeserializationContext;
@@ -56,7 +55,7 @@ public class BasePrompt implements Prompt {
 
     @Override
     public SurveyItemFragment getFragment() {
-        return MessagePromptFragment.getInstance(getText());
+        return MessagePromptFragment.getInstance(this);
     }
 
     /**
@@ -64,24 +63,18 @@ public class BasePrompt implements Prompt {
      */
     public static class MessagePromptFragment extends PromptFragment<BasePrompt> {
 
-        public static MessagePromptFragment getInstance(String text) {
-            if (TextUtils.isEmpty(text))
+        public static MessagePromptFragment getInstance(BasePrompt prompt) {
+            if (prompt == null || TextUtils.isEmpty(prompt.getText()))
                 return null;
 
             MessagePromptFragment fragment = new MessagePromptFragment();
-            Bundle args = new Bundle();
-            args.putString("text", text);
-            fragment.setArguments(args);
+            fragment.setPrompt(prompt);
             return fragment;
-        }
-
-        @Override protected String getPromptText() {
-            return getArguments().getString("text");
         }
 
         @Override protected void onOkPressed() {
             super.onOkPressed();
-            ((SurveyActivity)getActivity()).mPager.goToNext();
+            ((SurveyActivity) getActivity()).getPagerAdapter().updateAnswer(this);
         }
 
         @Override

@@ -23,9 +23,6 @@ import android.view.ViewGroup;
 import android.widget.CheckedTextView;
 import android.widget.LinearLayout;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.ohmage.app.R;
 
 import java.util.ArrayList;
@@ -49,17 +46,6 @@ public class MultiChoicePrompt<T> extends ChoicePrompt<ArrayList<T>, T> {
     @Override
     public SurveyItemFragment getFragment() {
         return MultiChoicePromptFragment.getInstance(this);
-    }
-
-    @Override
-    public void addAnswer(JSONObject data, JSONObject extras) throws JSONException {
-        if (value != null) {
-            JSONArray array = new JSONArray();
-            for (T object : value) {
-                array.put(object);
-            }
-            data.put(surveyItemId, array);
-        }
     }
 
     public List<T> getNewList() {
@@ -122,7 +108,7 @@ public class MultiChoicePrompt<T> extends ChoicePrompt<ArrayList<T>, T> {
 
         @Override protected void onSkipPressed() {
             super.onSkipPressed();
-            for(int i=0;i < mChoiceContainer.getChildCount();i++) {
+            for (int i = 0; i < mChoiceContainer.getChildCount(); i++) {
                 ((CheckedTextView) mChoiceContainer.getChildAt(i)).setChecked(false);
             }
         }

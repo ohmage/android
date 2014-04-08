@@ -16,8 +16,6 @@
 
 package org.ohmage.prompts;
 
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.ohmage.app.Ohmage;
 
 import java.io.File;
@@ -40,16 +38,16 @@ public class MediaPrompt extends AnswerablePrompt<File> {
         return new File(Ohmage.app().getExternalCacheDir(), UUID.randomUUID().toString());
     }
 
+    @Override
+    public Object getAnswer() {
+        return value.getName();
+    }
+
     /**
      * TODO: maybe we don't need the extras json? the name of the file is the prompt value and I know where to look for the file
-     *
-     * @param data
-     * @param extras
-     * @throws JSONException
      */
     @Override
-    public void addAnswer(JSONObject data, JSONObject extras) throws JSONException {
-        data.put(surveyItemId, value.getName());
-        extras.put(surveyItemId, value.getAbsolutePath());
+    public Object getAnswerExtras() {
+        return value.getAbsolutePath();
     }
 }

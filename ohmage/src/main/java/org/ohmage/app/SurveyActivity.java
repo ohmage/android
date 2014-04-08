@@ -29,13 +29,13 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.app.LoaderManager.LoaderCallbacks;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.view.PagerAdapter;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient.ConnectionCallbacks;
@@ -44,25 +44,27 @@ import com.google.android.gms.location.LocationClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.viewpagerindicator.CirclePageIndicator;
 
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.ohmage.dagger.InjectedActionBarActivity;
+import org.ohmage.prompts.AnswerablePrompt;
 import org.ohmage.prompts.AnswerablePrompt.AnswerablePromptFragment;
 import org.ohmage.prompts.Prompt;
+import org.ohmage.prompts.PromptFragment;
 import org.ohmage.prompts.SurveyItemFragment;
 import org.ohmage.provider.OhmageContract;
 import org.ohmage.provider.OhmageContract.Surveys;
 import org.ohmage.provider.ResponseContract.Responses;
 import org.ohmage.streams.StreamPointBuilder;
-import org.ohmage.widget.PromptViewPager;
+import org.ohmage.widget.VerticalViewPager;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -75,14 +77,11 @@ public class SurveyActivity extends InjectedActionBarActivity
         OnConnectionFailedListener {
     private static final String TAG = SurveyActivity.class.getSimpleName();
 
-    @Inject
-    OhmageService ohmageService;
-
     /**
      * The pager widget, which handles animation and allows swiping horizontally to access previous
      * and next wizard steps.
      */
-    public PromptViewPager mPager;
+    private VerticalViewPager mPager;
 
     /**
      * The pager adapter, which provides the pages to the view pager widget.
@@ -107,7 +106,7 @@ public class SurveyActivity extends InjectedActionBarActivity
         setContentView(R.layout.activity_survey);
 
         // Instantiate a ViewPager and a PagerAdapter.
-        mPager = (PromptViewPager) findViewById(R.id.pager);
+        mPager = (VerticalViewPager) findViewById(R.id.pager);
         mPager.setPageMargin(getResources().getDimensionPixelSize(R.dimen.gutter));
 
         //Bind the title indicator to the adapter
@@ -169,22 +168,17 @@ public class SurveyActivity extends InjectedActionBarActivity
     }
 
     public void submit() {
-        try {
-            ContentValues values = new ContentValues();
-            values.put(Responses.SURVEY_ID, Surveys.getId(getIntent().getData()));
-            values.put(Responses.SURVEY_VERSION, Surveys.getVersion(getIntent().getData()));
-            values.put(Responses.RESPONSE_METADATA,
-                    new StreamPointBuilder().now().withId()
-                            .withLocation(mLocationClient.getLastLocation())
-                            .getMetadata()
-            );
-            mPagerAdapter.buildResponse(values);
-            getContentResolver().insert(Responses.CONTENT_URI, values);
-            finish();
-        } catch (JSONException e) {
-            e.printStackTrace();
-            Toast.makeText(this, "There was an error saving the response", Toast.LENGTH_SHORT);
-        }
+        ContentValues values = new ContentValues();
+        values.put(Responses.SURVEY_ID, Surveys.getId(getIntent().getData()));
+        values.put(Responses.SURVEY_VERSION, Surveys.getVersion(getIntent().getData()));
+        values.put(Responses.RESPONSE_METADATA,
+                new StreamPointBuilder().now().withId()
+                        .withLocation(mLocationClient.getLastLocation())
+                        .getMetadata()
+        );
+        mPagerAdapter.buildResponse(values);
+        getContentResolver().insert(Responses.CONTENT_URI, values);
+        finish();
     }
 
     @Override public void onConnected(Bundle bundle) {
@@ -202,10 +196,20 @@ public class SurveyActivity extends InjectedActionBarActivity
 
     }
 
+    public PromptFragmentAdapter getPagerAdapter() {
+        return mPagerAdapter;
+    }
+
     public class PromptFragmentAdapter extends FragmentStatePagerAdapter {
         private final List<Prompt> mPrompts;
 
-        int mLastValidPrompt = 0;
+        Gson gson = new GsonBuilder().create();
+
+        HashMap<String, Object> answers = new HashMap<String, Object>();
+        HashMap<String, Object> extras = new HashMap<String, Object>();
+
+        // List of the skipped prompts
+        ArrayList<String> mSkipped = new ArrayList<String>();
 
         /**
          * Keeps track of what fragments have been created
@@ -215,32 +219,20 @@ public class SurveyActivity extends InjectedActionBarActivity
         public PromptFragmentAdapter(FragmentManager fm, List<Prompt> prompts) {
             super(fm);
             mPrompts = prompts;
-            mLastValidPrompt = mPager.getCurrentItem();
         }
 
         @Override
         public SurveyItemFragment getItem(final int position) {
             SurveyItemFragment fragment = null;
-            if (position == getCount() - 1) {
+            if (position == mPrompts.size()) {
                 fragment = new SubmitResponseFragment();
             } else {
                 fragment = mPrompts.get(position).getFragment();
-                if (fragment instanceof AnswerablePromptFragment) {
-                    ((AnswerablePromptFragment) fragment)
-                            .setOnValidAnswerStateChangedListener(mPager);
-                }
             }
 
             mFragments.set(position);
 
             return fragment;
-        }
-
-        public SurveyItemFragment getObject(int position) {
-            if (mFragments.get(position)) {
-                return (SurveyItemFragment) super.instantiateItem(null, position);
-            }
-            return null;
         }
 
         @Override
@@ -251,22 +243,38 @@ public class SurveyActivity extends InjectedActionBarActivity
 
         @Override
         public int getCount() {
-            return mPrompts.size() + 1;
+            return answers.size() + mSkipped.size() + 1;
         }
 
         @Override
         public float getPageWidth(int position) {
-            if (position == getCount() - 1) {
+            if (position == mPrompts.size()) {
                 return 1.0f;
             }
             return 0.1f;
         }
 
+        @Override public Parcelable saveState() {
+            Parcelable parent = super.saveState();
+            Bundle state = new Bundle();
+            state.putParcelable("parent", parent);
+            state.putSerializable("answers", answers);
+            state.putSerializable("extras", extras);
+            state.putStringArrayList("mSkipped", mSkipped);
+            return state;
+        }
+
         @Override
         public void restoreState(Parcelable state, ClassLoader loader) {
+            Bundle bundle = (Bundle) state;
+            answers = (HashMap<String, Object>) bundle.getSerializable("answers");
+            extras = (HashMap<String, Object>) bundle.getSerializable("extras");
+            mSkipped = bundle.getStringArrayList("mSkipped");
+            state = bundle.getBundle("parent");
+
             // Hijack the fragment state from our parent
             if (state != null) {
-                Bundle bundle = (Bundle) state;
+                bundle = (Bundle) state;
                 mFragments.clear();
                 Iterable<String> keys = bundle.keySet();
                 for (String key : keys) {
@@ -296,19 +304,54 @@ public class SurveyActivity extends InjectedActionBarActivity
             return mPrompts.size();
         }
 
-        public void buildResponse(ContentValues values) throws JSONException {
-            JSONObject extras = new JSONObject();
-            JSONObject data = new JSONObject();
-            for (int i = 0; i < getCount(); i++) {
-                Fragment item = getItem(i);
-                if (item instanceof AnswerablePromptFragment) {
-                    if (((AnswerablePromptFragment) item).getPrompt().hasValidResponse()) {
-                        ((AnswerablePromptFragment) item).getPrompt().addAnswer(data, extras);
-                    }
-                }
+        public void buildResponse(ContentValues values) {
+            Log.d(TAG, gson.toJson(answers).toString());
+            values.put(Responses.RESPONSE_DATA, gson.toJson(answers));
+            values.put(Responses.RESPONSE_EXTRAS, gson.toJson(extras));
+        }
+
+        public void updateAnswer(AnswerablePromptFragment promptFragment) {
+            promptFragment.showButtons(View.GONE);
+            AnswerablePrompt prompt = promptFragment.getPrompt();
+            boolean alreadyAnswered =
+                    answers.containsKey(prompt.getId()) || mSkipped.contains(prompt.getId());
+            if (prompt.hasValidResponse()) {
+                answers.put(prompt.getId(), prompt.getAnswer());
+                extras.put(prompt.getId(), prompt.getAnswerExtras());
+                mSkipped.remove(prompt.getId());
+            } else if (prompt.isSkippable() && !mSkipped.contains(prompt.getId())) {
+                mSkipped.add(prompt.getId());
             }
-            values.put(Responses.RESPONSE_EXTRAS, extras.toString());
-            values.put(Responses.RESPONSE_DATA, data.toString());
+            if (!alreadyAnswered) {
+                moveToNextPrompt(getPromptPosition(prompt) + 1);
+            }
+        }
+
+        public void updateAnswer(PromptFragment promptFragment) {
+            promptFragment.showButtons(View.GONE);
+            Prompt prompt = promptFragment.getPrompt();
+            if (!mSkipped.contains(prompt.getId())) {
+                mSkipped.add(prompt.getId());
+                moveToNextPrompt(getPromptPosition(prompt) + 1);
+            }
+        }
+
+        /**
+         * Moves to the next prompt, waits until it has been added to the view
+         *
+         * @param position
+         */
+        private void moveToNextPrompt(final int position) {
+            mPager.post(new Runnable() {
+                @Override public void run() {
+                    mPager.bringPositionUpOnScreen(position);
+                }
+            });
+        }
+
+        @Override
+        public int getItemPosition(Object object) {
+            return PagerAdapter.POSITION_UNCHANGED;
         }
     }
 

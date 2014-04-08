@@ -218,10 +218,6 @@ public class VerticalViewPager extends ViewGroup {
     private ArrayList<View> mDrawingOrderedChildren;
     private static final ViewPositionComparator sPositionComparator = new ViewPositionComparator();
 
-    // Only show pages less than the specified maximum
-    // TODO: maybe the adapter should handle this?
-    private int mMaximumPage = 0;
-
     /**
      * Indicates that the pager is in an idle, settled state. The current page
      * is fully in view and no animation is in progress.
@@ -543,9 +539,11 @@ public class VerticalViewPager extends ViewGroup {
             destY = (int) (height * Math.max(mFirstOffset,
                     Math.min(curInfo.offset, mLastOffset)));
 
+            // If we want to keep the top item aligned when scrolling up uncomment this
+//            destY = (int) (height * Math.max(mFirstOffset, curInfo.offset));
+
             final double scrollY = getScrollY() / new Double(getHeight());
-            final double pageMargin = getPageMargin()/new Double(getHeight());
-            final double heightFactor = curInfo.heightFactor + pageMargin*2;
+            final double heightFactor = curInfo.heightFactor;
             final double itemHeight = curInfo.offset + heightFactor;
 
             //Logic for pages which are larger than the screen height
@@ -1161,7 +1159,7 @@ public class VerticalViewPager extends ViewGroup {
         int pos = curItem.position - 1;
         mFirstOffset = curItem.position == 0 ? curItem.offset : -Float.MAX_VALUE;
         mLastOffset = curItem.position == N - 1 ?
-                curItem.offset + curItem.heightFactor - 1 : Float.MAX_VALUE;
+                Math.max(0, curItem.offset + curItem.heightFactor - 1) : Float.MAX_VALUE;
         // Previous pages
         for (int i = curIndex - 1; i >= 0; i--, pos--) {
             final ItemInfo ii = mItems.get(i);
@@ -1181,7 +1179,7 @@ public class VerticalViewPager extends ViewGroup {
                 offset += mAdapter.getPageWidth(pos++) + marginOffset;
             }
             if (ii.position == N - 1) {
-                mLastOffset = offset + ii.heightFactor - 1;
+                mLastOffset = Math.max(0, offset + ii.heightFactor - 1);
             }
             ii.offset = offset;
             offset += ii.heightFactor + marginOffset;
@@ -1437,6 +1435,7 @@ public class VerticalViewPager extends ViewGroup {
                                 (int) (childHeightSize * lp.heightFactor), MeasureSpec.EXACTLY);
 
                     child.measure(mChildWidthMeasureSpec, heightSpec);
+                    lp.needsMeasure = false;
 
                     if (lp.height == LayoutParams.WRAP_CONTENT) {
                         lp.heightFactor = child.getMeasuredHeight() / new Float(measuredHeight);
@@ -1444,6 +1443,12 @@ public class VerticalViewPager extends ViewGroup {
                         if (ii != null) {
                             double tmp = ii.heightFactor;
                             ii.heightFactor = lp.heightFactor;
+
+                            // Add padding to the last item
+                            if (ii.position == getAdapter().getCount() - 1) {
+                                ii.heightFactor += 2 * getPageMargin() / new Double(getHeight());
+                            }
+
                             //TODO: fix this by using some initial value rather than 0.1
                             if(Math.abs(tmp-0.1) > 0.000001 && tmp != lp.heightFactor) {
                                 start = ii.position;
@@ -2191,16 +2196,9 @@ public class VerticalViewPager extends ViewGroup {
 
             // Only let the user target pages we have items for
             targetPage = Math.max(firstItem.position, Math.min(targetPage, lastItem.position));
-
-            if(targetPage > mMaximumPage)
-                targetPage = mMaximumPage;
         }
 
         return targetPage;
-    }
-
-    public void setMaximumPage(int page) {
-        mMaximumPage = page;
     }
 
     @Override
@@ -2763,13 +2761,14 @@ public class VerticalViewPager extends ViewGroup {
      */
     public void bringPositionUpOnScreen(int i) {
         ItemInfo ii = infoForPosition(i);
-        if(getScrollY() + getHeight() < (ii.offset + ii.heightFactor) * getHeight()) {
-            int minOffset = (int)((ii.offset + ii.heightFactor - 1) * getHeight()) + getPageMargin()*2;
+        if (ii != null &&
+            getScrollY() + getHeight() < (ii.offset + ii.heightFactor) * getHeight()) {
+            double minOffset = ii.offset + ii.heightFactor - 1;
 
             do {
                 ii = infoForPosition(--i);
-            } while(ii != null && ii.offset *  getHeight() >= minOffset);
-            setCurrentItem(i+1);
+            } while (ii != null && ii.offset >= minOffset);
+            setCurrentItemInternal(i + 1, true, true);
         }
     }
 

@@ -24,7 +24,6 @@ import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
@@ -88,11 +87,10 @@ public class TextPrompt extends AnswerablePrompt<String> {
 
         public boolean nextPromptIsTextPrompt() {
             SurveyActivity.PromptFragmentAdapter adapter =
-                    ((SurveyActivity) getActivity()).mPager.getAdapter();
+                    ((SurveyActivity) getActivity()).getPagerAdapter();
             int position = adapter.getPromptPosition(getPrompt());
             if (position + 1 < adapter.getPromptCount()) {
-                return adapter.getPromptAt(position + 1) instanceof TextPrompt &&
-                       adapter.getObject(position + 1).mHidden;
+                return adapter.getPromptAt(position + 1) instanceof TextPrompt;
             }
             return false;
         }
@@ -102,34 +100,6 @@ public class TextPrompt extends AnswerablePrompt<String> {
                 InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(
                         Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(mInput.getWindowToken(), 0);
-            }
-        }
-
-        @Override protected void setHidden(View view, boolean hidden, int duration) {
-            super.setHidden(view, hidden, duration);
-            if (!hidden && mInput != null && getActivity() != null) {
-                Configuration config = getResources().getConfiguration();
-                if (config.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_YES) {
-                    // It has to request focus after the prompt has moved up, otherwise it will
-                    // scroll too far. I may have to fix this so it always happens after being moved
-                    // rather than after 200ms
-                    mInput.postDelayed(new Runnable() {
-                        @Override public void run() {
-                            mInput.requestFocus();
-                        }
-                    }, 200);
-
-                    mInput.post(new Runnable() {
-                        @Override public void run() {
-                            if(getActivity() != null) {
-                                InputMethodManager inputMgr =
-                                        (InputMethodManager) getActivity().getSystemService(
-                                                Context.INPUT_METHOD_SERVICE);
-                                inputMgr.showSoftInput(mInput, InputMethodManager.SHOW_IMPLICIT);
-                            }
-                        }
-                    });
-                }
             }
         }
 
@@ -174,6 +144,29 @@ public class TextPrompt extends AnswerablePrompt<String> {
                 @Override public void afterTextChanged(Editable s) {
                 }
             });
+
+            Configuration config = getResources().getConfiguration();
+            if (config.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_YES) {
+                // It has to request focus after the prompt has moved up, otherwise it will
+                // scroll too far. I may have to fix this so it always happens after being moved
+                // rather than after 200ms
+                mInput.postDelayed(new Runnable() {
+                    @Override public void run() {
+                        mInput.requestFocus();
+                    }
+                }, 200);
+
+                mInput.post(new Runnable() {
+                    @Override public void run() {
+                        if (getActivity() != null) {
+                            InputMethodManager inputMgr =
+                                    (InputMethodManager) getActivity().getSystemService(
+                                            Context.INPUT_METHOD_SERVICE);
+                            inputMgr.showSoftInput(mInput, InputMethodManager.SHOW_IMPLICIT);
+                        }
+                    }
+                });
+            }
         }
     }
 }

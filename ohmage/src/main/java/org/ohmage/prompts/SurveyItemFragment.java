@@ -33,14 +33,12 @@ import org.ohmage.app.R;
  */
 public class SurveyItemFragment extends Fragment {
 
-    boolean mHidden = true;
-
     private View.OnClickListener mOnClickListener;
     private View mButtons;
     private TextView skipButton;
     private TextView okButton;
 
-    private boolean mOkPressed = false;
+    private boolean mAnswered = false;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -48,15 +46,13 @@ public class SurveyItemFragment extends Fragment {
         setRetainInstance(true);
 
         if (savedInstanceState != null) {
-            mHidden = savedInstanceState.getBoolean("hidden", false);
-            mOkPressed = savedInstanceState.getBoolean("okPressed", false);
+            mAnswered = savedInstanceState.getBoolean("mAnswered", false);
         }
     }
 
     @Override public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putBoolean("hidden", mHidden);
-        outState.putBoolean("okPressed", mOkPressed);
+        outState.putBoolean("mAnswered", mAnswered);
     }
 
     @Override public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -69,13 +65,13 @@ public class SurveyItemFragment extends Fragment {
 
         okButton.setOnClickListener(new OnClickListener() {
             @Override public void onClick(View v) {
-                mOkPressed = true;
+                mAnswered = true;
                 onOkPressed();
             }
         });
         skipButton.setOnClickListener(new OnClickListener() {
             @Override public void onClick(View v) {
-                mOkPressed = true;
+                mAnswered = true;
                 onSkipPressed();
             }
         });
@@ -86,7 +82,7 @@ public class SurveyItemFragment extends Fragment {
             skipButton.setVisibility(View.GONE);
         }
 
-        if (getOkPressed()) {
+        if (isAnswered()) {
             view.findViewById(R.id.buttons).setVisibility(View.GONE);
         } else {
             updateCanContinue();
@@ -94,6 +90,14 @@ public class SurveyItemFragment extends Fragment {
 
         onCreatePromptView(inflater, (ViewGroup) view.findViewById(R.id.content),
                 savedInstanceState);
+
+        // Fade the prompt in
+        if (!isAnswered()) {
+            AlphaAnimation aa = new AlphaAnimation(0f, 1f);
+            aa.setFillAfter(true);
+            aa.setDuration(200);
+            view.startAnimation(aa);
+        }
 
         return view;
     }
@@ -103,7 +107,6 @@ public class SurveyItemFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         view.setOnClickListener(mOnClickListener);
-        setHidden(view, mHidden, 0);
     }
 
     protected void onSkipPressed() {
@@ -135,7 +138,7 @@ public class SurveyItemFragment extends Fragment {
     }
 
     public boolean isAnswered() {
-        return getOkPressed();
+        return mAnswered;
     }
 
     protected void updateCanContinue() {
@@ -161,34 +164,8 @@ public class SurveyItemFragment extends Fragment {
             Bundle savedInstanceState) {
     }
 
-    public void setHidden(boolean hidden) {
-        if(mHidden == hidden)
-            return;
-        setHidden(getView(), hidden, 200);
-    }
-
-    public void setHidden(boolean hidden, int duration) {
-        if(mHidden == hidden)
-            return;
-        setHidden(getView(), hidden, duration);
-    }
-
-    protected void setHidden(View view, boolean hidden, int duration) {
-        mHidden = hidden;
-        if (view == null)
-            return;
-        AlphaAnimation aa = (hidden) ? new AlphaAnimation(1f, 0f) : new AlphaAnimation(0f, 1f);
-        aa.setFillAfter(true);
-        aa.setDuration(duration);
-        view.startAnimation(aa);
-    }
-
     public void setOnClickListener(View.OnClickListener onClickListener) {
         mOnClickListener = onClickListener;
-    }
-
-    public boolean getOkPressed() {
-        return mOkPressed;
     }
 
     public void showButtons(int visibility) {

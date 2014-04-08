@@ -20,14 +20,11 @@ import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.ohmage.app.R;
 
+import java.util.HashMap;
 import java.util.Iterator;
 
 /**
@@ -84,28 +81,19 @@ public class RemotePrompt extends AnswerablePrompt {
          */
         @Override
         public void onActivityResult(int requestCode, int resultCode, Intent data) {
+            HashMap<String, Object> response = new HashMap<String, Object>();
             if (resultCode == Activity.RESULT_OK) {
                 if (data != null) {
-                    JSONArray responseArray = new JSONArray();
-                    JSONObject currResponse = new JSONObject();
                     Bundle extras = data.getExtras();
                     Iterator<String> keysIter = extras.keySet().iterator();
                     while (keysIter.hasNext()) {
                         String nextKey = keysIter.next();
-                        try {
-                            currResponse.put(nextKey, extras.get(nextKey));
-                        } catch (JSONException e) {
-                            Log.e(TAG, "Invalid return value from remote Activity for key: " +
-                                       nextKey);
-                        }
-                        responseArray.put(currResponse);
+                        response.put(nextKey, extras.get(nextKey));
                     }
-                    setValue(responseArray);
-                    return;
                 }
             }
             //TODO: return some error?
-            setValue(new JSONObject());
+            setValue(response);
         }
     }
 }

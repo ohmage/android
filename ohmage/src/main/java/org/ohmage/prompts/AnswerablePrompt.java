@@ -16,8 +16,7 @@
 
 package org.ohmage.prompts;
 
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.ohmage.app.SurveyActivity;
 
 /**
  * Created by cketcham on 12/19/13.
@@ -42,8 +41,12 @@ public abstract class AnswerablePrompt<T> extends BasePrompt {
         return value != null;
     }
 
-    public void addAnswer(JSONObject data, JSONObject extras) throws JSONException {
-        data.put(surveyItemId, value);
+    public Object getAnswer() {
+        return value;
+    }
+
+    public Object getAnswerExtras() {
+        return null;
     }
 
     public static class AnswerablePromptFragment<T extends AnswerablePrompt>
@@ -61,28 +64,22 @@ public abstract class AnswerablePrompt<T> extends BasePrompt {
         }
 
         protected void setValue(Object object) {
-            boolean notify = skippableStateChanged(getPrompt().value, object);
-            getPrompt().value = object;
-            if (notify) {
-                updateCanContinue();
+            if (object == null ? getPrompt().value != null : !object.equals(getPrompt().value)) {
+                boolean notify = skippableStateChanged(getPrompt().value, object);
+                getPrompt().value = object;
+                if (notify) {
+                    updateCanContinue();
+                }
+
+                // If this prompt as already been answered, we should update the value immediately
+                if (isAnswered()) {
+                    updateAnswer();
+                }
             }
         }
 
-        public interface OnValidAnswerStateChangedListener {
-            void onValidAnswerStateChanged(AnswerablePrompt prompt);
-        }
-
-        private OnValidAnswerStateChangedListener mOnValidAnswerStateChangedListener;
-
-        public void setOnValidAnswerStateChangedListener(
-                OnValidAnswerStateChangedListener onValidAnswerStateChangedListener) {
-            mOnValidAnswerStateChangedListener = onValidAnswerStateChangedListener;
-        }
-
-        private void notifyValidAnswerStateChanged() {
-            if (mOnValidAnswerStateChangedListener != null) {
-                mOnValidAnswerStateChangedListener.onValidAnswerStateChanged(getPrompt());
-            }
+        private void updateAnswer() {
+            ((SurveyActivity) getActivity()).getPagerAdapter().updateAnswer(this);
         }
 
         @Override
@@ -93,7 +90,7 @@ public abstract class AnswerablePrompt<T> extends BasePrompt {
         @Override protected void onOkPressed() {
             super.onOkPressed();
             if(getPrompt().hasValidResponse()) {
-                notifyValidAnswerStateChanged();
+                updateAnswer();
             }
         }
 
@@ -101,12 +98,8 @@ public abstract class AnswerablePrompt<T> extends BasePrompt {
             super.onSkipPressed();
             if (getPrompt().isSkippable()) {
                 getPrompt().value=null;
-                notifyValidAnswerStateChanged();
+                updateAnswer();
             }
-        }
-
-        @Override public boolean isAnswered() {
-            return super.isAnswered() && (getPrompt().hasValidResponse() || getPrompt().isSkippable());
         }
 
         @Override
