@@ -100,6 +100,8 @@ public class SurveyActivity extends InjectedActionBarActivity
             .setFastestInterval(16)    // 16ms = 60fps
             .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
+    private SurveyStateFragment mState;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -112,7 +114,18 @@ public class SurveyActivity extends InjectedActionBarActivity
         //Bind the title indicator to the adapter
         indicator = (CirclePageIndicator) findViewById(R.id.titles);
 
-        getSupportLoaderManager().initLoader(0, null, this);
+        if (savedInstanceState == null) {
+            mState = new SurveyStateFragment();
+            getSupportFragmentManager().beginTransaction().add(mState, "state").commit();
+        } else {
+            mState = (SurveyStateFragment) getSupportFragmentManager().findFragmentByTag("state");
+        }
+
+        if (mState.prompts == null) {
+            getSupportLoaderManager().initLoader(0, null, this);
+        } else {
+            setPrompts(mState.prompts);
+        }
     }
 
     @Override
@@ -157,14 +170,19 @@ public class SurveyActivity extends InjectedActionBarActivity
 
     @Override public void onLoadFinished(Loader<ArrayList<Prompt>> loader, ArrayList<Prompt> data) {
         if (mPagerAdapter == null) {
-            mPagerAdapter = new PromptFragmentAdapter(getSupportFragmentManager(), data);
-            mPager.setAdapter(mPagerAdapter);
-            indicator.setViewPager(mPager);
+            setPrompts(data);
         }
     }
 
     @Override public void onLoaderReset(Loader<ArrayList<Prompt>> loader) {
 
+    }
+
+    public void setPrompts(ArrayList<Prompt> data) {
+        mState.prompts = data;
+        mPagerAdapter = new PromptFragmentAdapter(getSupportFragmentManager(), data);
+        mPager.setAdapter(mPagerAdapter);
+        indicator.setViewPager(mPager);
     }
 
     public void submit() {
@@ -203,6 +221,8 @@ public class SurveyActivity extends InjectedActionBarActivity
     public class PromptFragmentAdapter extends FragmentStatePagerAdapter {
         private final List<Prompt> mPrompts;
 
+        private final FragmentManager mFragmentManager;
+
         Gson gson = new GsonBuilder().create();
 
         HashMap<String, Object> answers = new HashMap<String, Object>();
@@ -218,6 +238,7 @@ public class SurveyActivity extends InjectedActionBarActivity
 
         public PromptFragmentAdapter(FragmentManager fm, List<Prompt> prompts) {
             super(fm);
+            mFragmentManager = fm;
             mPrompts = prompts;
         }
 
@@ -280,7 +301,7 @@ public class SurveyActivity extends InjectedActionBarActivity
                 for (String key : keys) {
                     if (key.startsWith("f")) {
                         int index = Integer.parseInt(key.substring(1));
-                        Fragment f = getSupportFragmentManager().getFragment(bundle, key);
+                        Fragment f = mFragmentManager.getFragment(bundle, key);
                         if (f != null) {
                             mFragments.set(index, true);
                         } else {
@@ -493,6 +514,15 @@ public class SurveyActivity extends InjectedActionBarActivity
             writer.print(prefix);
             writer.print("mPrompts=");
             writer.println(mPrompts);
+        }
+    }
+
+    public static class SurveyStateFragment extends Fragment {
+        public ArrayList<Prompt> prompts;
+
+        @Override public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            setRetainInstance(true);
         }
     }
 }
