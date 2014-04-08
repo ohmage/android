@@ -65,6 +65,7 @@ import org.ohmage.provider.ResponseContract.Responses;
 import org.ohmage.streams.StreamPointBuilder;
 import org.ohmage.widget.VerticalViewPager;
 
+import java.io.File;
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
 import java.util.AbstractMap;
@@ -183,6 +184,7 @@ public class SurveyActivity extends InjectedActionBarActivity
     }
 
     private void discardSurvey() {
+        mPagerAdapter.clearExtras();
         super.onBackPressed();
     }
 
@@ -397,6 +399,10 @@ public class SurveyActivity extends InjectedActionBarActivity
         public int getAnsweredCount() {
             return prompts.getAnsweredCount();
         }
+
+        public void clearExtras() {
+            prompts.clearExtras();
+        }
     }
 
     public static class SubmitResponseFragment extends SurveyItemFragment {
@@ -560,7 +566,7 @@ public class SurveyActivity extends InjectedActionBarActivity
 
         // Answers
         final public HashMap<String, Object> answers;
-        final public HashMap<String, Object> extras;
+        final public HashMap<String, String> extras;
 
         // List of the skipped prompts
         final ArrayList<String> mSkipped;
@@ -572,7 +578,7 @@ public class SurveyActivity extends InjectedActionBarActivity
             this.prompts = data;
 
             answers = new HashMap<String, Object>();
-            extras = new HashMap<String, Object>();
+            extras = new HashMap<String, String>();
             mSkipped = new ArrayList<String>();
             mNotDisplayed = new ArrayList<String>();
         }
@@ -777,6 +783,15 @@ public class SurveyActivity extends InjectedActionBarActivity
                     }
                 } else if (mNotDisplayed.contains(promptId)) {
                     mNotDisplayed.remove(promptId);
+                }
+            }
+        }
+
+        public void clearExtras() {
+            for (int i = 0; i < prompts.size(); i++) {
+                String fileName = extras.get(prompts.get(i).getId());
+                if (fileName != null) {
+                    new File(fileName).delete();
                 }
             }
         }

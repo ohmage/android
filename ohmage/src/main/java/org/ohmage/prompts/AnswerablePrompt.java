@@ -45,7 +45,7 @@ public abstract class AnswerablePrompt<T> extends BasePrompt {
         return value;
     }
 
-    public Object getAnswerExtras() {
+    public String getAnswerExtras() {
         return null;
     }
 

@@ -47,7 +47,7 @@ public class MediaPrompt extends AnswerablePrompt<File> {
      * TODO: maybe we don't need the extras json? the name of the file is the prompt value and I know where to look for the file
      */
     @Override
-    public Object getAnswerExtras() {
+    public String getAnswerExtras() {
         return value.getAbsolutePath();
     }
 }
