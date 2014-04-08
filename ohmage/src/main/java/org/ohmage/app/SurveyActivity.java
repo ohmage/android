@@ -16,13 +16,17 @@
 
 package org.ohmage.app;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.database.Cursor;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
@@ -157,13 +161,29 @@ public class SurveyActivity extends InjectedActionBarActivity
     @Override
     public void onBackPressed() {
         if (mPager.getCurrentItem() == 0) {
-            // If the user is currently looking at the first step, allow the system to handle the
-            // Back button. This calls finish() on this activity and pops the back stack.
-            super.onBackPressed();
+
+            // If nothing has been answered just go back
+            if (mPagerAdapter.getAnsweredCount() == 0) {
+                discardSurvey();
+                return;
+            }
+
+            // Otherwise show a dialog so they don't lose their responses
+            FragmentManager fm = getSupportFragmentManager();
+            CancelResponseDialogFragment fragment =
+                    (CancelResponseDialogFragment) fm.findFragmentByTag("cancel");
+            if (fragment == null) {
+                fragment = new CancelResponseDialogFragment();
+            }
+            fragment.show(fm, "cancel");
         } else {
             // Otherwise, select the previous step.
             mPager.setCurrentItem(mPager.getCurrentItem() - 1);
         }
+    }
+
+    private void discardSurvey() {
+        super.onBackPressed();
     }
 
     @Override public SurveyPromptLoader onCreateLoader(int id, Bundle args) {
@@ -372,6 +392,10 @@ public class SurveyActivity extends InjectedActionBarActivity
                 return getItem(position);
             }
             return null;
+        }
+
+        public int getAnsweredCount() {
+            return prompts.getAnsweredCount();
         }
     }
 
@@ -798,6 +822,22 @@ public class SurveyActivity extends InjectedActionBarActivity
             removeAnswersAfter(after);
 
             return lastUpdate - ignoredPromptsBefore(lastUpdate + 1);
+        }
+    }
+
+    public static class CancelResponseDialogFragment extends DialogFragment {
+
+        @Override public Dialog onCreateDialog(Bundle savedInstanceState) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setTitle(getString(R.string.discard_survey_title))
+                    .setMessage(getString(R.string.discard_survey_message))
+                    .setPositiveButton(R.string.discard, new DialogInterface.OnClickListener() {
+                        @Override public void onClick(DialogInterface dialog, int which) {
+                            ((SurveyActivity) getActivity()).discardSurvey();
+                        }
+                    })
+                    .setNegativeButton(R.string.cancel, null);
+            return builder.create();
         }
     }
 }
