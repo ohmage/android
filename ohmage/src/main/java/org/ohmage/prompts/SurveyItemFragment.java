@@ -110,6 +110,10 @@ public class SurveyItemFragment extends Fragment {
         // Sub-classes should handle the skip pressed event
     }
 
+    public void dispatchSkipPressed() {
+        skipButton.performClick();
+    }
+
     protected void onOkPressed() {
         // Sub-classes should handle the ok pressed event
     }

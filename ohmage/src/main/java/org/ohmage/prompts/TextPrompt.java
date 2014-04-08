@@ -146,8 +146,13 @@ public class TextPrompt extends AnswerablePrompt<String> {
                 @Override
                 public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
                     if (id == R.id.submit_prompt || id == EditorInfo.IME_NULL) {
-                        dispatchOkPressed();
-                        return true;
+                        if (getPrompt().hasValidResponse()) {
+                            dispatchOkPressed();
+                            return true;
+                        } else if (getPrompt().isSkippable()) {
+                            dispatchSkipPressed();
+                            return true;
+                        }
                     }
                     return false;
                 }
