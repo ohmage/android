@@ -68,5 +68,6 @@
     <string name="no_surveys">No Surveys</string>
     <string name="skip">Skip</string>
     <string name="responses">Responses</string>
+    <string name="survey_conditions_error">The conditions for this survey are not set correctly.</string>
 
 </resources>

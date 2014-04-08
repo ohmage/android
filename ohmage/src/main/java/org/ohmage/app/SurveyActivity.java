@@ -48,9 +48,10 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.viewpagerindicator.CirclePageIndicator;
 
+import org.ohmage.condition.Condition;
+import org.ohmage.condition.NoResponse;
 import org.ohmage.dagger.InjectedActionBarActivity;
 import org.ohmage.prompts.AnswerablePrompt;
-import org.ohmage.prompts.AnswerablePrompt.AnswerablePromptFragment;
 import org.ohmage.prompts.Prompt;
 import org.ohmage.prompts.PromptFragment;
 import org.ohmage.prompts.SurveyItemFragment;
@@ -62,10 +63,11 @@ import org.ohmage.widget.VerticalViewPager;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.HashMap;
-import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -121,10 +123,10 @@ public class SurveyActivity extends InjectedActionBarActivity
             mState = (SurveyStateFragment) getSupportFragmentManager().findFragmentByTag("state");
         }
 
-        if (mState.prompts == null) {
-            getSupportLoaderManager().initLoader(0, null, this);
+        if (mState.prompts != null) {
+            setPromptFragmentAdapter();
         } else {
-            setPrompts(mState.prompts);
+            getSupportLoaderManager().initLoader(0, null, this);
         }
     }
 
@@ -178,11 +180,15 @@ public class SurveyActivity extends InjectedActionBarActivity
 
     }
 
-    public void setPrompts(ArrayList<Prompt> data) {
-        mState.prompts = data;
-        mPagerAdapter = new PromptFragmentAdapter(getSupportFragmentManager(), data);
+    public void setPromptFragmentAdapter() {
+        mPagerAdapter = new PromptFragmentAdapter(getSupportFragmentManager(), mState.prompts);
         mPager.setAdapter(mPagerAdapter);
         indicator.setViewPager(mPager);
+    }
+
+    public void setPrompts(ArrayList<Prompt> data) {
+        mState.prompts = new Prompts(data);
+        setPromptFragmentAdapter();
     }
 
     public void submit() {
@@ -219,39 +225,42 @@ public class SurveyActivity extends InjectedActionBarActivity
     }
 
     public class PromptFragmentAdapter extends FragmentStatePagerAdapter {
-        private final List<Prompt> mPrompts;
+        private final Prompts prompts;
 
         private final FragmentManager mFragmentManager;
 
         Gson gson = new GsonBuilder().create();
-
-        HashMap<String, Object> answers = new HashMap<String, Object>();
-        HashMap<String, Object> extras = new HashMap<String, Object>();
-
-        // List of the skipped prompts
-        ArrayList<String> mSkipped = new ArrayList<String>();
 
         /**
          * Keeps track of what fragments have been created
          */
         private BitSet mFragments = new BitSet();
 
-        public PromptFragmentAdapter(FragmentManager fm, List<Prompt> prompts) {
+        /**
+         * Keeps track of any prompts which have just changed due to an answer being updated.
+         */
+        int mLastUpdate = 0;
+
+        public PromptFragmentAdapter(FragmentManager fm, Prompts prompts) {
             super(fm);
             mFragmentManager = fm;
-            mPrompts = prompts;
+            this.prompts = prompts;
         }
 
         @Override
         public SurveyItemFragment getItem(final int position) {
+            Prompt prompt = prompts.getPromptAt(position);
             SurveyItemFragment fragment = null;
-            if (position == mPrompts.size()) {
+            if (prompt == null) {
                 fragment = new SubmitResponseFragment();
             } else {
-                fragment = mPrompts.get(position).getFragment();
+                fragment = prompt.getFragment();
+                fragment.showButtons(position == getCount() - 1 ? View.VISIBLE : View.GONE);
             }
 
-            mFragments.set(position);
+            if (fragment != null) {
+                mFragments.set(position);
+            }
 
             return fragment;
         }
@@ -264,12 +273,12 @@ public class SurveyActivity extends InjectedActionBarActivity
 
         @Override
         public int getCount() {
-            return answers.size() + mSkipped.size() + 1;
+            return prompts.getAnsweredCount() + 1;
         }
 
         @Override
         public float getPageWidth(int position) {
-            if (position == mPrompts.size()) {
+            if (position == prompts.size()) {
                 return 1.0f;
             }
             return 0.1f;
@@ -279,18 +288,12 @@ public class SurveyActivity extends InjectedActionBarActivity
             Parcelable parent = super.saveState();
             Bundle state = new Bundle();
             state.putParcelable("parent", parent);
-            state.putSerializable("answers", answers);
-            state.putSerializable("extras", extras);
-            state.putStringArrayList("mSkipped", mSkipped);
             return state;
         }
 
         @Override
         public void restoreState(Parcelable state, ClassLoader loader) {
             Bundle bundle = (Bundle) state;
-            answers = (HashMap<String, Object>) bundle.getSerializable("answers");
-            extras = (HashMap<String, Object>) bundle.getSerializable("extras");
-            mSkipped = bundle.getStringArrayList("mSkipped");
             state = bundle.getBundle("parent");
 
             // Hijack the fragment state from our parent
@@ -313,56 +316,30 @@ public class SurveyActivity extends InjectedActionBarActivity
             super.restoreState(state, loader);
         }
 
-        public int getPromptPosition(Prompt prompt) {
-            return mPrompts.indexOf(prompt);
-        }
-
-        public Prompt getPromptAt(int position) {
-            return mPrompts.get(position);
-        }
-
-        public int getPromptCount() {
-            return mPrompts.size();
-        }
-
         public void buildResponse(ContentValues values) {
-            Log.d(TAG, gson.toJson(answers).toString());
-            values.put(Responses.RESPONSE_DATA, gson.toJson(answers));
-            values.put(Responses.RESPONSE_EXTRAS, gson.toJson(extras));
-        }
-
-        public void updateAnswer(AnswerablePromptFragment promptFragment) {
-            promptFragment.showButtons(View.GONE);
-            AnswerablePrompt prompt = promptFragment.getPrompt();
-            boolean alreadyAnswered =
-                    answers.containsKey(prompt.getId()) || mSkipped.contains(prompt.getId());
-            if (prompt.hasValidResponse()) {
-                answers.put(prompt.getId(), prompt.getAnswer());
-                extras.put(prompt.getId(), prompt.getAnswerExtras());
-                mSkipped.remove(prompt.getId());
-            } else if (prompt.isSkippable() && !mSkipped.contains(prompt.getId())) {
-                mSkipped.add(prompt.getId());
-            }
-            if (!alreadyAnswered) {
-                moveToNextPrompt(getPromptPosition(prompt) + 1);
-            }
+            Log.d(TAG, gson.toJson(prompts.answers).toString());
+            values.put(Responses.RESPONSE_DATA, gson.toJson(prompts.answers));
+            values.put(Responses.RESPONSE_EXTRAS, gson.toJson(prompts.extras));
         }
 
         public void updateAnswer(PromptFragment promptFragment) {
             promptFragment.showButtons(View.GONE);
             Prompt prompt = promptFragment.getPrompt();
-            if (!mSkipped.contains(prompt.getId())) {
-                mSkipped.add(prompt.getId());
-                moveToNextPrompt(getPromptPosition(prompt) + 1);
+            boolean alreadyAnswered = prompts.isAnswered(prompt);
+
+            mLastUpdate = prompts.updateAnswer(prompt);
+            notifyDataSetChanged();
+
+            if (!alreadyAnswered) {
+                moveToLastPrompt();
             }
         }
 
         /**
-         * Moves to the next prompt, waits until it has been added to the view
-         *
-         * @param position
+         * Moves to the last prompt, waits until it has been added to the view
          */
-        private void moveToNextPrompt(final int position) {
+        private void moveToLastPrompt() {
+            final int position = getCount() - 1;
             mPager.post(new Runnable() {
                 @Override public void run() {
                     mPager.bringPositionUpOnScreen(position);
@@ -372,7 +349,29 @@ public class SurveyActivity extends InjectedActionBarActivity
 
         @Override
         public int getItemPosition(Object object) {
-            return PagerAdapter.POSITION_UNCHANGED;
+            if (object instanceof PromptFragment) {
+                if (prompts.positionOf(((PromptFragment) object).getPrompt()) >= mLastUpdate) {
+                    return PagerAdapter.POSITION_NONE;
+                }
+                return POSITION_UNCHANGED;
+            }
+            return PagerAdapter.POSITION_NONE;
+        }
+
+        public int getPosition(SurveyItemFragment fragment) {
+            if (fragment instanceof PromptFragment) {
+                return prompts.positionOf(((PromptFragment) fragment).getPrompt());
+            } else if (fragment instanceof SubmitResponseFragment) {
+                return prompts.size();
+            }
+            return -1;
+        }
+
+        public SurveyItemFragment getPromptFragmentAt(int position) {
+            if (mFragments.get(position)) {
+                return getItem(position);
+            }
+            return null;
         }
     }
 
@@ -388,7 +387,7 @@ public class SurveyActivity extends InjectedActionBarActivity
             submit.setOnClickListener(new OnClickListener() {
                 @Override public void onClick(View v) {
                     submit.setEnabled(false);
-                    if(!submitted) {
+                    if (!submitted) {
                         submitted = true;
                         ((SurveyActivity) getActivity()).submit();
                     }
@@ -518,11 +517,287 @@ public class SurveyActivity extends InjectedActionBarActivity
     }
 
     public static class SurveyStateFragment extends Fragment {
-        public ArrayList<Prompt> prompts;
+        public Prompts prompts;
 
         @Override public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             setRetainInstance(true);
+        }
+    }
+
+    /**
+     * This class keeps track of all the prompts and how the user answered them. It provides the
+     * functions {@link #answer(AnswerablePrompt)}, {@link #ignore(Prompt)}, and
+     * {@link #skip(Prompt)} based on the users actions. {@link #getPromptAt(int)} will return the
+     * next prompt ignoring all prompts which weren't displayed.
+     */
+    public static class Prompts {
+        final ArrayList<Prompt> prompts;
+
+        // Answers
+        final public HashMap<String, Object> answers;
+        final public HashMap<String, Object> extras;
+
+        // List of the skipped prompts
+        final ArrayList<String> mSkipped;
+
+        // List of not displayed prompts
+        final ArrayList<String> mNotDisplayed;
+
+        public Prompts(ArrayList<Prompt> data) {
+            this.prompts = data;
+
+            answers = new HashMap<String, Object>();
+            extras = new HashMap<String, Object>();
+            mSkipped = new ArrayList<String>();
+            mNotDisplayed = new ArrayList<String>();
+        }
+
+        /**
+         * Returns the prompt at the given position ignoring prompts which are not displayed
+         *
+         * @param position
+         * @return
+         */
+        public Prompt getPromptAt(int position) throws IllegalStateException {
+            Prompt prompt = null;
+            Map<String, Object> prev = null;
+            int index = promptIndex(position);
+
+            while (prompt == null && index < prompts.size()) {
+                prompt = prompts.get(index);
+                if (prompt.getCondition() != null) {
+                    if (prev == null) {
+                        prev = getPreviousResponses(index);
+                    }
+                    Condition condition = new Condition(prompt.getCondition());
+
+                    if (!condition.evaluate(prev)) {
+                        ignore(prompt);
+                        updatePrevious(prompt, prev);
+                        prompt = null;
+                        index++;
+                    }
+                }
+            }
+            return prompt;
+        }
+
+        /**
+         * Returns the index into {@link #prompts} given the position of shown prompts
+         *
+         * @param position
+         * @return
+         */
+        private int promptIndex(int position) {
+            return position + positionOffset(position);
+        }
+
+        private int positionOffset(int index) {
+            int count = 0;
+            for (int i = 0; i <= index && i < prompts.size(); i++) {
+                if (isIgnored(prompts.get(i))) {
+                    count++;
+                    index++;
+                }
+            }
+            return count;
+        }
+
+        /**
+         * Count the number of prompts that have been ignored before the given position
+         *
+         * @param index
+         * @return
+         */
+        private int ignoredPromptsBefore(int index) {
+            int count = 0;
+            for (int i = 0; i < index && i < prompts.size(); i++) {
+                if (isIgnored(prompts.get(i))) {
+                    count++;
+                }
+            }
+            return count;
+        }
+
+        /**
+         * Gets the map of all answers before the current answer to be used to evaluate the
+         * the condition for the prompt at the given position
+         *
+         * @return a map of all previous responses
+         */
+        private Map<String, Object> getPreviousResponses(int index) {
+            AbstractMap prev = new HashMap<String, Object>();
+            for (int i = 0; i < index; i++) {
+                updatePrevious(prompts.get(i), prev);
+            }
+            return prev;
+        }
+
+        /**
+         * Convenience method to update the previous responses map for the given prompt
+         *
+         * @param prompt
+         * @param prev
+         */
+        private void updatePrevious(Prompt prompt, Map<String, Object> prev) {
+            if (answers.keySet().contains(prompt.getId())) {
+                prev.put(prompt.getId(), answers.get(prompt.getId()));
+            } else if (mSkipped.contains(prompt.getId())) {
+                prev.put(prompt.getId(), NoResponse.SKIPPED);
+            } else if (mNotDisplayed.contains(prompt.getId())) {
+                prev.put(prompt.getId(), NoResponse.NOT_DISPLAYED);
+            }
+        }
+
+        /**
+         * Calculates the number of prompts that were actively answered or skipped.
+         *
+         * @return
+         */
+        public int getAnsweredCount() {
+            return answers.size() + mSkipped.size();
+        }
+
+        /**
+         * Will add an answer given the state of the prompt item
+         *
+         * @param prompt
+         * @return the index of the first position which changed due to conditions
+         */
+        public int updateAnswer(Prompt prompt) {
+            if (prompt instanceof AnswerablePrompt) {
+                if (((AnswerablePrompt) prompt).hasValidResponse()) {
+                    answer((AnswerablePrompt) prompt);
+                } else if (prompt.isSkippable()) {
+                    skip(prompt);
+                }
+            } else {
+                answer(prompt);
+            }
+
+            return resetFutureAnswers(prompt);
+        }
+
+        private void answer(Prompt prompt) {
+            remove(prompt);
+            answers.put(prompt.getId(), true);
+        }
+
+        private void answer(AnswerablePrompt prompt) {
+            remove(prompt);
+            answers.put(prompt.getId(), prompt.getAnswer());
+            extras.put(prompt.getId(), prompt.getAnswerExtras());
+        }
+
+        private void ignore(Prompt prompt) {
+            remove(prompt);
+            mNotDisplayed.add(prompt.getId());
+        }
+
+        private void skip(Prompt prompt) {
+            remove(prompt);
+            mSkipped.add(prompt.getId());
+        }
+
+        private void remove(Prompt prompt) {
+            mNotDisplayed.remove(prompt.getId());
+            mSkipped.remove(prompt.getId());
+            answers.remove(prompt.getId());
+            extras.remove(prompt.getId());
+        }
+
+        /**
+         * Calculates if a prompt was answered
+         *
+         * @param prompt
+         * @return true if it was answered or skipped
+         */
+        public boolean isAnswered(Prompt prompt) {
+            return answers.containsKey(prompt.getId()) || mSkipped.contains(prompt.getId());
+        }
+
+        /**
+         * Calculates if a prompt was ignored due to conditions
+         *
+         * @param prompt
+         * @return true if it was ignored
+         */
+        public boolean isIgnored(Prompt prompt) {
+            return mNotDisplayed.contains(prompt.getId());
+        }
+
+        public int ignoredPromptsSize() {
+            return mNotDisplayed.size();
+        }
+
+        public int size() {
+            return prompts.size() - mNotDisplayed.size();
+        }
+
+        public int positionOf(Prompt prompt) {
+            int idx = prompts.indexOf(prompt);
+            return idx - ignoredPromptsBefore(idx);
+        }
+
+        private void removeAnswersAfter(int index) {
+            for (int i = index; i < prompts.size(); i++) {
+                Prompt prompt = prompts.get(i);
+                String promptId = prompt.getId();
+                if (mSkipped.contains(promptId)) {
+                    mSkipped.remove(promptId);
+                } else if (answers.keySet().contains(promptId)) {
+                    answers.remove(promptId);
+                    if(extras.keySet().contains(promptId)) {
+                        extras.remove(promptId);
+                    }
+                } else if (mNotDisplayed.contains(promptId)) {
+                    mNotDisplayed.remove(promptId);
+                }
+            }
+        }
+
+        /**
+         * Since the answer changed for this response we should re-calculate all of the next responses
+         *
+         * @param prompt
+         */
+        private int resetFutureAnswers(Prompt prompt) throws IllegalStateException {
+            int pivot = prompts.indexOf(prompt);
+            Map<String, Object> prev = null;
+
+            int lastUpdate = size();
+
+            // Calculate the first prompt which no longer passes the condition test
+            int after = prompts.size();
+            for (int i = pivot + 1;
+                 i < getAnsweredCount() + ignoredPromptsSize() && i < prompts.size(); i++) {
+                prompt = prompts.get(i);
+                if (prev == null) {
+                    prev = getPreviousResponses(i);
+                }
+                if (prompt.getCondition() != null) {
+                    Condition condition = new Condition(prompt.getCondition());
+                    // The first prompt which is not the same as it used to be and is shown
+                    boolean show = condition.evaluate(prev);
+                    if (show == isIgnored(prompt)) {
+                        lastUpdate = Math.min(lastUpdate, i);
+                        if (!show) {
+                            ignore(prompt);
+                        } else {
+                            after = i;
+                            break;
+                        }
+                    }
+                }
+
+                updatePrevious(prompt, prev);
+            }
+
+            // Remove all responses after the last valid one
+            removeAnswersAfter(after);
+
+            return lastUpdate - ignoredPromptsBefore(lastUpdate + 1);
         }
     }
 }

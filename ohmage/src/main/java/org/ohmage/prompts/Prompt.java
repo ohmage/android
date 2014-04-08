@@ -26,5 +26,7 @@ public interface Prompt {
 
     public String getText();
 
+    public String getCondition();
+
     public SurveyItemFragment getFragment();
 }

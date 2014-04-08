@@ -54,6 +54,11 @@ public class BasePrompt implements Prompt {
     }
 
     @Override
+    public String getCondition() {
+        return condition;
+    }
+
+    @Override
     public SurveyItemFragment getFragment() {
         return MessagePromptFragment.getInstance(this);
     }

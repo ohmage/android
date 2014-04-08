@@ -44,15 +44,6 @@ public class SurveyItemFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
-
-        if (savedInstanceState != null) {
-            mAnswered = savedInstanceState.getBoolean("mAnswered", false);
-        }
-    }
-
-    @Override public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putBoolean("mAnswered", mAnswered);
     }
 
     @Override public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -83,7 +74,7 @@ public class SurveyItemFragment extends Fragment {
         }
 
         if (isAnswered()) {
-            view.findViewById(R.id.buttons).setVisibility(View.GONE);
+            mButtons.setVisibility(View.GONE);
         } else {
             updateCanContinue();
         }
@@ -169,6 +160,7 @@ public class SurveyItemFragment extends Fragment {
     }
 
     public void showButtons(int visibility) {
+        mAnswered = visibility == View.GONE;
         if(mButtons != null)
             mButtons.setVisibility(visibility);
     }

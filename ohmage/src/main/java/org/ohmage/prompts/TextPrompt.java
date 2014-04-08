@@ -88,9 +88,9 @@ public class TextPrompt extends AnswerablePrompt<String> {
         public boolean nextPromptIsTextPrompt() {
             SurveyActivity.PromptFragmentAdapter adapter =
                     ((SurveyActivity) getActivity()).getPagerAdapter();
-            int position = adapter.getPromptPosition(getPrompt());
-            if (position + 1 < adapter.getPromptCount()) {
-                return adapter.getPromptAt(position + 1) instanceof TextPrompt;
+            int position = adapter.getPosition(this);
+            if (position + 1 < adapter.getCount()) {
+                return adapter.getPromptFragmentAt(position + 1) instanceof TextPromptFragment;
             }
             return false;
         }
@@ -145,6 +145,12 @@ public class TextPrompt extends AnswerablePrompt<String> {
                 }
             });
 
+            if (!isAnswered()) {
+                showKeyboard();
+            }
+        }
+
+        private void showKeyboard() {
             Configuration config = getResources().getConfiguration();
             if (config.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_YES) {
                 // It has to request focus after the prompt has moved up, otherwise it will
