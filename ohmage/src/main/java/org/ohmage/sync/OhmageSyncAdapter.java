@@ -53,7 +53,6 @@ import org.ohmage.provider.OhmageContract.Surveys;
 
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
@@ -193,9 +192,11 @@ public class OhmageSyncAdapter extends AbstractThreadedSyncAdapter {
 
             try {
                 // Wait for the upload sync operation to finish before downloading the user state
-                upload.await(5, TimeUnit.MINUTES);
+                upload.await();
             } catch (InterruptedException e) {
                 e.printStackTrace();
+                syncResult.stats.numIoExceptions++;
+                return;
             }
 
             // Second, synchronize all data
