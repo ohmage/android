@@ -65,8 +65,10 @@ public class HomeFragment extends GridFragment implements LoaderCallbacks<Cursor
     private Handler mHandler = new Handler();
     private Runnable mRefreshCompleteRunnable = new Runnable() {
         @Override public void run() {
-            setEmptyText("No Surveys");
-            mPullToRefreshLayout.setRefreshComplete();
+            if(getView() != null) {
+                setEmptyText("No Surveys");
+                mPullToRefreshLayout.setRefreshComplete();
+            }
         }
     };
 
@@ -88,6 +90,11 @@ public class HomeFragment extends GridFragment implements LoaderCallbacks<Cursor
             getActivity().getContentResolver().removeStatusChangeListener(syncObserverHandle);
             syncObserverHandle = null;
         }
+    }
+
+    @Override public void onDestroy() {
+        super.onDestroy();
+        mHandler.removeCallbacks(mRefreshCompleteRunnable);
     }
 
     @Override
