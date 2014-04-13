@@ -20,11 +20,12 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
 
+import com.google.gson.Gson;
+
 import org.ohmage.helper.SelectParamBuilder;
 import org.ohmage.operators.ContentProviderSaver;
 import org.ohmage.operators.ContentProviderSaver.Savable;
 import org.ohmage.operators.ContentProviderStateSync.Syncable;
-import org.ohmage.provider.ContentProviderReader;
 import org.ohmage.provider.ContentProviderReader.Readable;
 import org.ohmage.provider.OhmageContract;
 
@@ -148,13 +149,13 @@ public class Ohmlet implements Savable, Readable, Syncable {
     }
 
     @Override
-    public void read(ContentProviderReader reader, Cursor cursor) {
+    public void read(Gson gson, Cursor cursor) {
         ohmletId = cursor.getString(0);
         name = cursor.getString(1);
         description = cursor.getString(2);
-        streams = reader.gson().fromJson(cursor.getString(3), Streams.class);
-        surveys = reader.gson().fromJson(cursor.getString(4), Surveys.class);
-        people = reader.gson().fromJson(cursor.getString(5), Member.List.class);
+        streams = gson.fromJson(cursor.getString(3), Streams.class);
+        surveys = gson.fromJson(cursor.getString(4), Surveys.class);
+        people = gson.fromJson(cursor.getString(5), Member.List.class);
         privacyState = PrivacyState.values()[cursor.getInt(6)];
     }
 }

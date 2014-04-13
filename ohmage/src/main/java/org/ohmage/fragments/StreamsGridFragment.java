@@ -14,35 +14,26 @@
  * limitations under the License.
  */
 
-package org.ohmage.provider;
+package org.ohmage.fragments;
 
-import android.database.Cursor;
-
-import com.google.gson.Gson;
+import android.content.Context;
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ListAdapter;
+import android.widget.TextView;
 
 import org.ohmage.app.Ohmage;
-
-import javax.inject.Inject;
+import org.ohmage.app.R;
+import org.ohmage.models.Stream;
+import org.ohmage.widget.CompatArrayAdapter;
 
 /**
- * Created by cketcham on 2/14/14.
+ * Shows ohmlets from the server
  */
-public class ContentProviderReader {
-    @Inject Gson gson;
+public class StreamsGridFragment extends GridFragment {
 
-    public ContentProviderReader() {
-        Ohmage.app().getApplicationGraph().inject(this);
-    }
 
-    public void read(Readable readable, Cursor cursor) {
-        readable.read(this.gson, cursor);
-    }
-
-    public Gson gson() {
-        return gson;
-    }
-
-    public static interface Readable {
-        void read(Gson gson, Cursor cursor);
-    }
 }

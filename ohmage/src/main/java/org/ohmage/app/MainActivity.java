@@ -45,6 +45,7 @@ import org.ohmage.auth.AuthenticatorActivity;
 import org.ohmage.dagger.InjectedActionBarActivity;
 import org.ohmage.fragments.HomeFragment;
 import org.ohmage.fragments.OhmletsFragment;
+import org.ohmage.fragments.StreamsFragment;
 import org.ohmage.fragments.SurveysFragment;
 import org.ohmage.provider.OhmageContract.Surveys;
 import org.ohmage.reminders.ui.TriggerListActivity;
@@ -57,6 +58,11 @@ public class MainActivity extends InjectedActionBarActivity
         OnAccountsUpdateListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
+
+    /**
+     * If this action is set, the streams fragment will be shown
+     */
+    public static final String EXTRA_VIEW_STREAMS = "extra_view_streams";
 
     @Inject AccountManager accountManager;
 
@@ -136,10 +142,26 @@ public class MainActivity extends InjectedActionBarActivity
         // Set the drawer toggle as the DrawerListener
         mDrawerLayout.setDrawerListener(mDrawerToggle);
 
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setHomeButtonEnabled(true);
+        if(getIntent().getBooleanExtra(EXTRA_VIEW_STREAMS, false)) {
+            setFragment(getString(R.string.streams));
+        } else {
+            setFragment(0);
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setHomeButtonEnabled(true);
+        }
+    }
 
-        setFragment(0);
+    @Override protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        if(intent.getBooleanExtra(EXTRA_VIEW_STREAMS, false)) {
+            String streams = getString(R.string.streams);
+            for (int i = 0; i < mNavigationItems.length; i++) {
+                if(streams.equals(mNavigationItems[i])) {
+                    setFragment(i);
+                    break;
+                }
+            }
+        }
     }
 
     public void onPostCreate(Bundle savedInstanceState) {
@@ -227,6 +249,8 @@ public class MainActivity extends InjectedActionBarActivity
             fragment = new OhmletsFragment();
         } else if (getString(R.string.surveys).equals(id)) {
             fragment = new SurveysFragment();
+        } else if (getString(R.string.streams).equals(id)) {
+            fragment = new StreamsFragment();
         }
 
         // Insert the fragment by replacing any existing fragment

@@ -72,5 +72,8 @@
     <string name="discard">Discard</string>
     <string name="discard_survey_message">This survey will not be saved</string>
     <string name="discard_survey_title">Discard Survey?</string>
+    <string name="install_apps_for_stream_title">%s requires additional apps.</string>
+    <string name="install_multiple_apps_for_stream_title">%s streams require additional apps.</string>
+    <string name="install_apps_for_stream_message">Install stream applications</string>
 
 </resources>

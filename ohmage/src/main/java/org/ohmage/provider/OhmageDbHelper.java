@@ -32,7 +32,7 @@ public class OhmageDbHelper extends SQLiteOpenHelper {
 
     private static final String DB_NAME = "ohmage.db";
 
-    private static final int DB_VERSION = 8;
+    private static final int DB_VERSION = 9;
 
     public static final String SQL_AND = " AND %s='%s'";
 
@@ -63,6 +63,9 @@ public class OhmageDbHelper extends SQLiteOpenHelper {
         db.execSQL("CREATE TABLE IF NOT EXISTS " + Tables.Streams + " ("
                    + Streams.STREAM_ID + " TEXT NOT NULL, "
                    + Streams.STREAM_VERSION + " INTEGER NOT NULL, "
+                   + Streams.STREAM_NAME + " TEXT NOT NULL, "
+                   + Streams.STREAM_DESCRIPTION + " TEXT NOT NULL,"
+                   + Streams.STREAM_APP + " TEXT NOT NULL,"
                    + "PRIMARY KEY (" + Streams.STREAM_ID + ", " + Streams.STREAM_VERSION + "));");
 
         db.execSQL("CREATE TABLE IF NOT EXISTS " + Tables.Surveys + " ("

@@ -163,6 +163,21 @@ public class OhmageContract {
          * Version to identify stream
          */
         String STREAM_VERSION = "stream_version";
+
+        /**
+         * The name of this stream
+         */
+        String STREAM_NAME = "stream_name";
+
+        /**
+         * The description of this stream
+         */
+        String STREAM_DESCRIPTION = "stream_description";
+
+        /**
+         * The application for this stream
+         */
+        String STREAM_APP = "stream_app";
     }
 
     private static final String PATH_STREAMS = "streams";
@@ -185,6 +200,10 @@ public class OhmageContract {
         public static Uri getUriForStreamIdVersion(String id, long version) {
             return ContentUris.withAppendedId(getUriForStreamId(id), version);
         }
+
+        public static final String[] DEFAULT_PROJECTION = new String[]{
+                STREAM_ID, STREAM_VERSION, STREAM_NAME, STREAM_DESCRIPTION, STREAM_APP
+        };
 
         public static String getId(Uri uri) {
             List<String> path = uri.getPathSegments();

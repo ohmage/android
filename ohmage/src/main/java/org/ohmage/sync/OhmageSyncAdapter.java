@@ -21,22 +21,31 @@ import android.accounts.AccountManager;
 import android.accounts.AuthenticatorException;
 import android.accounts.OperationCanceledException;
 import android.annotation.TargetApi;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SyncResult;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Build.VERSION;
+import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.RemoteException;
+import android.support.v4.app.NotificationCompat.Builder;
 import android.util.Log;
 
 import com.google.gson.Gson;
 
 import org.apache.http.auth.AuthenticationException;
+import org.ohmage.app.MainActivity;
 import org.ohmage.app.Ohmage;
 import org.ohmage.app.OhmageService;
+import org.ohmage.app.R;
 import org.ohmage.auth.AuthUtil;
 import org.ohmage.auth.Authenticator;
 import org.ohmage.models.Ohmlet;
@@ -52,14 +61,16 @@ import org.ohmage.provider.OhmageContract.Streams;
 import org.ohmage.provider.OhmageContract.Surveys;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 
 import javax.inject.Inject;
 
 import retrofit.RetrofitError;
 import rx.Observable;
+import rx.Observer;
+import rx.functions.Func1;
 import rx.util.functions.Action0;
-import rx.util.functions.Func1;
 
 /**
  * Handle the transfer of data between a server the ohmage app using the Android sync adapter
@@ -68,6 +79,8 @@ import rx.util.functions.Func1;
 public class OhmageSyncAdapter extends AbstractThreadedSyncAdapter {
 
     public static final String IS_SYNCADAPTER = "is_syncadapter";
+
+    private static final int NOTIFICATION_STREAM_APPS_ID = 0;
 
     @Inject AccountManager am;
 
@@ -236,6 +249,25 @@ public class OhmageSyncAdapter extends AbstractThreadedSyncAdapter {
                     streams.filter(new FilterUpToDateStreams(provider))
                             .flatMap(new RefreshStream());
             refreshedStreams.subscribe(new ContentProviderSaverObserver(true));
+            refreshedStreams.subscribe(
+                    new Observer<Stream>() {
+                        public ArrayList<Stream> streams = new ArrayList<Stream>();
+
+                        @Override public void onCompleted() {
+                            showInstallApkNotification(streams);
+                        }
+
+                        @Override public void onError(Throwable e) {
+                            showInstallApkNotification(streams);
+                        }
+
+                        @Override public void onNext(Stream stream) {
+                            if (!stream.app.isInstalled(getContext())) {
+                                streams.add(stream);
+                            }
+                        }
+                    }
+            );
 
 
             Observable.merge(current, refreshedStreams, refreshedSurveys, refreshedOhmlets).last()
@@ -264,6 +296,39 @@ public class OhmageSyncAdapter extends AbstractThreadedSyncAdapter {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    public void showInstallApkNotification(ArrayList<Stream> streams) {
+        if(streams == null || streams.isEmpty())
+            return;
+
+        Intent resultIntent = new Intent(getContext(), MainActivity.class);
+        resultIntent.putExtra(MainActivity.EXTRA_VIEW_STREAMS, true);
+        resultIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
+        PendingIntent resultPendingIntent = PendingIntent.getActivity(getContext(), 0, resultIntent,
+                PendingIntent.FLAG_CANCEL_CURRENT);
+
+        Builder builder = new Builder(getContext());
+        builder.setContentIntent(resultPendingIntent);
+
+        if (streams.size() > 1 && VERSION.SDK_INT >= VERSION_CODES.HONEYCOMB) {
+            builder.setSmallIcon(R.drawable.stat_notify_update_collapse)
+            .setContentText(getContext().getString(R.string.install_multiple_apps_for_stream_title,
+                    streams.size()));
+        } else {
+            builder.setSmallIcon(R.drawable.stat_notify_update)
+            .setContentText(getContext().getString(R.string.install_apps_for_stream_title,
+                    streams.get(0).name));
+        }
+
+        builder.setContentTitle(getContext().getString(R.string.install_apps_for_stream_message))
+                .setAutoCancel(true)
+                .setDefaults(Notification.DEFAULT_ALL);
+
+        NotificationManager mNotificationManager =
+                (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
+        // mId allows you to update the notification later on.
+        mNotificationManager.notify(NOTIFICATION_STREAM_APPS_ID, builder.build());
     }
 
     public static class SurveysFromOhmlet implements Func1<Ohmlet, Observable<Survey>> {

@@ -40,6 +40,7 @@ import org.ohmage.fragments.HomeFragment;
 import org.ohmage.fragments.OhmletsFragment;
 import org.ohmage.fragments.OhmletsGridFragment;
 import org.ohmage.fragments.OhmletsSearchFragment;
+import org.ohmage.fragments.StreamsFragment;
 import org.ohmage.fragments.SurveysFragment;
 import org.ohmage.operators.ContentProviderSaver;
 import org.ohmage.prompts.PromptFragment;
@@ -89,7 +90,8 @@ import static org.mockito.Mockito.mock;
                 SurveyActivity.class,
                 PromptFragment.class,
                 SurveyPromptLoader.class,
-                ResponseSyncAdapter.class
+                ResponseSyncAdapter.class,
+                StreamsFragment.class,
         },
         complete = false,
         library = true,
