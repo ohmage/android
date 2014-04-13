@@ -89,6 +89,7 @@ public class OhmageSyncAdapter extends AbstractThreadedSyncAdapter {
     @Inject Gson gson;
 
     private static final String TAG = OhmageSyncAdapter.class.getSimpleName();
+    private SyncResult mSyncResult;
 
     /**
      * Set up the sync adapter
@@ -115,6 +116,9 @@ public class OhmageSyncAdapter extends AbstractThreadedSyncAdapter {
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority,
             final ContentProviderClient provider, final SyncResult syncResult) {
+
+        mSyncResult = syncResult;
+
         // Check for authtoken
         String token = null;
         try {
@@ -345,19 +349,22 @@ public class OhmageSyncAdapter extends AbstractThreadedSyncAdapter {
 
     public class RefreshStream implements Func1<Stream, Observable<Stream>> {
         @Override public Observable<Stream> call(Stream stream) {
-            return ohmageService.getStream(stream.schemaId, stream.schemaVersion);
+            return ohmageService.getStream(stream.schemaId, stream.schemaVersion)
+                    .onErrorResumeNext(new LogAndSkipError());
         }
     }
 
     public class RefreshSurvey implements Func1<Survey, Observable<Survey>> {
         @Override public Observable<Survey> call(Survey survey) {
-            return ohmageService.getSurvey(survey.schemaId, survey.schemaVersion);
+            return ohmageService.getSurvey(survey.schemaId, survey.schemaVersion)
+                    .onErrorResumeNext(new LogAndSkipError());
         }
     }
 
     public class RefreshOhmlet implements Func1<Ohmlet, Observable<Ohmlet>> {
         @Override public Observable<Ohmlet> call(Ohmlet ohmlet) {
-            return ohmageService.getOhmlet(ohmlet.ohmletId);
+            return ohmageService.getOhmlet(ohmlet.ohmletId)
+                    .onErrorResumeNext(new LogAndSkipError());
         }
     }
 
@@ -406,6 +413,13 @@ public class OhmageSyncAdapter extends AbstractThreadedSyncAdapter {
                 e.printStackTrace();
             }
             return true;
+        }
+    }
+
+    private class LogAndSkipError<T> implements Func1<Throwable, Observable<? extends T>> {
+        @Override public Observable<? extends T> call(Throwable throwable) {
+            mSyncResult.stats.numIoExceptions++;
+            return Observable.empty();
         }
     }
 
