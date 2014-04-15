@@ -17,25 +17,45 @@
 package org.ohmage.prompts;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
+import android.widget.Toast;
+
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
 
 import org.ohmage.app.R;
+import org.ohmage.app.Util;
+import org.ohmage.models.Stream.RemoteApp;
 
 import java.util.HashMap;
 import java.util.Iterator;
+
+import javax.annotation.Nullable;
 
 /**
  * Created by cketcham on 1/24/14.
  */
 public class RemotePrompt extends AnswerablePrompt {
-    String uri;
+    public String uri;
+
+    @SerializedName("apps")
+    @Expose
+    private RemoteApp app;
 
     @Override
     public SurveyItemFragment getFragment() {
         return RemotePromptFragment.getInstance(this);
+    }
+
+    @Nullable
+    public RemoteApp getApp() {
+        return app == null || !app.appDefinitionExists() ? null : app;
     }
 
     /**
@@ -58,8 +78,45 @@ public class RemotePrompt extends AnswerablePrompt {
         }
 
         @Override public void onClick(View v) {
-            startActivityForResult(new Intent(Intent.ACTION_VIEW, Uri.parse(getPrompt().uri)),
-                    ACTIVITY_FINISHED);
+            if (getPrompt().app == null) {
+                Toast.makeText(getActivity(),
+                        getString(R.string.remote_prompt_missing_app_definition),
+                        Toast.LENGTH_SHORT).show();
+            } else if (getPrompt().canLaunchPrompt(getActivity())) {
+                startActivityForResult(getPrompt().getLaunchIntent(), ACTIVITY_FINISHED);
+            } else {
+                Toast.makeText(getActivity(), getString(R.string.remote_prompt_launch_error),
+                        Toast.LENGTH_SHORT).show();
+            }
+        }
+
+        @Override public void onResume() {
+            super.onResume();
+
+            if (getPrompt().app == null) {
+                // This prompt is incorrectly set up
+                return;
+            }
+
+            if (getView() != null) {
+                if (!getPrompt().app.isInstalled(getActivity())) {
+                    Button launch = (Button) getView().findViewById(R.id.launch);
+                    launch.setText("Install");
+                    launch.setOnClickListener(new OnClickListener() {
+                        @Override public void onClick(View v) {
+                            if (!Util.safeStartActivity(getActivity(),
+                                    getPrompt().app.installIntent())) {
+                                Toast.makeText(getActivity(), "No app can be found to install",
+                                        Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    });
+                } else {
+                    Button launch = (Button) getView().findViewById(R.id.launch);
+                    launch.setText(getLaunchButtonText());
+                    launch.setOnClickListener(this);
+                }
+            }
         }
 
         /**
@@ -95,5 +152,13 @@ public class RemotePrompt extends AnswerablePrompt {
             //TODO: return some error?
             setValue(response);
         }
+    }
+
+    private Intent getLaunchIntent() {
+        return new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
+    }
+
+    public boolean canLaunchPrompt(Context context) {
+        return Util.activityExists(context, getLaunchIntent());
     }
 }

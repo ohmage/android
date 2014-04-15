@@ -32,6 +32,8 @@ import com.google.gson.stream.JsonWriter;
 import com.squareup.okhttp.HttpResponseCache;
 import com.squareup.okhttp.OkHttpClient;
 
+import org.ohmage.app.InstallSurveyDependencies;
+import org.ohmage.app.InstallSurveyDependencies.InstallSurveyDependenciesFragment;
 import org.ohmage.app.MainActivity;
 import org.ohmage.app.Ohmage;
 import org.ohmage.app.OhmageAuthenticator;
@@ -47,6 +49,7 @@ import org.ohmage.auth.Authenticator;
 import org.ohmage.auth.CreateAccountFragment;
 import org.ohmage.auth.SignInFragment;
 import org.ohmage.fragments.HomeFragment;
+import org.ohmage.fragments.InstallDependenciesDialog;
 import org.ohmage.fragments.OhmletsFragment;
 import org.ohmage.fragments.OhmletsGridFragment;
 import org.ohmage.fragments.OhmletsSearchFragment;
@@ -105,7 +108,10 @@ import retrofit.converter.GsonConverter;
                 PromptFragment.class,
                 SurveyPromptLoader.class,
                 ResponseSyncAdapter.class,
-                StreamsFragment.class
+                StreamsFragment.class,
+                InstallSurveyDependencies.class,
+                InstallSurveyDependenciesFragment.class,
+                InstallDependenciesDialog.class
         },
         complete = false,
         library = true

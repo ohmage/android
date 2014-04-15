@@ -42,12 +42,14 @@ import android.util.Log;
 import com.google.gson.Gson;
 
 import org.apache.http.auth.AuthenticationException;
+import org.ohmage.app.InstallSurveyDependencies;
 import org.ohmage.app.MainActivity;
 import org.ohmage.app.Ohmage;
 import org.ohmage.app.OhmageService;
 import org.ohmage.app.R;
 import org.ohmage.auth.AuthUtil;
 import org.ohmage.auth.Authenticator;
+import org.ohmage.models.ApkSet;
 import org.ohmage.models.Ohmlet;
 import org.ohmage.models.Ohmlet.Member;
 import org.ohmage.models.Stream;
@@ -55,13 +57,14 @@ import org.ohmage.models.Survey;
 import org.ohmage.models.User;
 import org.ohmage.operators.ContentProviderSaver.ContentProviderSaverObserver;
 import org.ohmage.operators.ContentProviderStateSync.ContentProviderStateSyncObserver;
+import org.ohmage.prompts.Prompt;
+import org.ohmage.prompts.RemotePrompt;
 import org.ohmage.provider.OhmageContract;
 import org.ohmage.provider.OhmageContract.Ohmlets;
 import org.ohmage.provider.OhmageContract.Streams;
 import org.ohmage.provider.OhmageContract.Surveys;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 
 import javax.inject.Inject;
@@ -81,6 +84,7 @@ public class OhmageSyncAdapter extends AbstractThreadedSyncAdapter {
     public static final String IS_SYNCADAPTER = "is_syncadapter";
 
     private static final int NOTIFICATION_STREAM_APPS_ID = 0;
+    private static final int NOTIFICATION_REMOTE_APPS_ID = 1;
 
     @Inject AccountManager am;
 
@@ -239,10 +243,33 @@ public class OhmageSyncAdapter extends AbstractThreadedSyncAdapter {
 
 
             Observable<Survey> refreshedSurveys =
-                    surveys.filter(new FilterUpToDateSurveys(provider)).flatMap(
-                            new RefreshSurvey());
+                    surveys.filter(new FilterUpToDateSurveys(provider))
+                        .flatMap(new RefreshSurvey());
             refreshedSurveys.subscribe(new ContentProviderSaverObserver(true));
+            refreshedSurveys.subscribe(
+                    new Observer<Survey>() {
+                        public ApkSet surveys = new ApkSet();
 
+                        @Override public void onCompleted() {
+                            showInstallSurveyApkNotification(surveys);
+                        }
+
+                        @Override public void onError(Throwable e) {
+                            showInstallSurveyApkNotification(surveys);
+                        }
+
+                        @Override public void onNext(Survey survey) {
+                            for (Prompt prompt : survey.surveyItems) {
+                                if (prompt instanceof RemotePrompt &&
+                                    ((RemotePrompt) prompt).getApp() != null &&
+                                    !((RemotePrompt) prompt).getApp().isInstalled(getContext())) {
+                                    surveys.add(((RemotePrompt) prompt).getApp());
+                                    return;
+                                }
+                            }
+                        }
+                    }
+            );
 
             Observable<Stream> streams = current.flatMap(new StreamsFromOhmlet());
             streams.toList().subscribe(
@@ -255,24 +282,24 @@ public class OhmageSyncAdapter extends AbstractThreadedSyncAdapter {
             refreshedStreams.subscribe(new ContentProviderSaverObserver(true));
             refreshedStreams.subscribe(
                     new Observer<Stream>() {
-                        public ArrayList<Stream> streams = new ArrayList<Stream>();
+                        public ApkSet streams = new ApkSet();
 
                         @Override public void onCompleted() {
-                            showInstallApkNotification(streams);
+                            showInstallStreamApkNotification(streams);
                         }
 
                         @Override public void onError(Throwable e) {
-                            showInstallApkNotification(streams);
+                            showInstallStreamApkNotification(streams);
                         }
 
                         @Override public void onNext(Stream stream) {
                             if (!stream.app.isInstalled(getContext())) {
-                                streams.add(stream);
+                                stream.app.android.appName = stream.name;
+                                streams.add(stream.app);
                             }
                         }
                     }
             );
-
 
             Observable.merge(current, refreshedStreams, refreshedSurveys, refreshedOhmlets).last()
                     .finallyDo(new Action0() {
@@ -302,37 +329,60 @@ public class OhmageSyncAdapter extends AbstractThreadedSyncAdapter {
         }
     }
 
-    public void showInstallApkNotification(ArrayList<Stream> streams) {
-        if(streams == null || streams.isEmpty())
+    public void showInstallStreamApkNotification(ApkSet streams) {
+        if (streams == null || streams.isEmpty()) {
             return;
+        }
 
         Intent resultIntent = new Intent(getContext(), MainActivity.class);
         resultIntent.putExtra(MainActivity.EXTRA_VIEW_STREAMS, true);
-        resultIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
-        PendingIntent resultPendingIntent = PendingIntent.getActivity(getContext(), 0, resultIntent,
-                PendingIntent.FLAG_CANCEL_CURRENT);
-
         Builder builder = new Builder(getContext());
-        builder.setContentIntent(resultPendingIntent);
 
         if (streams.size() > 1 && VERSION.SDK_INT >= VERSION_CODES.HONEYCOMB) {
-            builder.setSmallIcon(R.drawable.stat_notify_update_collapse)
-            .setContentText(getContext().getString(R.string.install_multiple_apps_for_stream_title,
-                    streams.size()));
+            builder.setSmallIcon(R.drawable.stat_notify_update_collapse).setContentText(getContext()
+                    .getString(R.string.install_multiple_apps_for_stream_message, streams.size()));
         } else {
-            builder.setSmallIcon(R.drawable.stat_notify_update)
-            .setContentText(getContext().getString(R.string.install_apps_for_stream_title,
-                    streams.get(0).name));
+            builder.setSmallIcon(R.drawable.stat_notify_update).setContentText(getContext()
+                    .getString(R.string.install_app_for_stream_message,
+                            streams.iterator().next().getAppName()));
         }
 
-        builder.setContentTitle(getContext().getString(R.string.install_apps_for_stream_message))
+        builder.setContentTitle(getContext().getString(R.string.install_apps_for_stream_title));
+        showInstallApkNotification(NOTIFICATION_STREAM_APPS_ID, builder, resultIntent);
+    }
+
+    public void showInstallSurveyApkNotification(ApkSet surveys) {
+        if (surveys == null || surveys.isEmpty()) {
+            return;
+        }
+
+        Intent resultIntent = new Intent(getContext(), InstallSurveyDependencies.class);
+        Builder builder = new Builder(getContext());
+
+        if (surveys.size() > 1 && VERSION.SDK_INT >= VERSION_CODES.HONEYCOMB) {
+            builder.setSmallIcon(R.drawable.stat_notify_update_collapse).setContentText(getContext()
+                    .getString(R.string.install_multiple_apps_for_surveys_message, surveys.size()));
+        } else {
+            builder.setSmallIcon(R.drawable.stat_notify_update).setContentText(getContext()
+                    .getString(R.string.install_apps_for_survey_message,
+                            surveys.iterator().next().getAppName()));
+        }
+
+        builder.setContentTitle(getContext().getString(R.string.install_apps_for_survey_title));
+        showInstallApkNotification(NOTIFICATION_REMOTE_APPS_ID, builder, resultIntent);
+    }
+
+    private void showInstallApkNotification(int id, Builder builder, Intent intent) {
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
+        PendingIntent resultPendingIntent = PendingIntent.getActivity(getContext(), 0, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT);
+        builder.setContentIntent(resultPendingIntent)
                 .setAutoCancel(true)
                 .setDefaults(Notification.DEFAULT_ALL);
 
         NotificationManager mNotificationManager =
                 (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
-        // mId allows you to update the notification later on.
-        mNotificationManager.notify(NOTIFICATION_STREAM_APPS_ID, builder.build());
+        mNotificationManager.notify(id, builder.build());
     }
 
     public static class SurveysFromOhmlet implements Func1<Ohmlet, Observable<Survey>> {

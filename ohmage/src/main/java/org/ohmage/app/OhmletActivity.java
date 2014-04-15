@@ -70,7 +70,7 @@ public class OhmletActivity extends InjectedActionBarActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_ohmlet);
+        setContentView(R.layout.activity_single_fragment);
 
         String action = getIntent().getAction();
         Bundle extras = new Bundle();

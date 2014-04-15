@@ -36,6 +36,8 @@ import org.ohmage.operators.ContentProviderStateSync.Syncable;
 import org.ohmage.provider.ContentProviderReader.Readable;
 import org.ohmage.provider.OhmageContract;
 
+import javax.annotation.Nullable;
+
 /**
  * Basic Stream class. This class can hold a definition of a stream, and optionally the data and
  * metadata associated with a single point.
@@ -46,7 +48,7 @@ public class Stream implements Savable, Readable, Syncable {
     public long schemaVersion;
 
     @SerializedName("apps")
-    public Apps app;
+    public RemoteApp app;
 
     public String name;
 
@@ -87,30 +89,61 @@ public class Stream implements Savable, Readable, Syncable {
         schemaVersion = cursor.getLong(1);
         name = cursor.getString(2);
         description = cursor.getString(3);
-        app = gson.fromJson(cursor.getString(4), Apps.class);
+        app = gson.fromJson(cursor.getString(4), RemoteApp.class);
     }
 
-    public static class Apps {
+    public static class RemoteApp {
         @Expose
-        private Android android;
+        public Android android;
 
         public boolean isInstalled(Context context) {
-            PackageManager pm = context.getPackageManager();
+            if (android == null) {
+                return false;
+            }
             try {
                 PackageInfo info = getPackageInfo(context, 0);
-                return info.versionCode >= android.versionCode;
+                return info != null && info.versionCode >= android.versionCode;
             } catch (NameNotFoundException e) {
                 return false;
             }
         }
 
+        @Nullable
         public Intent installIntent() {
+            if (android == null) {
+                return null;
+            }
             return new Intent(Intent.ACTION_VIEW, Uri.parse(android.appUri));
         }
 
+        @Nullable
         public PackageInfo getPackageInfo(Context context, int flags) throws NameNotFoundException {
             PackageManager pm = context.getPackageManager();
-            return pm.getPackageInfo(android.packageName, flags);
+            if (pm != null) {
+                return pm.getPackageInfo(android.packageName, flags);
+            }
+            return null;
+        }
+
+        @Nullable
+        public String getPackageName() {
+            return android != null ? android.packageName : null;
+        }
+
+        @Nullable
+        public String getAppName() {
+            if (android == null) {
+                return null;
+            }
+            return android.appName == null ? android.packageName : android.appName;
+        }
+
+        public int getVersionCode() {
+            return android != null ? android.versionCode : -1;
+        }
+
+        public boolean appDefinitionExists() {
+            return android != null;
         }
 
         public static class Android {
@@ -118,11 +151,24 @@ public class Stream implements Savable, Readable, Syncable {
 
             public String authorizationUri;
 
+            public String appName;
+
             @SerializedName("package")
             public String packageName;
 
             @SerializedName("version")
             public int versionCode;
+        }
+
+        @Override public boolean equals(Object o) {
+            if(!(o instanceof RemoteApp)) {
+                return false;
+            } else {
+                RemoteApp other = (RemoteApp) o;
+                return appDefinitionExists() == other.appDefinitionExists() &&
+                       (getPackageName() == null ? other.getPackageName() == null :
+                        getPackageName().equals(other.getPackageName()));
+            }
         }
     }
 }

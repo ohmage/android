@@ -25,6 +25,8 @@ import android.database.Cursor;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.os.Parcelable;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
@@ -55,6 +57,8 @@ import com.viewpagerindicator.CirclePageIndicator;
 import org.ohmage.condition.Condition;
 import org.ohmage.condition.NoResponse;
 import org.ohmage.dagger.InjectedActionBarActivity;
+import org.ohmage.fragments.InstallDependenciesDialog;
+import org.ohmage.models.ApkSet;
 import org.ohmage.prompts.AnswerablePrompt;
 import org.ohmage.prompts.Prompt;
 import org.ohmage.prompts.PromptFragment;
@@ -108,6 +112,24 @@ public class SurveyActivity extends InjectedActionBarActivity
             .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
     private SurveyStateFragment mState;
+
+    public static final int MSG_SHOW_INSTALL_DEPENDENCIES = 0;
+
+    private Handler handler = new Handler() {
+
+        @Override
+        public void handleMessage(Message msg) {
+            if(msg.what == MSG_SHOW_INSTALL_DEPENDENCIES) {
+                FragmentManager fm = getSupportFragmentManager();
+                InstallDependenciesDialog fragment =
+                        (InstallDependenciesDialog) fm.findFragmentByTag("install");
+                if (fragment == null) {
+                    fragment = InstallDependenciesDialog.getInstance((ApkSet) msg.obj, true);
+                }
+                fragment.show(fm, "install");
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -195,6 +217,16 @@ public class SurveyActivity extends InjectedActionBarActivity
     @Override public void onLoadFinished(Loader<ArrayList<Prompt>> loader, ArrayList<Prompt> data) {
         if (mPagerAdapter == null) {
             setPrompts(data);
+
+            // Check for remote activity prompts and make sure they all exist
+            ApkSet appItems = ApkSet.fromPromptsIgnoreSkippable(data);
+            appItems.clearInstalled(this);
+
+            if(!appItems.isEmpty()) {
+                Message msg = handler.obtainMessage(MSG_SHOW_INSTALL_DEPENDENCIES);
+                msg.obj = appItems;
+                msg.sendToTarget();
+            }
         }
     }
 

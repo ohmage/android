@@ -142,6 +142,10 @@ public class OhmageContract {
             return ContentUris.withAppendedId(getUriForSurveyId(id), version);
         }
 
+        public static final String[] DEFAULT_PROJECTION = new String[]{
+                SURVEY_ID, SURVEY_VERSION, SURVEY_ITEMS, SURVEY_NAME, SURVEY_DESCRIPTION
+        };
+
         public static String getId(Uri uri) {
             List<String> path = uri.getPathSegments();
             return (path.size() < 2) ? null : path.get(1);

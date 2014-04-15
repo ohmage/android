@@ -72,8 +72,18 @@
     <string name="discard">Discard</string>
     <string name="discard_survey_message">This survey will not be saved</string>
     <string name="discard_survey_title">Discard Survey?</string>
-    <string name="install_apps_for_stream_title">%s requires additional apps.</string>
-    <string name="install_multiple_apps_for_stream_title">%s streams require additional apps.</string>
-    <string name="install_apps_for_stream_message">Install stream applications</string>
-
+    <string name="install_apps_for_stream_title">Install stream applications</string>
+    <string name="install_app_for_stream_message">%s requires an additional app.</string>
+    <string name="install_multiple_apps_for_stream_message">%s streams require additional apps.</string>
+    <string name="install_apps_for_survey_title">Install survey dependencies</string>
+    <string name="install_apps_for_survey_message">An additional app is required to take surveys.</string>
+    <string name="install_multiple_apps_for_surveys_message">%s additional apps are required to take surveys.</string>
+    <string name="no_app_to_install_error">Can\'t find application to install</string>
+    <string name="remote_prompt_missing_app_definition">This prompt is missing an app definition</string>
+    <string name="remote_prompt_launch_error">Prompt can\'t be launched</string>
+    <string name="no_survey_apps">No survey apps to install</string>
+    <string name="required_apps_header">Required</string>
+    <string name="installed_apps_header">Installed</string>
+    <string name="no_streams">No streams</string>
+    <string name="install_dependencies_title">Install Dependencies</string>
 </resources>

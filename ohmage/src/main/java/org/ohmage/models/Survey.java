@@ -17,13 +17,18 @@
 package org.ohmage.models;
 
 import android.content.ContentValues;
+import android.database.Cursor;
 import android.net.Uri;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import org.ohmage.helper.SelectParamBuilder;
 import org.ohmage.operators.ContentProviderSaver;
 import org.ohmage.operators.ContentProviderSaver.Savable;
 import org.ohmage.operators.ContentProviderStateSync.Syncable;
 import org.ohmage.prompts.Prompt;
+import org.ohmage.provider.ContentProviderReader.Readable;
 import org.ohmage.provider.OhmageContract;
 
 import java.util.ArrayList;
@@ -31,7 +36,7 @@ import java.util.ArrayList;
 /**
  * Created by cketcham on 12/18/13.
  */
-public class Survey implements Savable, Syncable {
+public class Survey implements Savable, Readable, Syncable {
     public String schemaId;
 
     public long schemaVersion;
@@ -59,5 +64,14 @@ public class Survey implements Savable, Syncable {
         select.and(OhmageContract.Surveys.SURVEY_ID, schemaId);
         select.and(OhmageContract.Surveys.SURVEY_VERSION, schemaVersion);
         return select;
+    }
+
+    public void read(Gson gson, Cursor cursor) {
+        schemaId = cursor.getString(0);
+        schemaVersion = cursor.getLong(1);
+        surveyItems = gson.fromJson(cursor.getString(2), new TypeToken<ArrayList<Prompt>>() {
+        }.getType());
+        name = cursor.getString(3);
+        description = cursor.getString(4);
     }
 }
