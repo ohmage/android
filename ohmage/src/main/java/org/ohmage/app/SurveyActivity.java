@@ -743,7 +743,7 @@ public class SurveyActivity extends InjectedActionBarActivity
 
         private void answer(Prompt prompt) {
             remove(prompt);
-            answers.put(prompt.getId(), true);
+            answers.put(prompt.getId(), null);
         }
 
         private void answer(AnswerablePrompt prompt) {

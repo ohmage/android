@@ -122,13 +122,10 @@ public class PromptId extends Terminal {
      */
     @Override
     public Object getValue(final Map<String, Object> responses) {
-        // Get the response value.
-        Object response = responses.get(value);
-
         // If the response doesn't exist, then this prompt does not exist as a
         // previous prompt in this survey, which means it should never have
         // reached this point.
-        if(response == null) {
+        if(!responses.containsKey(value)) {
             throw
                 new IllegalStateException(
                     "The response does not exist in the response map: " +
@@ -136,7 +133,7 @@ public class PromptId extends Terminal {
         }
 
         // Return the response value from the map.
-        return response;
+        return responses.get(value);
     }
 
     /*
