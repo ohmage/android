@@ -21,6 +21,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -35,8 +36,6 @@ import org.ohmage.models.Stream.RemoteApp;
 
 import java.util.HashMap;
 import java.util.Iterator;
-
-import javax.annotation.Nullable;
 
 /**
  * Created by cketcham on 1/24/14.

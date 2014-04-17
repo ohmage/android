@@ -17,6 +17,7 @@
 package org.ohmage.models;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 
 import org.ohmage.models.Stream.RemoteApp;
 import org.ohmage.prompts.Prompt;
@@ -28,15 +29,13 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import javax.annotation.Nonnull;
-
 /**
  * A set of applications which may or may not be installed. Applications are unique by packageName,
  * and a newer version of an app will replace older versions in the set.
  */
 public class ApkSet extends ArrayList<RemoteApp> {
 
-    public static ApkSet fromSurveys(@Nonnull ArrayList<Survey> surveys) {
+    public static ApkSet fromSurveys(@NonNull ArrayList<Survey> surveys) {
         ApkSet set = new ApkSet();
         for (Survey survey : surveys) {
             set.addAll(fromPrompts(survey.surveyItems));
@@ -44,7 +43,7 @@ public class ApkSet extends ArrayList<RemoteApp> {
         return set;
     }
 
-    public static ApkSet fromStreams(@Nonnull ArrayList<Stream> streams) {
+    public static ApkSet fromStreams(@NonNull ArrayList<Stream> streams) {
         ApkSet set = new ApkSet();
         for (Stream stream : streams) {
             set.add(stream.app);
@@ -52,7 +51,7 @@ public class ApkSet extends ArrayList<RemoteApp> {
         return set;
     }
 
-    public static ApkSet fromPrompts(@Nonnull ArrayList<Prompt> prompts) {
+    public static ApkSet fromPrompts(@NonNull ArrayList<Prompt> prompts) {
         ApkSet set = new ApkSet();
         for (Prompt prompt : prompts) {
             if (prompt instanceof RemotePrompt && ((RemotePrompt) prompt).getApp() != null) {
@@ -62,7 +61,7 @@ public class ApkSet extends ArrayList<RemoteApp> {
         return set;
     }
 
-    public static ApkSet fromPromptsIgnoreSkippable(@Nonnull ArrayList<Prompt> prompts) {
+    public static ApkSet fromPromptsIgnoreSkippable(@NonNull ArrayList<Prompt> prompts) {
         ApkSet set = new ApkSet();
         for (Prompt prompt : prompts) {
             if (prompt instanceof RemotePrompt && !prompt.isSkippable() &&

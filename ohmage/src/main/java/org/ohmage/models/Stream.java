@@ -24,6 +24,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.database.Cursor;
 import android.net.Uri;
+import android.support.annotation.Nullable;
 
 import com.google.gson.Gson;
 import com.google.gson.annotations.Expose;
@@ -35,8 +36,6 @@ import org.ohmage.operators.ContentProviderSaver.Savable;
 import org.ohmage.operators.ContentProviderStateSync.Syncable;
 import org.ohmage.provider.ContentProviderReader.Readable;
 import org.ohmage.provider.OhmageContract;
-
-import javax.annotation.Nullable;
 
 /**
  * Basic Stream class. This class can hold a definition of a stream, and optionally the data and
