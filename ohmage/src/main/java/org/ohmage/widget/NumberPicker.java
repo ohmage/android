@@ -18,9 +18,11 @@ package org.ohmage.widget;
 
 import android.content.Context;
 import android.os.Handler;
+import android.text.Editable;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.text.Spanned;
+import android.text.TextWatcher;
 import android.text.method.NumberKeyListener;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
@@ -180,19 +182,6 @@ public class NumberPicker extends LinearLayout {
             }
         };
 
-        OnFocusChangeListener focusListener = new OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-
-                /* When focus is lost check that the text field
-                 * has valid values.
-                 */
-                if (!hasFocus) {
-                    validateInput(v);
-                }
-            }
-        };
-
         OnLongClickListener longClickListener = new OnLongClickListener() {
             /**
              * We start the long click here but rely on the {@link NumberPickerButton}
@@ -229,7 +218,20 @@ public class NumberPicker extends LinearLayout {
         mDecrementButton.setNumberPicker(this);
 
         mText = (EditText) findViewById(R.id.timepicker_input);
-        mText.setOnFocusChangeListener(focusListener);
+        mText.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count,
+                    int after) {
+
+            }
+
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override public void afterTextChanged(Editable s) {
+                validateInput(mText);
+            }
+        });
         mText.setFilters(new InputFilter[]{inputFilter});
         mText.setRawInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_SIGNED |
                               ((mWholeNumbers) ? 0 : InputType.TYPE_NUMBER_FLAG_DECIMAL));
@@ -345,10 +347,12 @@ public class NumberPicker extends LinearLayout {
      */
     protected void changeCurrent(BigDecimal current) {
         // Don't wrap around the values if we go past the start or end
-        if (current.compareTo(mEnd) > 0) {
-            current = mEnd;
-        } else if (current.compareTo(mStart) < 0) {
-            current = mStart;
+        if(current != null) {
+            if (current.compareTo(mEnd) > 0) {
+                current = mEnd;
+            } else if (current.compareTo(mStart) < 0) {
+                current = mStart;
+            }
         }
         mPrevious = mCurrent;
         mCurrent = current;
@@ -385,23 +389,20 @@ public class NumberPicker extends LinearLayout {
     private boolean validateCurrentView(CharSequence str) {
         BigDecimal val = getSelectedPos(str.toString());
         if ((val.compareTo(mStart) >= 0) && (val.compareTo(mEnd) <= 0)) {
-            if (mCurrent != val) {
-                mPrevious = mCurrent;
-                mCurrent = val;
-                notifyChange();
+            if (!val.equals(mCurrent)) {
+                changeCurrent(val);
             }
         }
-        updateView();
         return (val.compareTo(mStart) >= 0) && (val.compareTo(mEnd) <= 0);
     }
 
     private boolean validateInput(View v) {
         String str = String.valueOf(((TextView) v).getText());
         if ("".equals(str)) {
-
-            // Restore to the old value as we don't allow empty values
-            updateView();
-            return false;
+            mPrevious = mCurrent;
+            mCurrent = null;
+            notifyChange();
+            return true;
         } else {
 
             // Check the new value and ensure it's in range
