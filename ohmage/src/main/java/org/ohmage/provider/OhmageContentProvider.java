@@ -28,6 +28,7 @@ import org.ohmage.provider.OhmageContract.Ohmlets;
 import org.ohmage.provider.OhmageContract.Streams;
 import org.ohmage.provider.OhmageContract.Surveys;
 import org.ohmage.provider.OhmageDbHelper.Tables;
+import org.ohmage.reminders.base.ReminderContract.Reminders;
 import org.ohmage.sync.OhmageSyncAdapter;
 
 public class OhmageContentProvider extends ContentProvider {
@@ -40,6 +41,7 @@ public class OhmageContentProvider extends ContentProvider {
         int SURVEY_ID = 3;
         int STREAMS = 4;
         int STREAM_ID = 5;
+        int REMINDERS = 6;
     }
 
     private OhmageDbHelper dbHelper;
@@ -55,6 +57,7 @@ public class OhmageContentProvider extends ContentProvider {
         sUriMatcher.addURI(OhmageContract.CONTENT_AUTHORITY, "surveys/*/*", MatcherTypes.SURVEY_ID);
         sUriMatcher.addURI(OhmageContract.CONTENT_AUTHORITY, "streams", MatcherTypes.STREAMS);
         sUriMatcher.addURI(OhmageContract.CONTENT_AUTHORITY, "streams/*/*", MatcherTypes.STREAM_ID);
+        sUriMatcher.addURI(OhmageContract.CONTENT_AUTHORITY, "reminders", MatcherTypes.REMINDERS);
     }
 
     @Override
@@ -181,6 +184,11 @@ public class OhmageContentProvider extends ContentProvider {
                         Streams.getVersion(uri), new String[]{Streams.getId(uri)}, null, null,
                         sortOrder);
                 break;
+            case MatcherTypes.REMINDERS:
+                cursor = dbHelper.getReadableDatabase().query(Tables.Surveys,
+                        fromReminderProjection(projection), fromReminderSelect(selection),
+                        selectionArgs, null, null, sortOrder);
+                break;
             default:
                 throw new UnsupportedOperationException("query(): Unknown URI: " + uri);
         }
@@ -191,10 +199,67 @@ public class OhmageContentProvider extends ContentProvider {
 
     @Override
     public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
-        throw new UnsupportedOperationException("Update not allowed");
+        int result = -1;
+        ContentResolver cr = getContext().getContentResolver();
+        switch (sUriMatcher.match(uri)) {
+            case MatcherTypes.REMINDERS:
+                result = dbHelper.getReadableDatabase().update(Tables.Surveys,
+                        fromReminderContentValues(values), fromReminderSelect(selection),
+                        selectionArgs);
+                break;
+            default:
+                throw new UnsupportedOperationException("update(): Unknown URI: " + uri);
+        }
+        if (result != -1) {
+            cr.notifyChange(Surveys.CONTENT_URI, null, false);
+        }
+        return result;
     }
 
     private boolean isSyncAdapter(Uri uri) {
         return uri.getQueryParameter(OhmageSyncAdapter.IS_SYNCADAPTER) != null;
+    }
+
+    private static ContentValues fromReminderContentValues(ContentValues values) {
+        ContentValues tValues = new ContentValues();
+        if (values != null) {
+            tValues.put(Surveys.SURVEY_PENDING_TIME,
+                    values.getAsLong(Reminders.REMINDER_PENDING_TIME));
+            tValues.put(Surveys.SURVEY_PENDING_TIMEZONE,
+                    values.getAsString(Reminders.REMINDER_PENDING_TIMEZONE));
+        }
+        return tValues;
+    }
+
+    private static String fromReminderSelect(String select) {
+        String tSelect = select;
+        if (select != null) {
+            tSelect = tSelect.replaceAll(Reminders._ID, Surveys.SURVEY_ID);
+            tSelect = tSelect.replaceAll(Reminders.REMINDER_NAME, Surveys.SURVEY_NAME);
+            tSelect = tSelect.replaceAll(Reminders.REMINDER_PENDING_TIME,
+                    Surveys.SURVEY_PENDING_TIME);
+            tSelect = tSelect.replaceAll(Reminders.REMINDER_PENDING_TIMEZONE,
+                    Surveys.SURVEY_PENDING_TIMEZONE);
+        }
+        return tSelect;
+    }
+
+    private static String[] fromReminderProjection(String[] projection) {
+        String[] tProjection = null;
+        if (projection != null) {
+            tProjection = new String[projection.length];
+            for (int i = 0; i < projection.length; i++) {
+                if (Reminders._ID.equals(projection[i])) {
+                    tProjection[i] = Surveys.SURVEY_ID;
+                } else if (Reminders.REMINDER_NAME.equals(projection[i])) {
+                    tProjection[i] = Surveys.SURVEY_NAME;
+                } else if (Reminders.REMINDER_PENDING_TIME.equals(projection[i])) {
+                    tProjection[i] = Surveys.SURVEY_PENDING_TIME;
+                } else if (Reminders.REMINDER_PENDING_TIMEZONE.equals(projection[i])) {
+                    tProjection[i] = Surveys.SURVEY_PENDING_TIMEZONE;
+                }
+            }
+        }
+        return tProjection;
     }
 }

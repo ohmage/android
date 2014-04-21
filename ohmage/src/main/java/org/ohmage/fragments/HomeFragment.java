@@ -28,19 +28,24 @@ import android.os.Handler;
 import android.support.v4.app.LoaderManager.LoaderCallbacks;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.support.v4.widget.CursorAdapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
+import android.widget.BaseAdapter;
 import android.widget.GridView;
-import android.widget.ListAdapter;
 import android.widget.TextView;
 
+import org.joda.time.DateTimeZone;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.ohmage.app.R;
 import org.ohmage.auth.AuthUtil;
 import org.ohmage.provider.OhmageContract;
 import org.ohmage.provider.OhmageContract.Surveys;
+import org.ohmage.reminders.base.ReminderContract.Reminders;
+import org.ohmage.widget.ViewHolder;
+
+import java.util.ArrayList;
 
 import javax.inject.Inject;
 
@@ -105,12 +110,7 @@ public class HomeFragment extends GridFragment implements LoaderCallbacks<Cursor
 
         setGridShown(false);
 
-        ListAdapter adapter = new SurveyAdapter(getActivity(), null);
-        setListAdapter(adapter);
-
         getLoaderManager().initLoader(0, null, this);
-
-
     }
 
     @Override
@@ -147,7 +147,7 @@ public class HomeFragment extends GridFragment implements LoaderCallbacks<Cursor
 
     @Override
     public void onGridItemClick(GridView g, View v, int position, long id) {
-        Cursor cursor = (Cursor) getListAdapter().getItem(position);
+        Cursor cursor = getListAdapter().getItem(position).getData();
         if (cursor != null) {
             startActivity(new Intent(Intent.ACTION_VIEW, OhmageContract.Surveys
                     .getUriForSurveyIdVersion(cursor.getString(0), cursor.getInt(1))));
@@ -157,17 +157,41 @@ public class HomeFragment extends GridFragment implements LoaderCallbacks<Cursor
     @Override public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         return new CursorLoader(getActivity(), OhmageContract.Surveys.CONTENT_URI, new String[]{
                 Surveys.SURVEY_ID, Surveys.SURVEY_VERSION, Surveys.SURVEY_NAME,
-                Surveys.SURVEY_DESCRIPTION}, null, null, null);
+                Surveys.SURVEY_DESCRIPTION, Surveys.SURVEY_PENDING_TIME,
+                Surveys.SURVEY_PENDING_TIMEZONE}, null, null,
+                Surveys.SURVEY_PENDING_TIME + " desc"
+        );
     }
 
     @Override public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        getListAdapter().changeCursor(data);
-        if(data.getCount() > 0)
-            setGridShown(true);
+
+        ArrayList<Item> items = new ArrayList<Item>();
+        boolean pivot = true;
+        data.moveToPosition(-1);
+        while (data.moveToNext()) {
+            if (items.isEmpty() && data.getLong(4) != Reminders.NOT_PENDING) {
+                pivot = false;
+                items.add(new Item("Pending"));
+            } else if (!items.isEmpty() && data.getLong(4) == Reminders.NOT_PENDING && !pivot) {
+                pivot = true;
+                items.add(new Item("Surveys"));
+            }
+            items.add(new Item(data, 0));
+        }
+
+        SurveyAdapter adapter = getListAdapter();
+        if (adapter == null) {
+            adapter = new SurveyAdapter(getActivity(), items);
+            setListAdapter(adapter);
+        } else {
+            adapter.setData(items);
+        }
+
+        setGridShown(true);
     }
 
     @Override public void onLoaderReset(Loader<Cursor> loader) {
-        getListAdapter().changeCursor(null);
+        getListAdapter().setData(null);
     }
 
     @Override public void onRefreshStarted(View view) {
@@ -204,84 +228,141 @@ public class HomeFragment extends GridFragment implements LoaderCallbacks<Cursor
         }
     }
 
-    public static class SurveyAdapter extends CursorAdapter {
-
-        private final int mResource;
-
-        private final LayoutInflater mInflater;
-
-        public static class Holder {
-            TextView name;
-            TextView description;
-            Button action;
-        }
-
-        public SurveyAdapter(Context context, Cursor c) {
-            super(context, c, false);
-            mResource = R.layout.list_item_survey;
-            mInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        }
-
-        @Override public View newView(Context context, Cursor cursor, ViewGroup viewGroup) {
-            return mInflater.inflate(mResource, viewGroup, false);
-        }
-
-        @Override public void bindView(View view, Context context, Cursor cursor) {
-
-            Holder holder = (Holder) view.getTag();
-            if (holder == null) {
-                holder = new Holder();
-                holder.name = (TextView) view.findViewById(R.id.name);
-                holder.action = (Button) view.findViewById(R.id.action);
-                holder.description = (TextView) view.findViewById(R.id.description);
-                holder.action.setVisibility(View.GONE);
-                view.setTag(holder);
-            }
-
-            holder.name.setText(cursor.getString(2));
-            holder.description.setText(cursor.getString(3));
-//            holder.action.setText(item.isParticipant ? "Leave" : "Join");
-        }
+    private static class Item {
+        private int dataPosition = -1;
 
         /**
-         * Swap in a new Cursor, returning the old Cursor.  Unlike
-         * {@link #changeCursor(Cursor)}, the returned old Cursor is <em>not</em>
-         * closed.
-         *
-         * @param newCursor The new cursor to be used.
-         * @return Returns the previously set Cursor, or null if there wasa not one.
-         * If the given new Cursor is the same instance is the previously set
-         * Cursor, null is also returned.
+         * The index of the id field for the cursor
          */
-        @Override
-        public Cursor swapCursor(Cursor newCursor) {
-            if (newCursor == mCursor) {
-                return null;
+        private final int idIdex;
+
+        private final Cursor data;
+        private final String header;
+
+        public Item(String header) {
+            this(header, null, -1);
+            if (header == null) {
+                throw new IllegalArgumentException("the header string can't be null");
             }
-            Cursor oldCursor = mCursor;
-            if (oldCursor != null) {
-                if (mChangeObserver != null) oldCursor.unregisterContentObserver(mChangeObserver);
-                if (mDataSetObserver != null) oldCursor.unregisterDataSetObserver(mDataSetObserver);
-            }
-            mCursor = newCursor;
-            if (newCursor != null) {
-                if (mChangeObserver != null) newCursor.registerContentObserver(mChangeObserver);
-                if (mDataSetObserver != null) newCursor.registerDataSetObserver(mDataSetObserver);
-                mRowIDColumn = newCursor.getColumnIndexOrThrow(getIdColumnName());
-                mDataValid = true;
-                // notify the observers about the new cursor
-                notifyDataSetChanged();
-            } else {
-                mRowIDColumn = -1;
-                mDataValid = false;
-                // notify the observers about the lack of a data set
-                notifyDataSetInvalidated();
-            }
-            return oldCursor;
         }
 
-        protected String getIdColumnName() {
-            return Surveys.SURVEY_ID;
+        public Item(Cursor data, int idIdx) {
+            this(null, data, idIdx);
+            if (data == null) {
+                throw new IllegalArgumentException("the cursor data shouldn't be null");
+            }
+        }
+
+        private Item(String header, Cursor data, int idIdx) {
+            this.header = header;
+            this.data = data;
+            if (data != null) {
+                this.dataPosition = data.getPosition();
+            } else {
+                this.dataPosition = -1;
+            }
+            this.idIdex = idIdx;
+        }
+
+        public boolean isHeader() {
+            return data == null;
+        }
+
+        public Cursor getData() {
+            data.moveToPosition(dataPosition);
+            return data;
+        }
+
+        public long getItemId() {
+            return data == null ? header.hashCode() : getData().getString(0).hashCode();
+        }
+    }
+
+    public static class SurveyAdapter extends BaseAdapter {
+        private static final int HEADER = 0;
+        private static final int DATA = 1;
+
+        private final LayoutInflater mInflater;
+        private final Context mContext;
+        private ArrayList<Item> mData;
+
+        private final DateTimeFormatter mTimeFormatter;
+
+        public SurveyAdapter(Context context, ArrayList<Item> data) {
+            super();
+            mContext = context;
+            mData = data;
+            mInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            mTimeFormatter = DateTimeFormat.shortTime().withZone(DateTimeZone.getDefault());
+        }
+
+        public boolean areAllItemsEnabled() {
+            return false;
+        }
+
+        public boolean isEnabled(int position) {
+            return !getItem(position).isHeader();
+        }
+
+        public int getItemViewType(int position) {
+            return getItem(position).isHeader() ? HEADER : DATA;
+        }
+
+        public int getViewTypeCount() {
+            return 2;
+        }
+
+        @Override public int getCount() {
+            return mData.size();
+        }
+
+        @Override public Item getItem(int position) {
+            return mData.get(position);
+        }
+
+        @Override public long getItemId(int position) {
+            return getItem(position).getItemId();
+        }
+
+        @Override public View getView(int position, View convertView, ViewGroup parent) {
+            Item item = getItem(position);
+            if (convertView == null) {
+                if (item.isHeader()) {
+                    convertView = new TextView(mContext);
+                } else {
+                    convertView = mInflater.inflate(R.layout.list_item_local_survey, parent, false);
+                }
+            }
+
+            if (item.isHeader()) {
+                ((TextView) convertView).setText(item.header);
+            } else {
+                TextView name = ViewHolder.get(convertView, R.id.name);
+                TextView description = ViewHolder.get(convertView, R.id.description);
+                TextView pending = ViewHolder.get(convertView, R.id.pendingTime);
+
+                Cursor data = item.getData();
+
+                name.setText(data.getString(2));
+                description.setText(data.getString(3));
+                long pendingTime = data.getLong(4);
+                String zone = data.getString(5);
+                pending.setText(
+                        mTimeFormatter.withZone(DateTimeZone.forID(zone)).print(pendingTime));
+                pending.setVisibility(
+                        pendingTime == Reminders.NOT_PENDING ? View.GONE : View.VISIBLE);
+            }
+
+            return convertView;
+        }
+
+        public void setData(ArrayList<Item> data) {
+            if (data == null) {
+                mData.clear();
+            } else {
+                mData = data;
+            }
+            notifyDataSetChanged();
         }
     }
 }

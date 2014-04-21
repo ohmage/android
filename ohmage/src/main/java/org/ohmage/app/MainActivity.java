@@ -22,7 +22,6 @@ import android.accounts.OnAccountsUpdateListener;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
-import android.database.Cursor;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v4.app.ActionBarDrawerToggle;
@@ -38,7 +37,6 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.ohmage.auth.AuthUtil;
 import org.ohmage.auth.AuthenticatorActivity;
@@ -47,7 +45,6 @@ import org.ohmage.fragments.HomeFragment;
 import org.ohmage.fragments.OhmletsFragment;
 import org.ohmage.fragments.StreamsFragment;
 import org.ohmage.fragments.SurveysFragment;
-import org.ohmage.provider.OhmageContract.Surveys;
 import org.ohmage.reminders.ui.TriggerListActivity;
 import org.ohmage.tasks.LogoutTaskFragment;
 
@@ -197,32 +194,8 @@ public class MainActivity extends InjectedActionBarActivity
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         if (getString(R.string.reminders).equals(mNavigationItems[position])) {
-
-            //TODO: query for surveys on a different thread
-            Cursor surveys = getContentResolver().query(Surveys.CONTENT_URI,
-                    new String[]{Surveys.SURVEY_ID, Surveys.SURVEY_NAME}, null, null, null);
-
-            String campaignUrn = null;
-            String[] actions = new String[1];
-            if (surveys.moveToFirst()) {
-                campaignUrn = surveys.getString(0);
-                actions[0] = surveys.getString(1);
-            }
-            surveys.close();
-
-//            String campaignUrn = "edef8ce2-e8cd-48f6-9142-5af675fee299"
-//            String[] actions = new String[1];
-//            actions[0] = "Complete Survey";
-
-            if (campaignUrn == null) {
-                Toast.makeText(this, R.string.no_surveys, Toast.LENGTH_SHORT).show();
-            } else {
-                Intent intent = new Intent(this, TriggerListActivity.class);
-                intent.putExtra(TriggerListActivity.EXTRA_CAMPAIGN_URN, campaignUrn);
-                intent.putExtra(TriggerListActivity.EXTRA_NAME, "Reminders");
-                intent.putExtra(TriggerListActivity.EXTRA_ACTIONS, actions);
-                startActivity(intent);
-            }
+            Intent intent = new Intent(this, TriggerListActivity.class);
+            startActivity(intent);
         } else {
             setFragment(position);
         }

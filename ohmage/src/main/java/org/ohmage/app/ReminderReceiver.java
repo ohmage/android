@@ -24,6 +24,8 @@ import org.ohmage.provider.OhmageContract.Surveys;
 import org.ohmage.reminders.glue.TriggerFramework;
 import org.ohmage.reminders.notif.Notifier;
 
+import java.util.ArrayList;
+
 /**
  * Created by cketcham on 3/5/14.
  */
@@ -35,11 +37,17 @@ public class ReminderReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
 
         String action = intent.getAction();
-        String urn = intent.getStringExtra(Notifier.KEY_CAMPAIGN_URN);
 
         if (TriggerFramework.ACTION_TRIGGER_NOTIFICATION.equals(action)) {
-            context.startActivity(new Intent(Intent.ACTION_VIEW, Surveys.getUriForSurveyId(urn))
-                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+            ArrayList<String> surveys = intent.getStringArrayListExtra(Notifier.EXTRA_SURVEYS);
+            Intent launch;
+            if (surveys.size() == 1) {
+                launch = new Intent(Intent.ACTION_VIEW, Surveys.getUriForSurveyId(surveys.get(0)));
+            } else {
+                launch = new Intent(context, MainActivity.class);
+            }
+
+            context.startActivity(launch.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
         }
     }
 }

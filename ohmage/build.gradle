@@ -32,7 +32,7 @@ dependencies {
     compile 'org.ohmage:android-stream-lib:2.0-SNAPSHOT'
     compile 'com.squareup.retrofit:retrofit:1.5.+'
     compile 'com.netflix.rxjava:rxjava-android:0.17.+'
-    compile 'org.ohmage:reminder-lib:1.1-SNAPSHOT'
+    compile 'org.ohmage:reminder-lib:1.1.1-SNAPSHOT'
     compile 'com.github.chrisbanes.actionbarpulltorefresh:extra-abc:+'
     compile 'joda-time:joda-time:2.3'
     compile 'com.android.support:support-annotations:+'

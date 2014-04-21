@@ -20,6 +20,8 @@ import android.app.Application;
 
 import org.ohmage.dagger.AndroidModule;
 import org.ohmage.dagger.OhmageModule;
+import org.ohmage.provider.OhmageContract;
+import org.ohmage.reminders.glue.TriggerFramework;
 
 import java.util.Arrays;
 import java.util.List;
@@ -63,6 +65,8 @@ public class Ohmage extends Application {
         super.onCreate();
 
         self = this;
+
+        TriggerFramework.setAuthority(OhmageContract.CONTENT_AUTHORITY);
     }
 
     /**

@@ -66,6 +66,7 @@ import org.ohmage.prompts.SurveyItemFragment;
 import org.ohmage.provider.OhmageContract;
 import org.ohmage.provider.OhmageContract.Surveys;
 import org.ohmage.provider.ResponseContract.Responses;
+import org.ohmage.reminders.glue.TriggerFramework;
 import org.ohmage.streams.StreamPointBuilder;
 import org.ohmage.widget.VerticalViewPager;
 
@@ -246,6 +247,9 @@ public class SurveyActivity extends InjectedActionBarActivity
     }
 
     public void submit() {
+        // Tell reminders that the survey was taken
+        TriggerFramework.notifySurveyTaken(this, Surveys.getId(getIntent().getData()));
+
         ContentValues values = new ContentValues();
         values.put(Responses.SURVEY_ID, Surveys.getId(getIntent().getData()));
         values.put(Responses.SURVEY_VERSION, Surveys.getVersion(getIntent().getData()));

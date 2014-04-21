@@ -119,6 +119,16 @@ public class OhmageContract {
          * The description of the survey
          */
         String SURVEY_DESCRIPTION = "survey_description";
+
+        /**
+         * The pending time of this survey, or -1 if it is not pending
+         */
+        String SURVEY_PENDING_TIME = "survey_pending_time";
+
+        /**
+         * The timezone this survey was pending in for printing the time
+         */
+        String SURVEY_PENDING_TIMEZONE = "survey_pending_timezone";
     }
 
     private static final String PATH_SURVEYS = "surveys";
