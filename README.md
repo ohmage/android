@@ -6,8 +6,10 @@ This is the repository for the ohmage Android application.
 DEPENDENCIES
 ------------
 
-There is a dependency on `ReminderLib` which has not been released yet. To build the project on
-your own now, you will have to remove that library and remove any references to it.
+There is a dependency on `ReminderLib` which can be found at
+[https://github.com/ohmage/android-reminder-lib](https://github.com/ohmage/android-reminder-lib) and
+must be installed to maven local. (run `.gradlew uploadArchives` in the android-reminder-lib
+directory.
 
 
 HOW TO BUILD THE PROJECT
