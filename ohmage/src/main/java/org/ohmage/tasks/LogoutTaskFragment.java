@@ -27,6 +27,7 @@ import org.ohmage.app.R;
 import org.ohmage.auth.AuthUtil;
 import org.ohmage.dagger.InjectedDialogFragment;
 import org.ohmage.provider.OhmageDbHelper;
+import org.ohmage.reminders.glue.TriggerFramework;
 
 import javax.inject.Inject;
 
@@ -62,6 +63,7 @@ public class LogoutTaskFragment extends InjectedDialogFragment {
         if (accounts.length > 0) {
             OhmageDbHelper db = new OhmageDbHelper(getActivity());
             db.clearAll();
+            TriggerFramework.resetAllTriggerSettings(getActivity());
             res = accountManager.removeAccount(accounts[0], null, null);
         }
     }
