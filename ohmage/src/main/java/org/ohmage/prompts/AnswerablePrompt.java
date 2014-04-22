@@ -16,6 +16,8 @@
 
 package org.ohmage.prompts;
 
+import android.view.View;
+
 import org.ohmage.app.SurveyActivity;
 
 /**
@@ -80,6 +82,10 @@ public abstract class AnswerablePrompt<T> extends BasePrompt {
 
         private void updateAnswer() {
             ((SurveyActivity) getActivity()).getPagerAdapter().updateAnswer(this);
+            // If this prompt is not valid and not skippable it must be the last prompt in the list.
+            if(!getPrompt().hasValidResponse() && !isSkippable()) {
+                showButtons(View.VISIBLE);
+            }
         }
 
         @Override

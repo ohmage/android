@@ -737,6 +737,11 @@ public class SurveyActivity extends InjectedActionBarActivity
                     answer((AnswerablePrompt) prompt);
                 } else if (prompt.isSkippable()) {
                     skip(prompt);
+                } else {
+                    // If this prompt is no longer valid remove all answers after it
+                    int invalidPrompt = prompts.indexOf(prompt);
+                    removeAnswersAfter(invalidPrompt);
+                    return invalidPrompt - ignoredPromptsBefore(invalidPrompt) + 1;
                 }
             } else {
                 answer(prompt);
