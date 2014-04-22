@@ -29,9 +29,8 @@ public class MediaPrompt extends AnswerablePrompt<File> {
 
     public long maxDimension;
 
-    @Override
-    public boolean isSkippable() {
-        return skippable || (value != null && value.exists());
+    @Override public boolean hasValidResponse() {
+        return super.hasValidResponse() && value.exists();
     }
 
     public static File getTemporaryResponseFile() {

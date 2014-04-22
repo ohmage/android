@@ -45,11 +45,6 @@ public class TextPrompt extends AnswerablePrompt<String> {
         return TextPromptFragment.getInstance(this);
     }
 
-    @Override
-    public boolean isSkippable() {
-        return skippable || !TextUtils.isEmpty(value);
-    }
-
     public boolean hasValidResponse() {
         return super.hasValidResponse() && !TextUtils.isEmpty(value);
     }

@@ -37,10 +37,10 @@ public class MultiChoicePrompt<T> extends ChoicePrompt<ArrayList<T>, T> {
 
     public Integer maxChoices;
 
-    public boolean isSkippable() {
-        return skippable || (value != null && !((List) value).isEmpty() &&
-                             (minChoices == null || ((List) value).size() >= minChoices) &&
-                             (maxChoices == null || ((List) value).size() <= maxChoices));
+    @Override public boolean hasValidResponse() {
+        return super.hasValidResponse() && !((List) value).isEmpty() &&
+               (minChoices == null || ((List) value).size() >= minChoices) &&
+               (maxChoices == null || ((List) value).size() <= maxChoices);
     }
 
     @Override
