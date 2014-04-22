@@ -31,6 +31,7 @@ import org.ohmage.app.OhmageService;
 import org.ohmage.app.R;
 import org.ohmage.fragments.TransitionFragment;
 import org.ohmage.models.AccessToken;
+import org.ohmage.models.User;
 
 import javax.inject.Inject;
 
@@ -122,7 +123,7 @@ public class SignInFragment extends TransitionFragment {
 
         mEmailView.setError(null);
 
-        String password = mPasswordView.getText().toString();
+        final String password = mPasswordView.getText().toString();
         final String email = mEmailView.getText().toString();
 
         boolean cancel = false;
@@ -160,7 +161,16 @@ public class SignInFragment extends TransitionFragment {
                         }
 
                         @Override public void failure(RetrofitError error) {
-                            ((AuthenticatorActivity) getActivity()).onRetrofitError(error);
+                            Response r = error.getResponse();
+
+                            // If it is a 409 they just have to verify their e-mail, so they can log in
+                            if (r != null && r.getStatus() == 409) {
+                                User user = new User();
+                                user.email = email;
+                                ((AuthenticatorActivity) getActivity()).createAccount(user, password);
+                            } else {
+                                ((AuthenticatorActivity) getActivity()).onRetrofitError(error);
+                            }
                         }
                     });
         }
