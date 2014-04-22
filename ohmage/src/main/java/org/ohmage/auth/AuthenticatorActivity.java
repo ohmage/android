@@ -38,6 +38,7 @@ import com.google.android.gms.auth.UserRecoverableAuthException;
 import com.google.android.gms.plus.PlusClient;
 import com.google.android.gms.plus.model.people.Person;
 
+import org.apache.http.auth.AuthenticationException;
 import org.ohmage.app.MainActivity;
 import org.ohmage.app.OhmageService;
 import org.ohmage.app.OhmletActivity.OhmletFragment;
@@ -561,7 +562,7 @@ public class AuthenticatorActivity extends AuthenticatorFragmentActivity impleme
                 if (error.isNetworkError()) {
                     Toast.makeText(getBaseContext(), R.string.network_error, Toast.LENGTH_SHORT)
                             .show();
-                } else if (r != null && r.getStatus() == 401) {
+                } else if (error.getCause() instanceof AuthenticationException) {
                     Toast.makeText(getBaseContext(), R.string.error_invalid_credentials,
                             Toast.LENGTH_SHORT).show();
                 } else if (r != null && r.getBody() instanceof TypedByteArray) {
