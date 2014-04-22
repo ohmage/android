@@ -30,6 +30,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.TextView.OnEditorActionListener;
 
 import org.ohmage.app.R;
 
@@ -537,5 +538,13 @@ public class NumberPicker extends LinearLayout {
 
     public boolean forceValidateInput() {
         return validateInput(mText);
+    }
+
+    public void setOnEditorActionListener(OnEditorActionListener onEditorActionListener) {
+        mText.setOnEditorActionListener(onEditorActionListener);
+    }
+
+    public void setImeActionLabel(CharSequence label, int actionId) {
+        mText.setImeActionLabel(label, actionId);
     }
 }

@@ -17,8 +17,11 @@
 package org.ohmage.prompts;
 
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
+import android.widget.TextView;
 
 import org.ohmage.app.R;
 import org.ohmage.widget.NumberPicker;
@@ -56,6 +59,7 @@ public class NumberPrompt extends AnswerablePrompt<BigDecimal> {
             ViewGroup view = (ViewGroup) inflater.inflate(R.layout.prompt_number, container, true);
 
             numberPicker = (NumberPicker) view.findViewById(R.id.number_picker);
+            numberPicker.requestFocus();
             numberPicker.setRange(getPrompt().min, getPrompt().max);
             numberPicker.setWholeNumbers(getPrompt().wholeNumbersOnly);
             numberPicker.setCurrent(getPrompt().defaultResponse);
@@ -63,6 +67,22 @@ public class NumberPrompt extends AnswerablePrompt<BigDecimal> {
                 @Override
                 public void onChanged(NumberPicker picker, BigDecimal oldVal, BigDecimal newVal) {
                     setValue(newVal);
+                }
+            });
+            numberPicker.setImeActionLabel(getString(android.R.string.ok), R.id.submit_prompt);
+            numberPicker.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+                @Override
+                public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
+                    if (id == R.id.submit_prompt || id == EditorInfo.IME_NULL) {
+                        if (getPrompt().hasValidResponse()) {
+                            dispatchOkPressed();
+                            return true;
+                        } else if (getPrompt().isSkippable()) {
+                            dispatchSkipPressed();
+                            return true;
+                        }
+                    }
+                    return false;
                 }
             });
         }
