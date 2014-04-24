@@ -217,7 +217,7 @@ public class HomeFragment extends GridFragment implements LoaderCallbacks<Cursor
            cr.isSyncPending(accounts[0], OhmageContract.CONTENT_AUTHORITY)) {
             getActivity().runOnUiThread(new Runnable() {
                 @Override public void run() {
-                    if(getListAdapter().isEmpty()) {
+                    if(getListAdapter() == null || getListAdapter().isEmpty()) {
                         mPullToRefreshLayout.setRefreshing(true);
                         setEmptyText("Please wait for Surveys to Synchronize...");
                     }
