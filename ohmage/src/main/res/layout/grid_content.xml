@@ -54,7 +54,7 @@
             android:layout_height="match_parent"
             android:drawSelectorOnTop="true"
             android:scrollbarStyle="outsideOverlay"
-            android:padding="@dimen/gutter"
+            android:padding="@dimen/grid_padding"
             android:clipToPadding="false"
             android:horizontalSpacing="@dimen/gutter"
             android:verticalSpacing="@dimen/gutter" />

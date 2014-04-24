@@ -30,4 +30,5 @@
     <dimen name="progress_bottom_padding">60dp</dimen>
     <dimen name="gutter">8dp</dimen>
     <dimen name="halfgutter">4dp</dimen>
+    <dimen name="grid_padding">0dp</dimen>
 </resources>
