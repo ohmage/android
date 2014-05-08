@@ -187,7 +187,7 @@ public class SurveyActivity extends InjectedActionBarActivity
         if (mPager.getCurrentItem() == 0) {
 
             // If nothing has been answered just go back
-            if (mPagerAdapter.getAnsweredCount() == 0) {
+            if (mPagerAdapter == null || mPagerAdapter.getAnsweredCount() == 0) {
                 discardSurvey();
                 return;
             }
@@ -207,7 +207,8 @@ public class SurveyActivity extends InjectedActionBarActivity
     }
 
     private void discardSurvey() {
-        mPagerAdapter.clearExtras();
+        if(mPagerAdapter != null)
+            mPagerAdapter.clearExtras();
         super.onBackPressed();
     }
 
