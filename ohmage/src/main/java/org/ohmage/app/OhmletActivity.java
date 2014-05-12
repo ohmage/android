@@ -156,6 +156,8 @@ public class OhmletActivity extends InjectedActionBarActivity {
 
         private String action;
 
+        private String invitationCode;
+
         private JoinOhmletDialog mJoinDialog;
 
         @Override public void onCreate(Bundle savedInstanceState) {
@@ -163,6 +165,7 @@ public class OhmletActivity extends InjectedActionBarActivity {
 
             action = getArguments().getString("action");
             uri = getArguments().getParcelable("uri");
+            invitationCode = getArguments().getString(EXTRA_OHMLET_INVITATION_ID);
             ohmletId = uri.getLastPathSegment();
         }
 
@@ -188,7 +191,7 @@ public class OhmletActivity extends InjectedActionBarActivity {
 
             if (savedInstanceState == null) {
                 if (ACTION_JOIN.equals(action)) {
-                    mJoinDialog = JoinOhmletDialog.getInstance(null, userId);
+                    mJoinDialog = JoinOhmletDialog.getInstance(null, userId, invitationCode);
                     mJoinDialog.show(getFragmentManager(), "join_dialog");
                 }
             }
@@ -247,7 +250,8 @@ public class OhmletActivity extends InjectedActionBarActivity {
         }
 
         @Override public void onClick(View v) {
-            JoinOhmletDialog.getInstance(mOhmlet, userId).show(getFragmentManager(), "join_dialog");
+            JoinOhmletDialog.getInstance(mOhmlet, userId, invitationCode).show(getFragmentManager(),
+                   "join_dialog");
         }
 
         @Override public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
@@ -281,11 +285,13 @@ public class OhmletActivity extends InjectedActionBarActivity {
 
         private Ohmlet mOhmlet;
         private String userId;
+        private String invitationCode;
 
-        public static JoinOhmletDialog getInstance(Ohmlet ohmlet, String userId) {
+        public static JoinOhmletDialog getInstance(Ohmlet ohmlet, String userId, String code) {
             JoinOhmletDialog fragment = new JoinOhmletDialog();
             fragment.setOhmlet(ohmlet);
             fragment.setUserId(userId);
+            fragment.setInvitationCode(code);
             return fragment;
         }
 
@@ -306,6 +312,7 @@ public class OhmletActivity extends InjectedActionBarActivity {
                 Member m = new Member();
                 m.memberId = id;
                 m.role = Role.MEMBER;
+                m.code = invitationCode;
                 mOhmlet.people.add(m);
             }
 
@@ -324,6 +331,14 @@ public class OhmletActivity extends InjectedActionBarActivity {
 
         public void setUserId(String userId) {
             this.userId = userId;
+        }
+
+        public void setInvitationCode(String invitationCode) {
+            this.invitationCode = invitationCode;
+        }
+
+        public String getInvitationCode() {
+            return invitationCode;
         }
     }
 }
