@@ -163,7 +163,9 @@ public class OhmageSyncAdapter extends AbstractThreadedSyncAdapter {
                 Member m = members.getMember(userId);
                 if(m == null) {
                     m = members.getMember("me");
-                    m.memberId = userId;
+                    if (m != null) {
+                        m.memberId = userId;
+                    }
                 }
                 final Member localMember = m;
 
