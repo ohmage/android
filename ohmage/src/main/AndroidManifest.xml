@@ -152,7 +152,8 @@
         <activity
             android:name="org.ohmage.app.OhmletActivity"
             android:label="@string/title_activity_ohmlet"
-            android:parentActivityName="org.ohmage.app.MainActivity">
+            android:parentActivityName="org.ohmage.app.MainActivity"
+            android:allowTaskReparenting="true">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
