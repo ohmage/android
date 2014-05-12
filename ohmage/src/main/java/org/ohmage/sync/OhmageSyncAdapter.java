@@ -390,7 +390,7 @@ public class OhmageSyncAdapter extends AbstractThreadedSyncAdapter {
     }
 
     private void showInstallApkNotification(int id, Builder builder, Intent intent) {
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         PendingIntent resultPendingIntent = PendingIntent.getActivity(getContext(), 0, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT);
         builder.setContentIntent(resultPendingIntent)
