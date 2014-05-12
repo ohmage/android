@@ -22,17 +22,18 @@ import android.net.Uri;
 import com.google.gson.Gson;
 
 import org.ohmage.app.Ohmage;
+import org.ohmage.operators.ContentProviderSaver.Savable;
 import org.ohmage.sync.OhmageSyncAdapter;
 
 import javax.inject.Inject;
 
-import rx.Observer;
-import rx.util.functions.Action1;
+import rx.Subscriber;
+import rx.functions.Action1;
 
 /**
  * Saves an item to the ohmage content provider
  */
-public class ContentProviderSaver implements Action1<ContentProviderSaver.Savable> {
+public class ContentProviderSaver implements Action1<Savable> {
     private static final String TAG = ContentProviderSaver.class.getSimpleName();
 
     private final boolean mIsSyncAdapter;
@@ -65,11 +66,11 @@ public class ContentProviderSaver implements Action1<ContentProviderSaver.Savabl
         Uri getUrl();
     }
 
-    public static class ContentProviderSaverObserver implements Observer<Savable> {
+    public static class ContentProviderSaverSubscriber extends Subscriber<Savable> {
 
         private final boolean mIsSyncAdapter;
 
-        public ContentProviderSaverObserver(boolean isSyncAdapter) {
+        public ContentProviderSaverSubscriber(boolean isSyncAdapter) {
             mIsSyncAdapter = isSyncAdapter;
         }
 

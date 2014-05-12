@@ -55,8 +55,8 @@ import org.ohmage.models.Ohmlet.Member;
 import org.ohmage.models.Stream;
 import org.ohmage.models.Survey;
 import org.ohmage.models.User;
-import org.ohmage.operators.ContentProviderSaver.ContentProviderSaverObserver;
-import org.ohmage.operators.ContentProviderStateSync.ContentProviderStateSyncObserver;
+import org.ohmage.operators.ContentProviderSaver.ContentProviderSaverSubscriber;
+import org.ohmage.operators.ContentProviderStateSync.ContentProviderStateSyncSubscriber;
 import org.ohmage.prompts.Prompt;
 import org.ohmage.prompts.RemotePrompt;
 import org.ohmage.provider.OhmageContract;
@@ -65,15 +65,17 @@ import org.ohmage.provider.OhmageContract.Streams;
 import org.ohmage.provider.OhmageContract.Surveys;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import javax.inject.Inject;
 
 import retrofit.RetrofitError;
 import rx.Observable;
-import rx.Observer;
+import rx.Subscriber;
+import rx.functions.Action0;
 import rx.functions.Func1;
-import rx.util.functions.Action0;
+import rx.observers.SafeSubscriber;
 
 /**
  * Handle the transfer of data between a server the ohmage app using the Android sync adapter
@@ -141,10 +143,34 @@ public class OhmageSyncAdapter extends AbstractThreadedSyncAdapter {
             return;
         }
 
+        String userId = am.getUserData(account, Authenticator.USER_ID);
+
+        try {
+            synchronizeOhmlets(userId, provider);
+            // TODO: download streams and surveys that are not part of ohmlets
+
+            // Don't continue if there were already errors
+            if (mSyncResult.stats.numIoExceptions > 0 || mSyncResult.stats.numAuthExceptions > 0) {
+                return;
+            }
+            synchronizeData(userId, provider);
+        } catch (AuthenticationException e) {
+            Log.e(TAG, "Error authenticating user", e);
+            syncResult.stats.numAuthExceptions++;
+        } catch (RemoteException e) {
+            Log.e(TAG, "Error synchronizing account", e);
+            syncResult.stats.numIoExceptions++;
+        } catch (InterruptedException e) {
+            Log.e(TAG, "Error synchronizing account", e);
+            syncResult.stats.numIoExceptions++;
+        }
+    }
+
+    private void synchronizeOhmlets(final String userId, ContentProviderClient provider)
+            throws AuthenticationException, RemoteException, InterruptedException {
         Log.d(TAG, "state of ohmlets sync");
+
         final CountDownLatch upload;
-        final CountDownLatch download = new CountDownLatch(1);
-        final String userId = am.getUserData(account, Authenticator.USER_ID);
 
         // First, sync ohmlet join state. As described by the people field.
         Cursor cursor = null;
@@ -161,14 +187,13 @@ public class OhmageSyncAdapter extends AbstractThreadedSyncAdapter {
             while (cursor.moveToNext()) {
                 Member.List members = gson.fromJson(cursor.getString(1), Member.List.class);
                 Member m = members.getMember(userId);
-                if(m == null) {
+                if (m == null) {
                     m = members.getMember("me");
                     if (m != null) {
                         m.memberId = userId;
                     }
                 }
                 final Member localMember = m;
-
                 ohmageService.getOhmlet(cursor.getString(0)).first(
                         new Func1<Ohmlet, Boolean>() {
                             @Override public Boolean call(Ohmlet ohmlet) {
@@ -193,9 +218,11 @@ public class OhmageSyncAdapter extends AbstractThreadedSyncAdapter {
                                         ohmageService.removeUserFromOhmlet(ohmlet.ohmletId, userId);
                                     }
                                 } catch (AuthenticationException e) {
-                                    syncResult.stats.numAuthExceptions++;
+                                    Log.e(TAG, "Error authenticating user", e);
+                                    mSyncResult.stats.numAuthExceptions++;
                                 } catch (RetrofitError e) {
-                                    syncResult.stats.numIoExceptions++;
+                                    Log.e(TAG, "Error synchronizing ohmlet member state", e);
+                                    mSyncResult.stats.numIoExceptions++;
                                 }
                                 return true;
                             }
@@ -208,127 +235,115 @@ public class OhmageSyncAdapter extends AbstractThreadedSyncAdapter {
             }
             cursor.close();
 
-            // Don't continue if there are errors above
-            if (syncResult.stats.numIoExceptions > 0 || syncResult.stats.numAuthExceptions > 0) {
-                return;
-            }
+            // Wait for the upload sync operation to finish before downloading the user state
+            upload.await();
 
-            try {
-                // Wait for the upload sync operation to finish before downloading the user state
-                upload.await();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-                syncResult.stats.numIoExceptions++;
-                return;
-            }
-
-            // Second, synchronize all data
-
-            Observable<Ohmlet> current = ohmageService.getCurrentStateForUser(userId).flatMap(
-                    new Func1<User, Observable<Ohmlet>>() {
-                        @Override
-                        public Observable<Ohmlet> call(User user) {
-                            return Observable.from(user.ohmlets);
-                        }
-                    }
-            ).cache();
-            current.toList().subscribe(
-                    new ContentProviderStateSyncObserver(Ohmlets.CONTENT_URI, true));
-
-            Observable<Ohmlet> refreshedOhmlets = current.flatMap(new RefreshOhmlet());
-            refreshedOhmlets.subscribe(new ContentProviderSaverObserver(true));
-
-
-            Observable<Survey> surveys = current.flatMap(new SurveysFromOhmlet());
-            surveys.toList()
-                    .subscribe(new ContentProviderStateSyncObserver(Surveys.CONTENT_URI, true));
-
-
-            Observable<Survey> refreshedSurveys =
-                    surveys.filter(new FilterUpToDateSurveys(provider))
-                        .flatMap(new RefreshSurvey());
-            refreshedSurveys.subscribe(new ContentProviderSaverObserver(true));
-            refreshedSurveys.subscribe(
-                    new Observer<Survey>() {
-                        public ApkSet surveys = new ApkSet();
-
-                        @Override public void onCompleted() {
-                            showInstallSurveyApkNotification(surveys);
-                        }
-
-                        @Override public void onError(Throwable e) {
-                            showInstallSurveyApkNotification(surveys);
-                        }
-
-                        @Override public void onNext(Survey survey) {
-                            for (Prompt prompt : survey.surveyItems) {
-                                if (prompt instanceof RemotePrompt &&
-                                    ((RemotePrompt) prompt).getApp() != null &&
-                                    !((RemotePrompt) prompt).getApp().isInstalled(getContext())) {
-                                    surveys.add(((RemotePrompt) prompt).getApp());
-                                    return;
-                                }
-                            }
-                        }
-                    }
-            );
-
-            Observable<Stream> streams = current.flatMap(new StreamsFromOhmlet());
-            streams.toList().subscribe(
-                    new ContentProviderStateSyncObserver(Streams.CONTENT_URI, true));
-
-
-            Observable<Stream> refreshedStreams =
-                    streams.filter(new FilterUpToDateStreams(provider))
-                            .flatMap(new RefreshStream());
-            refreshedStreams.subscribe(new ContentProviderSaverObserver(true));
-            refreshedStreams.subscribe(
-                    new Observer<Stream>() {
-                        public ApkSet streams = new ApkSet();
-
-                        @Override public void onCompleted() {
-                            showInstallStreamApkNotification(streams);
-                        }
-
-                        @Override public void onError(Throwable e) {
-                            showInstallStreamApkNotification(streams);
-                        }
-
-                        @Override public void onNext(Stream stream) {
-                            if (!stream.app.isInstalled(getContext())) {
-                                stream.app.android.appName = stream.name;
-                                streams.add(stream.app);
-                            }
-                        }
-                    }
-            );
-
-            Observable.merge(current, refreshedStreams, refreshedSurveys, refreshedOhmlets).last()
-                    .finallyDo(new Action0() {
-                        @Override public void call() {
-                            download.countDown();
-                        }
-                    }).subscribe();
-
-
-            // TODO: download streams and surveys that are not part of ohmlets
-
-        } catch (AuthenticationException e) {
-            syncResult.stats.numAuthExceptions++;
-        } catch (RemoteException e) {
-            syncResult.stats.numIoExceptions++;
         } finally {
             if (cursor != null) {
                 cursor.close();
             }
         }
+    }
+
+    private void synchronizeData(String userId, ContentProviderClient provider)
+            throws AuthenticationException, RemoteException, InterruptedException {
+
+        final CountDownLatch download = new CountDownLatch(1);
+
+        Observable<Ohmlet> current = ohmageService.getCurrentStateForUser(userId).flatMap(
+                new Func1<User, Observable<Ohmlet>>() {
+                    @Override
+                    public Observable<Ohmlet> call(User user) {
+                        return Observable.from(user.ohmlets);
+                    }
+                }
+        ).cache();
+
+        // Synchronize the current ohmlets to the db (this removes other ohmlets)
+        current.toList().subscribe(new SyncSubscriber<List<Ohmlet>>(mSyncResult,
+                new ContentProviderStateSyncSubscriber(Ohmlets.CONTENT_URI, true)));
+
+        Observable<Ohmlet> refreshedOhmlets = current.flatMap(new RefreshOhmlet());
+        refreshedOhmlets.subscribe(
+                new SyncSubscriber<Ohmlet>(mSyncResult, new ContentProviderSaverSubscriber(true)));
+
+
+        Observable<Survey> surveys = current.flatMap(new SurveysFromOhmlet());
+        surveys.toList().subscribe(new SyncSubscriber<List<Survey>>(mSyncResult,
+                new ContentProviderStateSyncSubscriber(Surveys.CONTENT_URI, true)));
+
+
+        Observable<Survey> refreshedSurveys =
+                surveys.filter(new FilterUpToDateSurveys(provider))
+                        .flatMap(new RefreshSurvey());
+        refreshedSurveys.subscribe(
+                new SyncSubscriber<Survey>(mSyncResult, new ContentProviderSaverSubscriber(true)));
+        refreshedSurveys.subscribe(new SyncSubscriber<Survey>(mSyncResult,
+                new Subscriber<Survey>() {
+                    public ApkSet surveys = new ApkSet();
+
+                    @Override public void onCompleted() {
+                        showInstallSurveyApkNotification(surveys);
+                    }
+
+                    @Override public void onError(Throwable e) {
+                        showInstallSurveyApkNotification(surveys);
+                    }
+
+                    @Override public void onNext(Survey survey) {
+                        for (Prompt prompt : survey.surveyItems) {
+                            if (prompt instanceof RemotePrompt &&
+                                ((RemotePrompt) prompt).getApp() != null &&
+                                !((RemotePrompt) prompt).getApp()
+                                        .isInstalled(getContext())) {
+                                surveys.add(((RemotePrompt) prompt).getApp());
+                                return;
+                            }
+                        }
+                    }
+                }
+        ));
+
+        Observable<Stream> streams = current.flatMap(new StreamsFromOhmlet());
+        streams.toList().subscribe(new SyncSubscriber<List<Stream>>(mSyncResult,
+                new ContentProviderStateSyncSubscriber(Streams.CONTENT_URI, true)));
+
+
+        Observable<Stream> refreshedStreams =
+                streams.filter(new FilterUpToDateStreams(provider)).flatMap(
+                        new RefreshStream());
+        refreshedStreams.subscribe(
+                new SyncSubscriber<Stream>(mSyncResult, new ContentProviderSaverSubscriber(true)));
+        refreshedStreams.subscribe(
+                new SyncSubscriber<Stream>(mSyncResult, new Subscriber<Stream>() {
+                    public ApkSet streams = new ApkSet();
+
+                    @Override public void onCompleted() {
+                        showInstallStreamApkNotification(streams);
+                    }
+
+                    @Override public void onError(Throwable e) {
+                        showInstallStreamApkNotification(streams);
+                    }
+
+                    @Override public void onNext(Stream stream) {
+                        if (!stream.app.isInstalled(getContext())) {
+                            stream.app.android.appName = stream.name;
+                            streams.add(stream.app);
+                        }
+                    }
+                })
+        );
+
+        Observable.merge(current, refreshedStreams, refreshedSurveys, refreshedOhmlets).last()
+                .finallyDo(new Action0() {
+                    @Override public void call() {
+                        download.countDown();
+                    }
+                }).subscribe();
 
         // Wait for any async download operations to finish
-        try {
-            download.await();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        download.await();
     }
 
     public void showInstallStreamApkNotification(ApkSet streams) {
@@ -401,22 +416,19 @@ public class OhmageSyncAdapter extends AbstractThreadedSyncAdapter {
 
     public class RefreshStream implements Func1<Stream, Observable<Stream>> {
         @Override public Observable<Stream> call(Stream stream) {
-            return ohmageService.getStream(stream.schemaId, stream.schemaVersion)
-                    .onErrorResumeNext(new LogAndSkipError());
+            return ohmageService.getStream(stream.schemaId, stream.schemaVersion);
         }
     }
 
     public class RefreshSurvey implements Func1<Survey, Observable<Survey>> {
         @Override public Observable<Survey> call(Survey survey) {
-            return ohmageService.getSurvey(survey.schemaId, survey.schemaVersion)
-                    .onErrorResumeNext(new LogAndSkipError());
+            return ohmageService.getSurvey(survey.schemaId, survey.schemaVersion);
         }
     }
 
     public class RefreshOhmlet implements Func1<Ohmlet, Observable<Ohmlet>> {
         @Override public Observable<Ohmlet> call(Ohmlet ohmlet) {
-            return ohmageService.getOhmlet(ohmlet.ohmletId)
-                    .onErrorResumeNext(new LogAndSkipError());
+            return ohmageService.getOhmlet(ohmlet.ohmletId);
         }
     }
 
@@ -429,8 +441,9 @@ public class OhmageSyncAdapter extends AbstractThreadedSyncAdapter {
         }
 
         @Override public Boolean call(Survey survey) {
+            Cursor c = null;
             try {
-                Cursor c = provider.query(
+                c = provider.query(
                         Surveys.getUriForSurveyIdVersion(survey.schemaId, survey.schemaVersion),
                         new String[]{Surveys.SURVEY_ID, Surveys.SURVEY_VERSION}, null, null, null);
                 if (c.moveToFirst()) {
@@ -439,6 +452,10 @@ public class OhmageSyncAdapter extends AbstractThreadedSyncAdapter {
                 }
             } catch (RemoteException e) {
                 e.printStackTrace();
+            } finally {
+                if(c != null) {
+                    c.close();
+                }
             }
             return true;
         }
@@ -453,8 +470,9 @@ public class OhmageSyncAdapter extends AbstractThreadedSyncAdapter {
         }
 
         @Override public Boolean call(Stream stream) {
+            Cursor c = null;
             try {
-                Cursor c = provider.query(
+                c = provider.query(
                         Streams.getUriForStreamIdVersion(stream.schemaId, stream.schemaVersion),
                         new String[]{Streams.STREAM_ID, Streams.STREAM_VERSION}, null, null, null);
                 if (c.moveToFirst()) {
@@ -463,17 +481,37 @@ public class OhmageSyncAdapter extends AbstractThreadedSyncAdapter {
                 }
             } catch (RemoteException e) {
                 e.printStackTrace();
+            } finally {
+                if(c != null) {
+                    c.close();
+                }
             }
-            return true;
+            return false;
         }
     }
 
-    private class LogAndSkipError<T> implements Func1<Throwable, Observable<? extends T>> {
-        @Override public Observable<? extends T> call(Throwable throwable) {
-            mSyncResult.stats.numIoExceptions++;
-            return Observable.empty();
+    /**
+     * Same as the safe subscriber except it will log errors and continue running
+     *
+     * @param <T>
+     */
+    public static class SyncSubscriber<T> extends SafeSubscriber<T> {
+
+        private final SyncResult mSyncResult;
+
+        public SyncSubscriber(SyncResult syncResult, Subscriber<? super T> actual) {
+            super(actual);
+            mSyncResult = syncResult;
+        }
+
+        @Override
+        public void onError(Throwable e) {
+            synchronized (mSyncResult) {
+                mSyncResult.stats.numIoExceptions++;
+            }
         }
     }
+
 
     public static Uri appendSyncAdapterParam(Uri uri) {
         return uri.buildUpon().appendQueryParameter(IS_SYNCADAPTER, "true").build();

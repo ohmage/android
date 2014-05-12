@@ -52,7 +52,7 @@ import javax.inject.Inject;
 
 import retrofit.client.Response;
 import rx.Observable;
-import rx.Observer;
+import rx.Subscriber;
 import rx.util.functions.Action1;
 import rx.util.functions.Func1;
 
@@ -182,7 +182,7 @@ public class ResponseSyncAdapter extends AbstractThreadedSyncAdapter {
                     return Observable.from(ContentProviderOperation.newDelete(appendSyncAdapterParam(
                             ContentUris.withAppendedId(Responses.CONTENT_URI, aLong))).build());
                 }
-            }).subscribe(new Observer<ContentProviderOperation>() {
+            }).subscribe(new Subscriber<ContentProviderOperation>() {
                 ArrayList<ContentProviderOperation> toDelete =
                         new ArrayList<ContentProviderOperation>();
 
@@ -195,6 +195,7 @@ public class ResponseSyncAdapter extends AbstractThreadedSyncAdapter {
                     } catch (OperationApplicationException e) {
                         syncResult.stats.numIoExceptions++;
                     }
+                    unsubscribe();
                 }
 
                 @Override public void onError(Throwable e) {
@@ -215,7 +216,19 @@ public class ResponseSyncAdapter extends AbstractThreadedSyncAdapter {
                         responseFiles.getFile(s).delete();
                     }
                 }
-            }).subscribe();
+            }).subscribe(new Subscriber<ResponseFiles>() {
+                @Override public void onCompleted() {
+                    unsubscribe();
+                }
+
+                @Override public void onError(Throwable e) {
+
+                }
+
+                @Override public void onNext(ResponseFiles responseFiles) {
+
+                }
+            });
         }
     }
 

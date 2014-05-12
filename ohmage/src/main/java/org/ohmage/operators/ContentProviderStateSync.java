@@ -16,20 +16,16 @@
 
 package org.ohmage.operators;
 
-import android.content.ContentValues;
 import android.net.Uri;
 
 import org.ohmage.app.Ohmage;
 import org.ohmage.helper.SelectParamBuilder;
-import org.ohmage.models.Survey;
 import org.ohmage.operators.ContentProviderStateSync.Syncable;
 import org.ohmage.sync.OhmageSyncAdapter;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
-import rx.Observer;
+import rx.Subscriber;
 import rx.util.functions.Action1;
 
 /**
@@ -63,12 +59,13 @@ public class ContentProviderStateSync implements Action1<List<? extends Syncable
         Uri getUrl();
     }
 
-    public static class ContentProviderStateSyncObserver implements Observer<List<? extends Syncable>> {
+    public static class ContentProviderStateSyncSubscriber extends
+            Subscriber<List<? extends Syncable>> {
 
         private final Uri mUri;
         private final boolean mIsSyncAdapter;
 
-        public ContentProviderStateSyncObserver(Uri uri, boolean isSyncAdapter) {
+        public ContentProviderStateSyncSubscriber(Uri uri, boolean isSyncAdapter) {
             mUri = uri;
             mIsSyncAdapter = isSyncAdapter;
         }
