@@ -486,7 +486,7 @@ public class OhmageSyncAdapter extends AbstractThreadedSyncAdapter {
                     c.close();
                 }
             }
-            return false;
+            return true;
         }
     }
 
