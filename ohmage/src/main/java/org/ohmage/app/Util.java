@@ -54,7 +54,8 @@ public class Util {
     public static boolean activityExists(Context context, @Nullable Intent intent) {
         PackageManager pm = context.getPackageManager();
         if (pm != null && intent != null) {
-            List<ResolveInfo> activities = pm.queryIntentActivities(intent, 0);
+            List<ResolveInfo> activities = pm.queryIntentActivities(intent,
+                    PackageManager.MATCH_DEFAULT_ONLY);
             return activities != null && !activities.isEmpty();
         }
         return false;
