@@ -184,26 +184,20 @@ public class SurveyActivity extends InjectedActionBarActivity
 
     @Override
     public void onBackPressed() {
-        if (mPager.getCurrentItem() == 0) {
-
-            // If nothing has been answered just go back
-            if (mPagerAdapter == null || mPagerAdapter.getAnsweredCount() == 0) {
-                discardSurvey();
-                return;
-            }
-
-            // Otherwise show a dialog so they don't lose their responses
-            FragmentManager fm = getSupportFragmentManager();
-            CancelResponseDialogFragment fragment =
-                    (CancelResponseDialogFragment) fm.findFragmentByTag("cancel");
-            if (fragment == null) {
-                fragment = new CancelResponseDialogFragment();
-            }
-            fragment.show(fm, "cancel");
-        } else {
-            // Otherwise, select the previous step.
-            mPager.setCurrentItem(mPager.getCurrentItem() - 1);
+        // If nothing has been answered just go back
+        if (mPagerAdapter == null || mPagerAdapter.getAnsweredCount() == 0) {
+            discardSurvey();
+            return;
         }
+
+        // Otherwise show a dialog so they don't lose their responses
+        FragmentManager fm = getSupportFragmentManager();
+        CancelResponseDialogFragment fragment =
+                (CancelResponseDialogFragment) fm.findFragmentByTag("cancel");
+        if (fragment == null) {
+            fragment = new CancelResponseDialogFragment();
+        }
+        fragment.show(fm, "cancel");
     }
 
     private void discardSurvey() {
