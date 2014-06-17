@@ -28,12 +28,12 @@
     </string-array>
     <array name="navigation_icons">
         <item>@drawable/ic_home_surveys</item>
-        <item>@drawable/ic_home_ohmlets</item>
+        <!--<item>@drawable/ic_home_ohmlets</item>-->
         <item>@drawable/ic_home_streams</item>
-        <item>@drawable/ic_home_surveys</item>
-        <item>@drawable/ic_home_history</item>
-        <item>@drawable/ic_launcher</item>
-        <item>@drawable/ic_home_profile</item>
+        <!--<item>@drawable/ic_home_surveys</item>-->
+        <!--<item>@drawable/ic_home_history</item>-->
+        <item>@drawable/clock</item>
+        <!--<item>@drawable/ic_home_profile</item>-->
     </array>
     <string name="home">Home</string>
     <string name="ohmlets">Ohmlets</string>
