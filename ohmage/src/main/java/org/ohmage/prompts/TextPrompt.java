@@ -46,7 +46,9 @@ public class TextPrompt extends AnswerablePrompt<String> {
     }
 
     public boolean hasValidResponse() {
-        return super.hasValidResponse() && !TextUtils.isEmpty(value);
+        return super.hasValidResponse() && !TextUtils.isEmpty(value) &&
+               (min == 0 || TextUtils.getTrimmedLength(value) >= min) &&
+               (max == 0 || TextUtils.getTrimmedLength(value) <= max);
     }
 
     public static class TextPromptFragment extends AnswerablePromptFragment<TextPrompt> {
@@ -62,11 +64,8 @@ public class TextPrompt extends AnswerablePrompt<String> {
 
         @Override
         protected boolean skippableStateChanged(Object o1, Object n1) {
-            //TODO: remove this casting hack...
-            String o = (String) o1;
-            String n = (String) n1;
-            return (TextUtils.isEmpty(o) && !TextUtils.isEmpty(n))
-                   || (!TextUtils.isEmpty(o) && TextUtils.isEmpty(n));
+            return o1 == null || n1 == null || TextUtils.getTrimmedLength((CharSequence) o1) !=
+                                               TextUtils.getTrimmedLength((CharSequence) n1);
         }
 
         @Override protected void onOkPressed() {
