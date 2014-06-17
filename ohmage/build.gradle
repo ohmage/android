@@ -3,7 +3,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:0.9.0'
+        classpath 'com.android.tools.build:gradle:0.11.+'
     }
 }
 
@@ -25,14 +25,14 @@ dependencies {
     compile 'com.android.support:appcompat-v7:19.1.+'
     compile 'com.squareup.dagger:dagger:1.1+'
     compile 'com.squareup.dagger:dagger-compiler:1.1+'
-    compile 'com.google.guava:guava:16.0.+'
+    compile 'com.google.guava:guava:17.0'
     compile 'com.google.code.gson:gson:2.2.+'
     compile 'com.squareup.okhttp:okhttp:1.5.+'
-    compile 'com.google.android.gms:play-services:4.3.+'
-    compile 'org.ohmage:android-stream-lib:2.0-SNAPSHOT'
+    compile 'com.google.android.gms:play-services:4.4.+'
+    compile 'org.ohmage:android-stream-lib:2.0-SNAPSHOT@aar'
     compile 'com.squareup.retrofit:retrofit:1.5.+'
     compile 'com.netflix.rxjava:rxjava-android:0.17.+'
-    compile 'org.ohmage:reminder-lib:1.1.1-SNAPSHOT'
+    compile 'org.ohmage:reminder-lib:1.1.1-SNAPSHOT@aar'
     compile 'com.github.chrisbanes.actionbarpulltorefresh:extra-abc:+'
     compile 'joda-time:joda-time:2.3'
     compile 'com.android.support:support-annotations:+'
@@ -50,7 +50,7 @@ dependencies {
 
 android {
     compileSdkVersion 19
-    buildToolsVersion '19.0.3'
+    buildToolsVersion '19.1.0'
 
     defaultConfig {
         minSdkVersion 9
