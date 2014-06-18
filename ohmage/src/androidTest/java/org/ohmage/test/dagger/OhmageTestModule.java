@@ -98,6 +98,7 @@ import static org.mockito.Mockito.mock;
                 InstallSurveyDependencies.class,
                 InstallSurveyDependenciesFragment.class,
                 InstallDependenciesDialog.class,
+                SurveyActivity.class,
         },
         complete = false,
         library = true,

@@ -23,6 +23,9 @@ import android.content.Context;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
 import com.google.gson.TypeAdapter;
 import com.google.gson.TypeAdapterFactory;
 import com.google.gson.reflect.TypeToken;
@@ -67,6 +70,7 @@ import org.ohmage.sync.StreamSyncAdapter;
 import org.ohmage.tasks.LogoutTaskFragment;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -111,7 +115,8 @@ import retrofit.converter.GsonConverter;
                 StreamsFragment.class,
                 InstallSurveyDependencies.class,
                 InstallSurveyDependenciesFragment.class,
-                InstallDependenciesDialog.class
+                InstallDependenciesDialog.class,
+                SurveyActivity.class,
         },
         complete = false,
         library = true
@@ -131,6 +136,16 @@ public class OhmageModule {
                 .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
                 .registerTypeAdapterFactory(new LowercaseEnumTypeAdapterFactory())
                 .registerTypeAdapter(Prompt.class, new BasePrompt.PromptDeserializer())
+                .registerTypeAdapter(Double.class, new JsonSerializer<Double>() {
+                    @Override public JsonElement serialize(Double src, Type typeOfSrc,
+                            JsonSerializationContext context) {
+                        if ((src == Math.floor(src)) && !Double.isInfinite(src)) {
+                            return context.serialize(src.intValue());
+                        }
+
+                        return context.serialize(src);
+                    }
+                })
                 .create();
         return gson;
     }

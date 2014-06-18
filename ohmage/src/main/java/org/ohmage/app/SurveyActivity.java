@@ -50,7 +50,6 @@ import com.google.android.gms.location.LocationClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.viewpagerindicator.CirclePageIndicator;
 
@@ -88,6 +87,8 @@ public class SurveyActivity extends InjectedActionBarActivity
         implements LoaderCallbacks<ArrayList<Prompt>>, ConnectionCallbacks,
         OnConnectionFailedListener {
     private static final String TAG = SurveyActivity.class.getSimpleName();
+
+    @Inject Gson gson;
 
     /**
      * The pager widget, which handles animation and allows swiping horizontally to access previous
@@ -282,8 +283,6 @@ public class SurveyActivity extends InjectedActionBarActivity
 
         private final FragmentManager mFragmentManager;
 
-        Gson gson = new GsonBuilder().create();
-
         /**
          * Keeps track of what fragments have been created
          */
@@ -370,7 +369,7 @@ public class SurveyActivity extends InjectedActionBarActivity
         }
 
         public void buildResponse(ContentValues values) {
-            Log.d(TAG, gson.toJson(prompts.answers).toString());
+            Log.d(TAG, gson.toJson(prompts.answers));
             values.put(Responses.RESPONSE_DATA, gson.toJson(prompts.answers));
             values.put(Responses.RESPONSE_EXTRAS, gson.toJson(prompts.extras));
         }
