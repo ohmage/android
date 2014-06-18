@@ -65,12 +65,14 @@ import rx.util.functions.Action1;
 public class OhmletActivity extends InjectedActionBarActivity {
 
     private static final String TAG = OhmletActivity.class.getSimpleName();
-
+    private View mLoadingView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_single_fragment);
+
+        mLoadingView = findViewById(R.id.loading);
 
         String action = getIntent().getAction();
         Bundle extras = new Bundle();
@@ -93,6 +95,10 @@ public class OhmletActivity extends InjectedActionBarActivity {
             getSupportFragmentManager().beginTransaction().add(R.id.container,
                     OhmletFragment.getInstance(action, data, extras)).commit();
         }
+    }
+
+    public void showLoadingView(boolean show) {
+        mLoadingView.setVisibility(show ? View.VISIBLE : View.GONE);
     }
 
     @Override
@@ -191,8 +197,7 @@ public class OhmletActivity extends InjectedActionBarActivity {
 
             if (savedInstanceState == null) {
                 if (ACTION_JOIN.equals(action)) {
-                    mJoinDialog = JoinOhmletDialog.getInstance(null, userId, invitationCode);
-                    mJoinDialog.show(getFragmentManager(), "join_dialog");
+                    mJoinDialog = (JoinOhmletDialog) getChildFragmentManager().findFragmentByTag("join_dialog");
                 }
             }
 
@@ -223,9 +228,12 @@ public class OhmletActivity extends InjectedActionBarActivity {
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                 Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_ohmlet, container, false);
+            assert rootView != null;
 
             mDescription = (TextView) rootView.findViewById(R.id.description);
+            mDescription.setVisibility(View.GONE);
             mJoinButton = (Button) rootView.findViewById(R.id.join);
+            mJoinButton.setVisibility(View.GONE);
             mJoinButton.setOnClickListener(this);
 
             if (mOhmlet != null)
@@ -236,22 +244,33 @@ public class OhmletActivity extends InjectedActionBarActivity {
 
         public void setOhmlet(Ohmlet ohmlet) {
             mOhmlet = ohmlet;
-            if (mJoinDialog != null)
-                mJoinDialog.setOhmlet(mOhmlet);
+        }
+
+        public Ohmlet getOhmlet() {
+            return mOhmlet;
+        }
+
+        public String getUserId() {
+            return userId;
+        }
+
+        public String getInvitationCode() {
+            return invitationCode;
         }
 
         private void updateView() {
+            ((OhmletActivity) getActivity()).showLoadingView(false);
             getActivity().setTitle(mOhmlet.name);
 
             if (getView() != null) {
+                mDescription.setVisibility(View.VISIBLE);
                 mDescription.setText(mOhmlet.description);
-                mJoinButton.setText(mOhmlet.isMember(userId) ? "Leave" : "Join");
+                mJoinButton.setVisibility(mOhmlet.isMember(userId) ? View.GONE : View.VISIBLE);
             }
         }
 
         @Override public void onClick(View v) {
-            JoinOhmletDialog.getInstance(mOhmlet, userId, invitationCode).show(getFragmentManager(),
-                   "join_dialog");
+            JoinOhmletDialog.getInstance().show(getChildFragmentManager(), "join_dialog");
         }
 
         @Override public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
@@ -283,16 +302,8 @@ public class OhmletActivity extends InjectedActionBarActivity {
     public static class JoinOhmletDialog extends InjectedDialogFragment
             implements DialogInterface.OnClickListener {
 
-        private Ohmlet mOhmlet;
-        private String userId;
-        private String invitationCode;
-
-        public static JoinOhmletDialog getInstance(Ohmlet ohmlet, String userId, String code) {
-            JoinOhmletDialog fragment = new JoinOhmletDialog();
-            fragment.setOhmlet(ohmlet);
-            fragment.setUserId(userId);
-            fragment.setInvitationCode(code);
-            return fragment;
+        public static JoinOhmletDialog getInstance() {
+            return new JoinOhmletDialog();
         }
 
         @Override public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -305,40 +316,27 @@ public class OhmletActivity extends InjectedActionBarActivity {
         }
 
         @Override public void onClick(DialogInterface dialog, int which) {
+
+            OhmletFragment parent = ((OhmletFragment) getParentFragment());
+
+            String userId = parent.getUserId();
+            Ohmlet ohmlet = parent.getOhmlet();
             String id = TextUtils.isEmpty(userId) ? "me" : userId;
-            if (mOhmlet.isMember(id)) {
-                mOhmlet.people.removeMember(id);
-            } else {
+
+            if (!ohmlet.isMember(id)) {
+                Observable.from(ohmlet).subscribeOn(Schedulers.io()).doOnNext(
+                        new ContentProviderSaver()).doOnError(new Action1<Throwable>() {
+                    @Override public void call(Throwable throwable) {
+                        throwable.printStackTrace();
+                    }
+                }).subscribe();
+
                 Member m = new Member();
                 m.memberId = id;
                 m.role = Role.MEMBER;
-                m.code = invitationCode;
-                mOhmlet.people.add(m);
+                m.code = parent.getInvitationCode();
+                ohmlet.people.add(m);
             }
-
-            Observable.from(mOhmlet).subscribeOn(Schedulers.io()).doOnNext(
-                    new ContentProviderSaver()).doOnError(new Action1<Throwable>() {
-                @Override public void call(Throwable throwable) {
-                    throwable.printStackTrace();
-                }
-            }).subscribe();
-
-        }
-
-        public void setOhmlet(Ohmlet ohmlet) {
-            mOhmlet = ohmlet;
-        }
-
-        public void setUserId(String userId) {
-            this.userId = userId;
-        }
-
-        public void setInvitationCode(String invitationCode) {
-            this.invitationCode = invitationCode;
-        }
-
-        public String getInvitationCode() {
-            return invitationCode;
         }
     }
 }
