@@ -846,7 +846,7 @@ public class SurveyActivity extends InjectedActionBarActivity
             // Calculate the first prompt which no longer passes the condition test
             int after = prompts.size();
             for (int i = pivot + 1;
-                 i < getAnsweredCount() + ignoredPromptsSize() && i < prompts.size(); i++) {
+                 i < getAnsweredCount() + ignoredPromptsSize() + 1 && i < prompts.size(); i++) {
                 prompt = prompts.get(i);
                 if (prev == null) {
                     prev = getPreviousResponses(i);
