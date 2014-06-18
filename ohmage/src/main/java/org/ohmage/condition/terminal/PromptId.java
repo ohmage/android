@@ -22,6 +22,7 @@ import org.ohmage.condition.NoResponse;
 import org.ohmage.condition.OhmageNumber;
 import org.ohmage.prompts.Prompt;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -215,8 +216,9 @@ public class PromptId extends Terminal {
         }
         if(response instanceof Number) {
             return (new OhmageNumber((Number) response)).equals(value);
-        }
-        else {
+        } else if(response instanceof List) {
+            return ((List) response).contains(value);
+        } else {
             return response.equals(value);
         }
     }
