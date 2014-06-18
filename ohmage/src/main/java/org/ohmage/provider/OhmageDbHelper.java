@@ -33,7 +33,7 @@ public class OhmageDbHelper extends SQLiteOpenHelper {
 
     private static final String DB_NAME = "ohmage.db";
 
-    private static final int DB_VERSION = 10;
+    private static final int DB_VERSION = 36;
 
     public static final String SQL_AND = " AND %s='%s'";
 
@@ -102,6 +102,14 @@ public class OhmageDbHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + Tables.Streams);
         db.execSQL("DROP TABLE IF EXISTS " + Tables.Surveys);
         db.execSQL("DROP TABLE IF EXISTS " + Tables.Responses);
+
+        // Also drop old tables from 2.0 version of app
+        if(oldVersion < 36) {
+            db.execSQL("DROP TABLE IF EXISTS campaigns");
+            db.execSQL("DROP TABLE IF EXISTS prompt_responses");
+            db.execSQL("DROP TABLE IF EXISTS survey_prompts");
+        }
+
         onCreate(db);
     }
 
