@@ -17,9 +17,11 @@
 package org.ohmage.fragments;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -153,8 +155,26 @@ public class InstalledAppItemsAdapter extends BaseAdapter {
             case ITEM_VIEW_TYPE_APK:
                 ImageView icon = ViewHolder.get(convertView, R.id.icon);
                 TextView label = ViewHolder.get(convertView, R.id.app_label);
+                Button authorize = ViewHolder.get(convertView, R.id.authorize);
                 label.setText(((AppEntry) item).getLabel());
                 icon.setImageDrawable(((AppEntry) item).getIcon());
+
+                final String packageName = ((AppEntry) item).getAppItem().android.packageName;
+                final String authUri = ((AppEntry) item).getAppItem().android.authorizationUri;
+                if (authUri != null) {
+                    authorize.setVisibility(View.VISIBLE);
+                    authorize.setOnClickListener(new OnClickListener() {
+                        @Override public void onClick(View v) {
+                            mContext.startActivity(new Intent(Intent.ACTION_VIEW,
+                                    Uri.parse(authUri).buildUpon()
+                                            .appendQueryParameter("redirect_uri",
+                                                    "ohmage://app/stream/authorized?packageName=" +
+                                                    packageName).build()));
+                        }
+                    });
+                } else {
+                    authorize.setVisibility(View.GONE);
+                }
 
                 break;
             case ITEM_VIEW_TYPE_HEADER:

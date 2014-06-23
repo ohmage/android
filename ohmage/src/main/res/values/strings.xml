@@ -86,4 +86,7 @@
     <string name="installed_apps_header">Installed</string>
     <string name="no_streams">No streams</string>
     <string name="install_dependencies_title">Install Dependencies</string>
+    <string name="title_stream_not_authorized">Authorization Failed</string>
+    <string name="message_stream_not_authorized">There was an error authorizing %1$s: %2$s</string>
+
 </resources>

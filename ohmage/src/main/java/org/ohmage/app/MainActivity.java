@@ -19,16 +19,21 @@ package org.ohmage.app;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.accounts.OnAccountsUpdateListener;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.ActionBarDrawerToggle;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -142,26 +147,54 @@ public class MainActivity extends InjectedActionBarActivity
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
 
-        if(savedInstanceState == null) {
+        if (savedInstanceState == null) {
             if (getIntent().getBooleanExtra(EXTRA_VIEW_STREAMS, false)) {
                 setFragment(getString(R.string.streams));
             } else {
-                setFragment(0);
+                if (!handleNewIntent(getIntent())) {
+                    setFragment(0);
+                }
             }
         }
     }
 
     @Override protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-        if(intent.getBooleanExtra(EXTRA_VIEW_STREAMS, false)) {
+        handleNewIntent(intent);
+    }
+
+    private boolean handleNewIntent(Intent intent) {
+        boolean handled = false;
+        boolean showStreams = intent.getBooleanExtra(EXTRA_VIEW_STREAMS, false);
+
+        Uri data = intent.getData();
+        if (data != null && "/stream/authorized".equals(data.getPath())) {
+
+            String packageName = data.getQueryParameter("packageName");
+            String error = data.getQueryParameter("error");
+            if (error != null) {
+                StreamNotAuthorizedError e =
+                        StreamNotAuthorizedError.newInstance(packageName, error);
+                e.show(getSupportFragmentManager(), "stream_error");
+                Log.d(TAG, "There was an error authorizing " + packageName + ": " + error);
+            } else {
+                Log.d(TAG, "Successfully authorized: " + packageName);
+            }
+
+            showStreams = true;
+        }
+
+        if (showStreams) {
             String streams = getString(R.string.streams);
             for (int i = 0; i < mNavigationItems.length; i++) {
                 if(streams.equals(mNavigationItems[i])) {
                     setFragment(i);
+                    handled = true;
                     break;
                 }
             }
         }
+        return handled;
     }
 
     public void onPostCreate(Bundle savedInstanceState) {
@@ -294,5 +327,28 @@ public class MainActivity extends InjectedActionBarActivity
             intent.putExtra(AuthenticatorActivity.EXTRA_CLEAR_DEFAULT_ACCOUNT, true);
         startActivity(intent);
         finish();
+    }
+
+    public static class StreamNotAuthorizedError extends DialogFragment {
+
+        public static StreamNotAuthorizedError newInstance(String packageName, String error) {
+            StreamNotAuthorizedError fragment = new StreamNotAuthorizedError();
+            Bundle args = new Bundle();
+            args.putString("error", error);
+            args.putString("packageName", packageName);
+            fragment.setArguments(args);
+            return fragment;
+        }
+
+        @Override public Dialog onCreateDialog(Bundle savedInstanceState) {
+            String packageName = getArguments().getString("packageName");
+            String error = getArguments().getString("error");
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setTitle(R.string.title_stream_not_authorized)
+                    .setMessage(
+                            getString(R.string.message_stream_not_authorized, packageName, error));
+            builder.setPositiveButton(android.R.string.ok, null);
+            return builder.create();
+        }
     }
 }
