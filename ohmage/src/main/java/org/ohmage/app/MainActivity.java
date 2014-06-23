@@ -139,12 +139,15 @@ public class MainActivity extends InjectedActionBarActivity
         // Set the drawer toggle as the DrawerListener
         mDrawerLayout.setDrawerListener(mDrawerToggle);
 
-        if(getIntent().getBooleanExtra(EXTRA_VIEW_STREAMS, false)) {
-            setFragment(getString(R.string.streams));
-        } else {
-            setFragment(0);
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setHomeButtonEnabled(true);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setHomeButtonEnabled(true);
+
+        if(savedInstanceState == null) {
+            if (getIntent().getBooleanExtra(EXTRA_VIEW_STREAMS, false)) {
+                setFragment(getString(R.string.streams));
+            } else {
+                setFragment(0);
+            }
         }
     }
 

@@ -135,6 +135,7 @@ public class StreamsFragment extends GridFragment implements LoaderCallbacks<Cur
 
     @Override public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         ArrayList<Stream> streams = new ArrayList<Stream>();
+        data.moveToPosition(-1);
         while(data.moveToNext()) {
             Stream stream = new Stream();
             stream.read(gson, data);
