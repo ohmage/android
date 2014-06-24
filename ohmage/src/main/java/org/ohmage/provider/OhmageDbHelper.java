@@ -100,13 +100,15 @@ public class OhmageDbHelper extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 
-        if(oldVersion == 36) {
-            db.execSQL("ALTER TABLE " + Tables.Ohmlets + " ADD " + Ohmlets.OHMLET_DIRTY +
-                       " INTEGER DEFAULT 0");
-        }
+        if(oldVersion < 37) {
+            // Drop new tables to get them on the correct version
+            db.execSQL("DROP TABLE IF EXISTS ohmlets");
+            db.execSQL("DROP TABLE IF EXISTS streams");
+            db.execSQL("DROP TABLE IF EXISTS surveys");
+            db.execSQL("DROP TABLE IF EXISTS responses");
+            db.execSQL("DROP TABLE IF EXISTS stream_data");
 
-        // Also drop old tables from 2.0 version of app
-        if(oldVersion < 36) {
+            // Also drop old tables from 2.0 version of app
             db.execSQL("DROP TABLE IF EXISTS campaigns");
             db.execSQL("DROP TABLE IF EXISTS prompt_responses");
             db.execSQL("DROP TABLE IF EXISTS survey_prompts");

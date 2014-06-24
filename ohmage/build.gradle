@@ -7,7 +7,7 @@ buildscript {
     }
 }
 
-apply plugin: 'android'
+apply plugin: 'com.android.application'
 
 // Update the values in this file to sign the apk for release
 if(gradle.startParameter.taskNames.contains('assembleRelease')) {
@@ -55,7 +55,7 @@ android {
     defaultConfig {
         minSdkVersion 9
         targetSdkVersion 19
-        versionCode 29
+        versionCode 30
         versionName "3.0.8"
 
         testInstrumentationRunner "com.google.android.apps.common.testing.testrunner.GoogleInstrumentationTestRunner"
