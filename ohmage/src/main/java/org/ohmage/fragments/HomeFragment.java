@@ -84,15 +84,18 @@ public class HomeFragment extends GridFragment implements LoaderCallbacks<Cursor
     @Override public void onResume() {
         super.onResume();
 
-        syncObserverHandle = getActivity().getContentResolver().addStatusChangeListener(
+        syncObserverHandle = ContentResolver.addStatusChangeListener(
                 ContentResolver.SYNC_OBSERVER_TYPE_PENDING |
-                ContentResolver.SYNC_OBSERVER_TYPE_ACTIVE, this);
+                ContentResolver.SYNC_OBSERVER_TYPE_ACTIVE, this
+        );
+
+        checkSyncStatus();
     }
 
     @Override public void onPause() {
         super.onPause();
         if(syncObserverHandle != null) {
-            getActivity().getContentResolver().removeStatusChangeListener(syncObserverHandle);
+            ContentResolver.removeStatusChangeListener(syncObserverHandle);
             syncObserverHandle = null;
         }
     }
@@ -205,16 +208,18 @@ public class HomeFragment extends GridFragment implements LoaderCallbacks<Cursor
     }
 
     @Override public void onStatusChanged(int which) {
+        checkSyncStatus();
+    }
+
+    public void checkSyncStatus() {
         Account[] accounts = am.getAccountsByType(AuthUtil.ACCOUNT_TYPE);
         if(accounts.length == 0) {
             return;
         }
 
-        ContentResolver cr = getActivity().getContentResolver();
-
         mHandler.removeCallbacks(mRefreshCompleteRunnable);
-        if(cr.isSyncActive(accounts[0], OhmageContract.CONTENT_AUTHORITY) ||
-           cr.isSyncPending(accounts[0], OhmageContract.CONTENT_AUTHORITY)) {
+        if(ContentResolver.isSyncActive(accounts[0], OhmageContract.CONTENT_AUTHORITY) ||
+           ContentResolver.isSyncPending(accounts[0], OhmageContract.CONTENT_AUTHORITY)) {
             getActivity().runOnUiThread(new Runnable() {
                 @Override public void run() {
                     if(getListAdapter() == null || getListAdapter().isEmpty()) {
