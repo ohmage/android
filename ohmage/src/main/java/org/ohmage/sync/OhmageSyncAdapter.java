@@ -179,7 +179,7 @@ public class OhmageSyncAdapter extends AbstractThreadedSyncAdapter {
                     new String[]{
                             OhmageContract.Ohmlets.OHMLET_ID,
                             OhmageContract.Ohmlets.OHMLET_MEMBERS},
-                    null, null, null
+                    Ohmlets.OHMLET_DIRTY + "=1", null, null
             );
 
             upload = new CountDownLatch(cursor.getCount());

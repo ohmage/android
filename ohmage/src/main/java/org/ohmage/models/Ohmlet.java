@@ -43,6 +43,7 @@ public class Ohmlet implements Savable, Readable, Syncable {
     public Surveys surveys;
     public Member.List people;
     public PrivacyState privacyState;
+    public boolean dirty;
 
     public boolean isMember(String userId) {
         return people.getMember(userId) != null;
@@ -145,6 +146,7 @@ public class Ohmlet implements Savable, Readable, Syncable {
         values.put(OhmageContract.Ohmlets.OHMLET_MEMBERS, saver.gson().toJson(people));
         if (privacyState != null)
             values.put(OhmageContract.Ohmlets.OHMLET_PRIVACY_STATE, privacyState.ordinal());
+        values.put(OhmageContract.Ohmlets.OHMLET_DIRTY, dirty ? 1 : 0);
         return values;
     }
 
@@ -157,5 +159,6 @@ public class Ohmlet implements Savable, Readable, Syncable {
         surveys = gson.fromJson(cursor.getString(4), Surveys.class);
         people = gson.fromJson(cursor.getString(5), Member.List.class);
         privacyState = PrivacyState.values()[cursor.getInt(6)];
+        dirty = cursor.getInt(7) == 1;
     }
 }

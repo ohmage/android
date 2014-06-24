@@ -33,7 +33,7 @@ public class OhmageDbHelper extends SQLiteOpenHelper {
 
     private static final String DB_NAME = "ohmage.db";
 
-    private static final int DB_VERSION = 36;
+    private static final int DB_VERSION = 37;
 
     public static final String SQL_AND = " AND %s='%s'";
 
@@ -59,7 +59,8 @@ public class OhmageDbHelper extends SQLiteOpenHelper {
                    + Ohmlets.OHMLET_STREAMS + " TEXT, "
                    + Ohmlets.OHMLET_MEMBERS + " TEXT, "
                    + Ohmlets.OHMLET_PRIVACY_STATE + " INTEGER DEFAULT " +
-                   PrivacyState.UNKNOWN.ordinal() + ");");
+                   PrivacyState.UNKNOWN.ordinal() + ", "
+                   + Ohmlets.OHMLET_DIRTY + " INTEGER DEFAULT 0);");
 
         db.execSQL("CREATE TABLE IF NOT EXISTS " + Tables.Streams + " ("
                    + Streams.STREAM_ID + " TEXT NOT NULL, "
@@ -98,10 +99,11 @@ public class OhmageDbHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS " + Tables.Ohmlets);
-        db.execSQL("DROP TABLE IF EXISTS " + Tables.Streams);
-        db.execSQL("DROP TABLE IF EXISTS " + Tables.Surveys);
-        db.execSQL("DROP TABLE IF EXISTS " + Tables.Responses);
+
+        if(oldVersion == 36) {
+            db.execSQL("ALTER TABLE " + Tables.Ohmlets + " ADD " + Ohmlets.OHMLET_DIRTY +
+                       " INTEGER DEFAULT 0");
+        }
 
         // Also drop old tables from 2.0 version of app
         if(oldVersion < 36) {

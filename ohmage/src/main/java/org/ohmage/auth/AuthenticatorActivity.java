@@ -530,6 +530,7 @@ public class AuthenticatorActivity extends AuthenticatorFragmentActivity impleme
         m.role = Role.MEMBER;
         m.code = getIntent().getStringExtra(OhmletFragment.EXTRA_OHMLET_INVITATION_ID);
         o.people.add(m);
+        o.dirty = true;
 
         Observable.from(o).subscribeOn(Schedulers.io()).doOnNext(
                 new ContentProviderSaver()).doOnError(new Action1<Throwable>() {

@@ -324,18 +324,20 @@ public class OhmletActivity extends InjectedActionBarActivity {
             String id = TextUtils.isEmpty(userId) ? "me" : userId;
 
             if (!ohmlet.isMember(id)) {
+                Member m = new Member();
+                m.memberId = id;
+                m.role = Role.MEMBER;
+                m.code = parent.getInvitationCode();
+                ohmlet.people.add(m);
+                ohmlet.dirty = true;
+
+                // Save the state of the ohmlet
                 Observable.from(ohmlet).subscribeOn(Schedulers.io()).doOnNext(
                         new ContentProviderSaver()).doOnError(new Action1<Throwable>() {
                     @Override public void call(Throwable throwable) {
                         throwable.printStackTrace();
                     }
                 }).subscribe();
-
-                Member m = new Member();
-                m.memberId = id;
-                m.role = Role.MEMBER;
-                m.code = parent.getInvitationCode();
-                ohmlet.people.add(m);
             }
         }
     }

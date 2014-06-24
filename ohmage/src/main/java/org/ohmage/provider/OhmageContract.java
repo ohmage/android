@@ -66,6 +66,11 @@ public class OhmageContract {
          * The privacy state for this ohmlet
          */
         String OHMLET_PRIVACY_STATE = "ohmlet_privacy_state";
+
+        /**
+         * If this is true the ohmlet should be synchronized to the server
+         */
+        String OHMLET_DIRTY = "ohmlet_dirty";
     }
 
     private static final String PATH_OHMLETS = "ohmlets";
@@ -90,7 +95,7 @@ public class OhmageContract {
 
         public static final String[] DEFAULT_PROJECTION = new String[]{
                 OHMLET_ID, OHMLET_NAME, OHMLET_DESCRIPTION, OHMLET_SURVEYS, OHMLET_STREAMS,
-                OHMLET_MEMBERS, OHMLET_PRIVACY_STATE
+                OHMLET_MEMBERS, OHMLET_PRIVACY_STATE, OHMLET_DIRTY
         };
     }
 
