@@ -202,8 +202,7 @@ public class HomeFragment extends GridFragment implements LoaderCallbacks<Cursor
         for (Account account : accounts) {
             Bundle bundle = new Bundle();
             bundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
-            getActivity().getContentResolver()
-                    .requestSync(account, OhmageContract.CONTENT_AUTHORITY, bundle);
+            ContentResolver.requestSync(account, OhmageContract.CONTENT_AUTHORITY, bundle);
         }
     }
 
