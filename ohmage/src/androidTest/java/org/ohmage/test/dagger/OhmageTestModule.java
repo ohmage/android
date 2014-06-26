@@ -37,6 +37,8 @@ import org.ohmage.auth.Authenticator;
 import org.ohmage.auth.AuthenticatorTest;
 import org.ohmage.auth.CreateAccountFragment;
 import org.ohmage.auth.SignInFragment;
+import org.ohmage.auth.oauth.OAuthActivity;
+import org.ohmage.auth.oauth.OAuthActivity.OAuthFragment;
 import org.ohmage.dagger.ForApplication;
 import org.ohmage.fragments.HomeFragment;
 import org.ohmage.fragments.InstallDependenciesDialog;
@@ -99,6 +101,8 @@ import static org.mockito.Mockito.mock;
                 InstallSurveyDependenciesFragment.class,
                 InstallDependenciesDialog.class,
                 SurveyActivity.class,
+                OAuthActivity.class,
+                OAuthFragment.class,
         },
         complete = false,
         library = true,

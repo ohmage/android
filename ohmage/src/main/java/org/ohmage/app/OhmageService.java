@@ -20,6 +20,7 @@ import org.apache.http.auth.AuthenticationException;
 import org.ohmage.auth.AuthUtil;
 import org.ohmage.auth.AuthUtil.GrantType;
 import org.ohmage.models.AccessToken;
+import org.ohmage.models.OAuthClient;
 import org.ohmage.models.Ohmlet;
 import org.ohmage.models.Ohmlet.Member;
 import org.ohmage.models.Ohmlets;
@@ -29,6 +30,8 @@ import org.ohmage.models.Surveys;
 import org.ohmage.models.User;
 import org.ohmage.sync.ResponseTypedOutput;
 import org.ohmage.sync.StreamWriterOutput;
+
+import java.util.Collection;
 
 import retrofit.Callback;
 import retrofit.client.Response;
@@ -61,6 +64,18 @@ public interface OhmageService {
     @GET("/auth_token")
     void getAccessToken(@Query("email") String email, @Query("password") String password,
             CancelableCallback<AccessToken> callback);
+
+    //This path is checked in the OkClient to prevent redirects
+    @GET("/oauth/authorize?response_type=code")
+    Observable<String> OAuthAuthorize(@Query("client_id") String clientId, @Query("scope") String scope,
+            @Query("state") String state);
+
+    //This path is checked in the OkClient to prevent redirects
+    @POST("/oauth/authorization_with_token")
+    Observable<String> OAuthAuthorized(@Query("granted") boolean granted, @Query("code") String code);
+
+    @GET("/oauth/clients/{client_id}")
+    Observable<OAuthClient> OAuthClientInfo(@Path("client_id") String clientId);
 
     @POST("/people") void createUser(@Query("provider") AuthUtil.GrantType grantType,
             @Query("access_token") String accessToken, @Body User user,
@@ -105,6 +120,9 @@ public interface OhmageService {
     Observable<Response> uploadResponse(@Path("surveyId") String surveyId,
             @Path("surveyVersion") long surveyVersion, @Body ResponseTypedOutput data)
             throws AuthenticationException;
+
+    @GET("/streams/{streamId}")
+    Observable<Collection<Integer>> getStreamVersions(@Path("streamId") String streamId);
 
     @GET("/streams/{streamId}/{streamVersion}")
     Observable<Stream> getStream(@Path("streamId") String streamId,

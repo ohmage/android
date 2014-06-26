@@ -19,6 +19,7 @@ package org.ohmage.dagger;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.Context;
+import android.net.Uri;
 
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
@@ -51,6 +52,8 @@ import org.ohmage.auth.AuthenticateFragment;
 import org.ohmage.auth.Authenticator;
 import org.ohmage.auth.CreateAccountFragment;
 import org.ohmage.auth.SignInFragment;
+import org.ohmage.auth.oauth.OAuthActivity;
+import org.ohmage.auth.oauth.OAuthActivity.OAuthFragment;
 import org.ohmage.fragments.HomeFragment;
 import org.ohmage.fragments.InstallDependenciesDialog;
 import org.ohmage.fragments.OhmletsFragment;
@@ -71,6 +74,8 @@ import org.ohmage.tasks.LogoutTaskFragment;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -83,7 +88,10 @@ import dagger.Module;
 import dagger.Provides;
 import retrofit.RequestInterceptor;
 import retrofit.RestAdapter;
+import retrofit.RestAdapter.Builder;
+import retrofit.RestAdapter.LogLevel;
 import retrofit.client.OkClient;
+import retrofit.client.Request;
 import retrofit.converter.GsonConverter;
 
 @Module(
@@ -117,6 +125,8 @@ import retrofit.converter.GsonConverter;
                 InstallSurveyDependenciesFragment.class,
                 InstallDependenciesDialog.class,
                 SurveyActivity.class,
+                OAuthActivity.class,
+                OAuthFragment.class,
         },
         complete = false,
         library = true
@@ -150,7 +160,7 @@ public class OhmageModule {
         return gson;
     }
 
-    @Provides OhmageService provideOhmageService(@ForApplication Context context, Gson gson) {
+    @Provides @Singleton OkHttpClient providesOkHttpClient(@ForApplication Context context) {
         // Create an HTTP client that uses a cache on the file system.
         OkHttpClient okHttpClient = new OkHttpClient();
         try {
@@ -159,10 +169,16 @@ public class OhmageModule {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        Executor executor = Executors.newCachedThreadPool();
 
         // Add an authenticator to handle 401 error by updating the token
         okHttpClient.setAuthenticator(new OhmageAuthenticator());
+
+        return okHttpClient;
+    }
+
+    @Provides OhmageService provideOhmageService(final OkHttpClient okHttpClient, Gson gson) {
+
+        Executor executor = Executors.newCachedThreadPool();
 
         // Add the ohmage token to each outgoing request for the current user
         RequestInterceptor requestInterceptor = new RequestInterceptor() {
@@ -179,11 +195,24 @@ public class OhmageModule {
             }
         };
 
-        RestAdapter restAdapter = new RestAdapter.Builder()
+        RestAdapter restAdapter = new Builder()
                 .setExecutors(executor, executor)
                 .setConverter(new GsonConverter(gson))
-                .setClient(new OkClient(okHttpClient))
-                .setLogLevel(RestAdapter.LogLevel.FULL)
+                .setClient(new OkClient(okHttpClient) {
+                    @Override protected HttpURLConnection openConnection(Request request) throws IOException {
+                        HttpURLConnection ret = super.openConnection(request);
+
+                        String path = Uri.parse(request.getUrl()).getPath();
+                        // For these specific paths we should not follow redirects
+                        if ("/ohmage/oauth/authorize".equals(path) ||
+                            "/ohmage/oauth/authorization_with_token".equals(path)) {
+                            ret.setInstanceFollowRedirects(false);
+                        }
+
+                        return ret;
+                    }
+                })
+                .setLogLevel(LogLevel.FULL)
                 .setErrorHandler(new OhmageErrorHandler())
                 .setServer(Ohmage.API_ROOT)
                 .setRequestInterceptor(requestInterceptor)
