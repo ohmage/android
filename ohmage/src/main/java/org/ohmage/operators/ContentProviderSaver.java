@@ -54,6 +54,7 @@ public class ContentProviderSaver implements Action1<Savable> {
         if (mIsSyncAdapter)
             uri = OhmageSyncAdapter.appendSyncAdapterParam(uri);
         Ohmage.app().getContentResolver().insert(uri, savable.toContentValues(this));
+        savable.onSaved();
     }
 
     public Gson gson() {
@@ -64,6 +65,8 @@ public class ContentProviderSaver implements Action1<Savable> {
         ContentValues toContentValues(ContentProviderSaver saver);
 
         Uri getUrl();
+
+        void onSaved();
     }
 
     public static class ContentProviderSaverSubscriber extends Subscriber<Savable> {

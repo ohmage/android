@@ -75,6 +75,10 @@ public class Stream implements Savable, Readable, Syncable {
         return OhmageContract.Streams.CONTENT_URI;
     }
 
+    @Override public void onSaved() {
+
+    }
+
     @Override public SelectParamBuilder select() {
         SelectParamBuilder select = new SelectParamBuilder();
         select.and(OhmageContract.Streams.STREAM_ID, schemaId);

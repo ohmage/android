@@ -22,12 +22,14 @@ import android.net.Uri;
 
 import com.google.gson.Gson;
 
+import org.ohmage.app.Ohmage;
 import org.ohmage.helper.SelectParamBuilder;
 import org.ohmage.operators.ContentProviderSaver;
 import org.ohmage.operators.ContentProviderSaver.Savable;
 import org.ohmage.operators.ContentProviderStateSync.Syncable;
 import org.ohmage.provider.ContentProviderReader.Readable;
 import org.ohmage.provider.OhmageContract;
+import org.ohmage.reminders.base.TriggerBase;
 
 import java.util.ArrayList;
 
@@ -39,6 +41,7 @@ public class Ohmlet implements Savable, Readable, Syncable {
     public String name;
     public String description;
 
+    public ArrayList<TriggerBase> reminders;
     public Streams streams;
     public Surveys surveys;
     public Member.List people;
@@ -160,5 +163,12 @@ public class Ohmlet implements Savable, Readable, Syncable {
         people = gson.fromJson(cursor.getString(5), Member.List.class);
         privacyState = PrivacyState.values()[cursor.getInt(6)];
         dirty = cursor.getInt(7) == 1;
+    }
+
+    public void onSaved() {
+        // When the ohmlet is saved all the triggers should be saved
+        for (TriggerBase trigger : reminders) {
+            trigger.addTrigger(Ohmage.app());
+        }
     }
 }

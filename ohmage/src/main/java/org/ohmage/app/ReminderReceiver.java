@@ -41,7 +41,7 @@ public class ReminderReceiver extends BroadcastReceiver {
         if (TriggerFramework.ACTION_TRIGGER_NOTIFICATION.equals(action)) {
             ArrayList<String> surveys = intent.getStringArrayListExtra(Notifier.EXTRA_SURVEYS);
             Intent launch;
-            if (surveys.size() == 1) {
+            if (surveys != null && surveys.size() == 1) {
                 launch = new Intent(Intent.ACTION_VIEW, Surveys.getUriForSurveyId(surveys.get(0)));
             } else {
                 launch = new Intent(context, MainActivity.class);

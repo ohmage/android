@@ -32,7 +32,7 @@ dependencies {
     compile 'org.ohmage:android-stream-lib:2.0-SNAPSHOT@aar'
     compile 'com.squareup.retrofit:retrofit:1.5.+'
     compile 'com.netflix.rxjava:rxjava-android:0.17.+'
-    compile 'org.ohmage:reminder-lib:1.1.1-SNAPSHOT@aar'
+    compile 'org.ohmage:reminder-lib:1.1.2-SNAPSHOT@aar'
     compile 'org.ohmage:accelservice:3.0@aar'
     compile 'org.ohmage:wifigpslocation:3.15@aar'
     compile 'com.github.chrisbanes.actionbarpulltorefresh:extra-abc:+'

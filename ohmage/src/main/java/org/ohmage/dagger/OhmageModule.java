@@ -67,6 +67,7 @@ import org.ohmage.prompts.Prompt;
 import org.ohmage.prompts.PromptFragment;
 import org.ohmage.provider.ContentProviderReader;
 import org.ohmage.provider.StreamContentProvider;
+import org.ohmage.reminders.base.TriggerInit;
 import org.ohmage.sync.OhmageSyncAdapter;
 import org.ohmage.sync.ResponseSyncAdapter;
 import org.ohmage.sync.StreamSyncAdapter;
@@ -142,7 +143,7 @@ public class OhmageModule {
     }
 
     @Provides @Singleton Gson provideGson() {
-        Gson gson = new GsonBuilder()
+        GsonBuilder gson = new GsonBuilder()
                 .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
                 .registerTypeAdapterFactory(new LowercaseEnumTypeAdapterFactory())
                 .registerTypeAdapter(Prompt.class, new BasePrompt.PromptDeserializer())
@@ -155,9 +156,9 @@ public class OhmageModule {
 
                         return context.serialize(src);
                     }
-                })
-                .create();
-        return gson;
+                });
+        TriggerInit.injectDeserializers(gson);
+        return gson.create();
     }
 
     @Provides @Singleton OkHttpClient providesOkHttpClient(@ForApplication Context context) {

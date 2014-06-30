@@ -59,6 +59,10 @@ public class Survey implements Savable, Readable, Syncable {
         return OhmageContract.Surveys.CONTENT_URI;
     }
 
+    @Override public void onSaved() {
+
+    }
+
     @Override public SelectParamBuilder select() {
         SelectParamBuilder select = new SelectParamBuilder();
         select.and(OhmageContract.Surveys.SURVEY_ID, schemaId);
