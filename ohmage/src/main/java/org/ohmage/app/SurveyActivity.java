@@ -42,6 +42,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient.ConnectionCallbacks;
@@ -212,17 +213,25 @@ public class SurveyActivity extends InjectedActionBarActivity
     }
 
     @Override public void onLoadFinished(Loader<ArrayList<Prompt>> loader, ArrayList<Prompt> data) {
+        if(data == null) {
+            Toast.makeText(this, R.string.survey_not_found, Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
+
         if (mPagerAdapter == null) {
             setPrompts(data);
 
             // Check for remote activity prompts and make sure they all exist
-            ApkSet appItems = ApkSet.fromPromptsIgnoreSkippable(data);
-            appItems.clearInstalled(this);
+            if(data != null) {
+                ApkSet appItems = ApkSet.fromPromptsIgnoreSkippable(data);
+                appItems.clearInstalled(this);
 
-            if(!appItems.isEmpty()) {
-                Message msg = handler.obtainMessage(MSG_SHOW_INSTALL_DEPENDENCIES);
-                msg.obj = appItems;
-                msg.sendToTarget();
+                if (!appItems.isEmpty()) {
+                    Message msg = handler.obtainMessage(MSG_SHOW_INSTALL_DEPENDENCIES);
+                    msg.obj = appItems;
+                    msg.sendToTarget();
+                }
             }
         }
     }

@@ -98,5 +98,6 @@
     <string name="oauth_invalid_redirect_url">Invalid redirect url</string>
     <string name="oauth_no_scopes_error">You must allow at least one permission</string>
     <string name="oauth_server_error_authorizing">Error authorizing with the server</string>
+    <string name="survey_not_found">Survey could not be loaded</string>
 
 </resources>
