@@ -44,7 +44,8 @@ public class ReminderReceiver extends BroadcastReceiver {
             if (surveys != null && surveys.size() == 1) {
                 launch = new Intent(Intent.ACTION_VIEW, Surveys.getUriForSurveyId(surveys.get(0)));
             } else {
-                launch = new Intent(context, MainActivity.class);
+                launch = new Intent(context, MainActivity.class)
+                        .putExtra(MainActivity.EXTRA_VIEW_SURVEYS, true);
             }
 
             context.startActivity(launch.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));

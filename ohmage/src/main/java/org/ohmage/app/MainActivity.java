@@ -66,6 +66,11 @@ public class MainActivity extends InjectedActionBarActivity
      */
     public static final String EXTRA_VIEW_STREAMS = "extra_view_streams";
 
+    /**
+     * If this action is set, the surveys fragment will be shown
+     */
+    public static final String EXTRA_VIEW_SURVEYS = "extra_view_surveys";
+
     @Inject AccountManager accountManager;
 
     /**
@@ -166,6 +171,7 @@ public class MainActivity extends InjectedActionBarActivity
     private boolean handleNewIntent(Intent intent) {
         boolean handled = false;
         boolean showStreams = intent.getBooleanExtra(EXTRA_VIEW_STREAMS, false);
+        boolean showSurveys = intent.getBooleanExtra(EXTRA_VIEW_SURVEYS, false);
 
         Uri data = intent.getData();
         if (data != null && "/stream/authorized".equals(data.getPath())) {
@@ -184,10 +190,10 @@ public class MainActivity extends InjectedActionBarActivity
             showStreams = true;
         }
 
-        if (showStreams) {
-            String streams = getString(R.string.streams);
+        if (showStreams || showSurveys) {
+            String page = showSurveys ? getString(R.string.home) : getString(R.string.streams);
             for (int i = 0; i < mNavigationItems.length; i++) {
-                if(streams.equals(mNavigationItems[i])) {
+                if(page.equals(mNavigationItems[i])) {
                     setFragment(i);
                     handled = true;
                     break;
