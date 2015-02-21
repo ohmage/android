@@ -19,6 +19,7 @@ package org.ohmage.auth;
 import android.app.Activity;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Patterns;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -207,7 +208,7 @@ public class CreateAccountFragment extends TransitionFragment {
      * @return true if the email is valid enough..
      */
     private boolean isValidEmail(String email) {
-        return email.matches(".*@.*\\..*");
+        return Patterns.EMAIL_ADDRESS.matcher(email).matches();
     }
 
     /**
