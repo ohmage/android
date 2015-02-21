@@ -78,6 +78,8 @@ public class AuthenticatorActivity extends AuthenticatorFragmentActivity impleme
     @Inject PlusClientFragment mPlusClientFragment;
 
     public static final int REQUEST_CODE_PLUS_CLIENT_FRAGMENT = 0;
+    public static final int GOOGLE_CODE_RESULT = 1;
+
     private static final String TAG_ERROR_DIALOG = "error_dialog";
     private static final String TAG_OHMAGE_SIGN_IN = "sign_in_email";
     private static final String TAG_CREATE_ACCOUNT = "create_account";
@@ -228,6 +230,14 @@ public class AuthenticatorActivity extends AuthenticatorFragmentActivity impleme
     @Override
     protected void onActivityResult(int requestCode, int responseCode, Intent intent) {
         switch (requestCode) {
+            case GOOGLE_CODE_RESULT:
+                if (responseCode == RESULT_OK) {
+                    String token = intent.getStringExtra("authtoken");
+                    if (token != null) {
+                        useGoogleToken("fromApp_" + token, false);
+                        return;
+                    }
+                }
             case REQUEST_CODE_PLUS_CLIENT_FRAGMENT:
                 // Only show progress if the result failed indicating there was an error
                 showProgress(responseCode == RESULT_OK);
@@ -389,43 +399,55 @@ public class AuthenticatorActivity extends AuthenticatorFragmentActivity impleme
         mAuthenticateFragment.showProgress(show);
     }
 
+    private void useGoogleToken(final String token, final boolean shouldRetry) {
+        OhmageService.CancelableCallback<AccessToken> callback =
+                new OhmageService.CancelableCallback<AccessToken>() {
+                    @Override
+                    public void success(AccessToken accessToken, Response response) {
+                        if (!isCancelled()) {
+                            createAccount(mPlusClientFragment.getClient().getAccountName(),
+                                    accessToken);
+                        }
+                    }
+
+                    @Override public void failure(RetrofitError error) {
+                        if (isCancelled()) {
+                            return;
+                        }
+
+                        if (error.getResponse().getStatus() == 409) {
+                            Person person =
+                                    mPlusClientFragment.getClient().getCurrentPerson();
+                            String fullName = null;
+                            if (person != null) {
+                                fullName = person.getDisplayName();
+                            }
+                            showCreateAccountFragment(AuthUtil.GrantType.GOOGLE_OAUTH2,
+                                    fullName);
+                        } else if (error.getResponse().getStatus() == 400 && shouldRetry) {
+                            GoogleAuthUtil
+                                    .invalidateToken(getApplicationContext(), token.substring(8));
+                            startLogin(mPlusClientFragment.getClient());
+                        } else {
+                            onRetrofitError(error);
+                        }
+                    }
+                };
+        ohmageService.getAccessTokenWithCode(token, AuthUtil.OMH_CLIENT_ID, callback);
+    }
+
     /**
      * Starts the process of getting an auth_token from the server
      *
      * @param plusClient
      */
-    private void startLogin(PlusClient plusClient) {
+    private void startLogin(final PlusClient plusClient) {
         final String email = plusClient.getAccountName();
         new GoogleAccessTokenTask(email, new GoogleAccessTokenCallback() {
             @Override
             public void onGoogleAccessTokenReceived(String token) {
                 // Now that we have a google accessToken, we can make a request to get one from ohmage
-                OhmageService.CancelableCallback<AccessToken> callback =
-                        new OhmageService.CancelableCallback<AccessToken>() {
-                            @Override
-                            public void success(AccessToken accessToken, Response response) {
-                                if (!isCancelled())
-                                    createAccount(email, accessToken);
-                            }
-
-                            @Override public void failure(RetrofitError error) {
-                                if (isCancelled())
-                                    return;
-
-                                if (error.getResponse().getStatus() == 409) {
-                                    Person person =
-                                            mPlusClientFragment.getClient().getCurrentPerson();
-                                    String fullName = null;
-                                    if (person != null)
-                                        fullName = person.getDisplayName();
-                                    showCreateAccountFragment(AuthUtil.GrantType.GOOGLE_OAUTH2,
-                                            fullName);
-                                } else {
-                                    onRetrofitError(error);
-                                }
-                            }
-                        };
-                ohmageService.getAccessToken(AuthUtil.GrantType.GOOGLE_OAUTH2, token, callback);
+                useGoogleToken(token, true);
             }
         }).execute();
     }
@@ -631,16 +653,24 @@ public class AuthenticatorActivity extends AuthenticatorFragmentActivity impleme
                 GooglePlayServicesErrorDialogFragment fragment =
                         new GooglePlayServicesErrorDialogFragment();
                 fragment.setArguments(GooglePlayServicesErrorDialogFragment.createArguments(
-                        playEx.getConnectionStatusCode(), REQUEST_CODE_PLUS_CLIENT_FRAGMENT));
+                        playEx.getConnectionStatusCode(), GOOGLE_CODE_RESULT));
                 showErrorDialog(getSupportFragmentManager(), fragment);
             } catch (UserRecoverableAuthException userAuthEx) {
-                startActivityForResult(userAuthEx.getIntent(), REQUEST_CODE_PLUS_CLIENT_FRAGMENT);
+                startActivityForResult(userAuthEx.getIntent(), GOOGLE_CODE_RESULT);
             } catch (IOException transientEx) {
-                Toast.makeText(getBaseContext(), getString(R.string.network_error),
-                        Toast.LENGTH_SHORT).show();
+                runOnUiThread(new Runnable() {
+                    @Override public void run() {
+                        Toast.makeText(getBaseContext(), getString(R.string.network_error),
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
             } catch (GoogleAuthException authEx) {
-                Toast.makeText(getBaseContext(), getString(R.string.account_error),
-                        Toast.LENGTH_SHORT).show();
+                runOnUiThread(new Runnable() {
+                    @Override public void run() {
+                        Toast.makeText(getBaseContext(), getString(R.string.account_error),
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
             return null;
         }

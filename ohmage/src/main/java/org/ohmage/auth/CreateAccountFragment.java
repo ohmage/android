@@ -241,7 +241,7 @@ public class CreateAccountFragment extends TransitionFragment {
                             mCallbacks.fetchToken(new UseToken() {
                                 @Override
                                 public void useToken(String token) {
-                                    ohmageService.getAccessToken(mGrantType, token,
+                                    ohmageService.getAccessTokenWithCode(token, AuthUtil.OMH_CLIENT_ID,
                                             new OhmageService.CancelableCallback<AccessToken>() {
                                                 @Override
                                                 public void success(AccessToken accessToken,

@@ -196,7 +196,7 @@ public class Authenticator extends AbstractAccountAuthenticator {
 
         try {
             String googleToken = authHelper.googleAuthGetToken(googleAccount);
-            return ohmageService.getAccessToken(AuthUtil.GrantType.GOOGLE_OAUTH2, googleToken);
+            return ohmageService.getAccessTokenWithCode(googleToken, AuthUtil.OMH_CLIENT_ID);
 
         } catch (UserRecoverableAuthException userAuthEx) {
             throw userAuthEx;

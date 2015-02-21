@@ -18,7 +18,6 @@ package org.ohmage.app;
 
 import org.apache.http.auth.AuthenticationException;
 import org.ohmage.auth.AuthUtil;
-import org.ohmage.auth.AuthUtil.GrantType;
 import org.ohmage.models.AccessToken;
 import org.ohmage.models.OAuthClient;
 import org.ohmage.models.Ohmlet;
@@ -38,6 +37,7 @@ import retrofit.client.Response;
 import retrofit.http.Body;
 import retrofit.http.DELETE;
 import retrofit.http.GET;
+import retrofit.http.Headers;
 import retrofit.http.POST;
 import retrofit.http.Path;
 import retrofit.http.Query;
@@ -51,11 +51,13 @@ public interface OhmageService {
     @GET("/auth_token") AccessToken getAccessToken(@Query("refresh_token") String refreshToken)
             throws AuthenticationException;
 
-    @GET("/auth_token") AccessToken getAccessToken(@Query("provider") GrantType provider,
-            @Query("access_token") String token) throws AuthenticationException;
+    @Headers(AuthUtil.OMH_AUTH_HEADER)
+    @GET("/google-signin") AccessToken getAccessTokenWithCode(@Query("code") String code,
+            @Query("client_id") String clientId) throws AuthenticationException;
 
-    @GET("/auth_token") void getAccessToken(@Query("provider") AuthUtil.GrantType grantType,
-            @Query("access_token") String accessToken, CancelableCallback<AccessToken> callback);
+    @Headers(AuthUtil.OMH_AUTH_HEADER)
+    @GET("/google-signin") void getAccessTokenWithCode(@Query("code") String code,
+            @Query("client_id") String clientId, CancelableCallback<AccessToken> callback);
 
     @GET("/auth_token")
     AccessToken getAccessToken(@Query("email") String email, @Query("password") String password)

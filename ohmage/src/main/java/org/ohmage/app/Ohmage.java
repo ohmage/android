@@ -36,12 +36,12 @@ public class Ohmage extends Application {
     /**
      * The protocol and hostname used to access the ohmage service.
      */
-    public static final String API_HOST = "https://dev.ohmage.org";
+    public static final String API_HOST = "https://lifestreams.smalldata.io";
 
     /**
      * The URL root used to access the ohmage API.
      */
-    public static final String API_ROOT = API_HOST + "/ohmage";
+    public static final String API_ROOT = API_HOST + "/dsu";
 
     /**
      * Static reference to self

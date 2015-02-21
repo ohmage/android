@@ -37,6 +37,6 @@ public class AuthHelper {
 
     public String googleAuthGetToken(String googleAccount) throws UserRecoverableAuthException,
             IOException, GoogleAuthException {
-        return GoogleAuthUtil.getToken(mContext, googleAccount, AuthUtil.Google.SCOPE_STRING, null);
+        return "fromApp_" + GoogleAuthUtil.getToken(mContext, googleAccount, AuthUtil.Google.CODE_SCOPE, null);
     }
 }
