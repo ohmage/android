@@ -27,10 +27,12 @@ import org.ohmage.models.Stream;
 import org.ohmage.models.Survey;
 import org.ohmage.models.Surveys;
 import org.ohmage.models.User;
+import org.ohmage.sync.DataPointTypedOutput;
 import org.ohmage.sync.ResponseTypedOutput;
 import org.ohmage.sync.StreamWriterOutput;
 
 import java.util.Collection;
+import java.util.List;
 
 import retrofit.Callback;
 import retrofit.client.Response;
@@ -114,9 +116,16 @@ public interface OhmageService {
 
     @GET("/surveys") void getSurveys(Callback<Surveys> surveysCallback);
 
+    @GET("/surveys")
+    Observable<List<Survey>> getDefaultSurveys();
+
     @GET("/surveys/{surveyId}/{surveyVersion}")
     Observable<Survey> getSurvey(@Path("surveyId") String surveyId,
-            @Path("surveyVersion") long surveyVersion);
+            @Path("surveyVersion") String surveyVersion);
+
+    @POST("/dataPoints")
+    Observable<Response> uploadDataPoint(@Body DataPointTypedOutput data)
+            throws AuthenticationException;
 
     @POST("/surveys/{surveyId}/{surveyVersion}/data")
     Observable<Response> uploadResponse(@Path("surveyId") String surveyId,

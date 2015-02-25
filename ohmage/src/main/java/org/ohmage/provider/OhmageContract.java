@@ -20,6 +20,8 @@ import android.content.ContentUris;
 import android.net.Uri;
 import android.provider.BaseColumns;
 
+import org.ohmage.models.SchemaId;
+
 import java.util.List;
 
 /**
@@ -149,12 +151,20 @@ public class OhmageContract {
         public static final String CONTENT_ITEM_TYPE =
                 "vnd.android.cursor.item/vnd.ohmage.surveys.survey";
 
-        public static Uri getUriForSurveyId(String id) {
-            return Uri.withAppendedPath(CONTENT_URI, id);
+        public static Uri getUriForSurveyId(SchemaId id) {
+            return getUriForSurveyId(id.toString());
         }
 
-        public static Uri getUriForSurveyIdVersion(String id, long version) {
-            return ContentUris.withAppendedId(getUriForSurveyId(id), version);
+        public static Uri getUriForSurveyId(String id) {
+            return Uri.withAppendedPath(CONTENT_URI, id.toString());
+        }
+
+        public static Uri getUriForSurveyIdVersion(SchemaId id) {
+            return Uri.withAppendedPath(getUriForSurveyId(id), id.getVersion());
+        }
+
+        public static Uri getUriForSurveyIdVersion(String id, String version) {
+            return Uri.withAppendedPath(getUriForSurveyId(id), version);
         }
 
         public static final String[] DEFAULT_PROJECTION = new String[]{

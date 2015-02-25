@@ -36,17 +36,24 @@ import android.os.RemoteException;
 import android.provider.BaseColumns;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import org.apache.http.auth.AuthenticationException;
 import org.ohmage.app.Ohmage;
 import org.ohmage.app.OhmageService;
 import org.ohmage.auth.AuthUtil;
+import org.ohmage.models.DataPoint;
+import org.ohmage.models.SchemaId;
+import org.ohmage.models.Survey;
 import org.ohmage.provider.ResponseContract;
 import org.ohmage.provider.ResponseContract.Responses;
 import org.ohmage.sync.ResponseTypedOutput.ResponseFiles;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -130,10 +137,13 @@ public class ResponseSyncAdapter extends AbstractThreadedSyncAdapter {
                 final ResponseFiles files = gson.fromJson(cursor.getString(5), ResponseFiles.class);
                 try {
                     // Make the call to upload responses
-                    Observable<Response> uploadResponse =
-                            ohmageService.uploadResponse(cursor.getString(1), cursor.getLong(2),
-                                    new ResponseTypedOutput(cursor.getString(3),
-                                            cursor.getString(4), files)).cache();
+                    Observable<Response> uploadResponse = null;
+
+                    if(Ohmage.USE_DSU_DATAPOINTS_API) {
+                        uploadResponse = uploadDatapoint(cursor);
+                    } else {
+                        uploadOhmagePoint(cursor, files);
+                    }
 
                     // Map the data for the upload response to the local id in the db
                     final long localResponseId = cursor.getLong(0);
@@ -234,5 +244,28 @@ public class ResponseSyncAdapter extends AbstractThreadedSyncAdapter {
 
     public static Uri appendSyncAdapterParam(Uri uri) {
         return uri.buildUpon().appendQueryParameter(IS_SYNCADAPTER, "true").build();
+    }
+
+    private Observable<Response> uploadOhmagePoint(Cursor cursor, ResponseFiles files) throws AuthenticationException {
+        // Make the call to upload responses
+        return ohmageService.uploadResponse(cursor.getString(1), cursor.getLong(2),
+                new ResponseTypedOutput(cursor.getString(3),
+                        cursor.getString(4), files)).cache();
+
+    }
+
+    private Observable<Response> uploadDatapoint(Cursor cursor) throws AuthenticationException {
+        DataPoint data = new DataPoint();
+        data.schemaId = new SchemaId(cursor.getString(1), cursor.getString(2));
+
+        Type type = new TypeToken<Map<String, String>>(){}.getType();
+        Map<String, String> metadata = gson.fromJson(cursor.getString(4), type);
+        data.creationDateTime = metadata.get("timestamp");
+        data.id = metadata.get("id");
+
+        DataPointTypedOutput point = new DataPointTypedOutput(gson.toJson(data), cursor.getString(3));
+
+        // Make the call to upload responses
+        return ohmageService.uploadDataPoint(point).cache();
     }
 }

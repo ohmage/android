@@ -190,7 +190,7 @@ public class OhmageModule {
                     String token =
                             accountManager.peekAuthToken(accounts[0], AuthUtil.AUTHTOKEN_TYPE);
                     if (token != null) {
-                        request.addHeader("Authorization", "ohmage " + token);
+                        request.addHeader("Authorization", "bearer " + token);
                     }
                 }
             }

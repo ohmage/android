@@ -37,9 +37,8 @@ import java.util.ArrayList;
  * Created by cketcham on 12/18/13.
  */
 public class Survey implements Savable, Readable, Syncable {
-    public String schemaId;
+    public SchemaId schemaId;
 
-    public long schemaVersion;
     public String name;
     public String description;
 
@@ -47,8 +46,8 @@ public class Survey implements Savable, Readable, Syncable {
 
     @Override public ContentValues toContentValues(ContentProviderSaver saver) {
         ContentValues values = new ContentValues();
-        values.put(OhmageContract.Surveys.SURVEY_ID, schemaId);
-        values.put(OhmageContract.Surveys.SURVEY_VERSION, schemaVersion);
+        values.put(OhmageContract.Surveys.SURVEY_ID, schemaId.toString());
+        values.put(OhmageContract.Surveys.SURVEY_VERSION, schemaId.getVersion());
         values.put(OhmageContract.Surveys.SURVEY_ITEMS, saver.gson().toJson(surveyItems));
         values.put(OhmageContract.Surveys.SURVEY_NAME, name);
         values.put(OhmageContract.Surveys.SURVEY_DESCRIPTION, description);
@@ -65,14 +64,13 @@ public class Survey implements Savable, Readable, Syncable {
 
     @Override public SelectParamBuilder select() {
         SelectParamBuilder select = new SelectParamBuilder();
-        select.and(OhmageContract.Surveys.SURVEY_ID, schemaId);
-        select.and(OhmageContract.Surveys.SURVEY_VERSION, schemaVersion);
+        select.and(OhmageContract.Surveys.SURVEY_ID, schemaId.toString());
+        select.and(OhmageContract.Surveys.SURVEY_VERSION, schemaId.getVersion());
         return select;
     }
 
     public void read(Gson gson, Cursor cursor) {
-        schemaId = cursor.getString(0);
-        schemaVersion = cursor.getLong(1);
+        schemaId = new SchemaId(cursor.getString(0), cursor.getString(1));
         surveyItems = gson.fromJson(cursor.getString(2), new TypeToken<ArrayList<Prompt>>() {
         }.getType());
         name = cursor.getString(3);

@@ -153,7 +153,7 @@ public class HomeFragment extends GridFragment implements LoaderCallbacks<Cursor
         Cursor cursor = getListAdapter().getItem(position).getData();
         if (cursor != null) {
             startActivity(new Intent(Intent.ACTION_VIEW, OhmageContract.Surveys
-                    .getUriForSurveyIdVersion(cursor.getString(0), cursor.getInt(1))));
+                    .getUriForSurveyIdVersion(cursor.getString(0), cursor.getString(1))));
         }
     }
 

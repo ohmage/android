@@ -146,14 +146,19 @@ public class OhmageSyncAdapter extends AbstractThreadedSyncAdapter {
         String userId = am.getUserData(account, Authenticator.USER_ID);
 
         try {
-            synchronizeOhmlets(userId, provider);
-            // TODO: download streams and surveys that are not part of ohmlets
+            if (!Ohmage.USE_DSU_DATAPOINTS_API || userId != null) {
+                synchronizeOhmlets(userId, provider);
+                // TODO: download streams and surveys that are not part of ohmlets
 
-            // Don't continue if there were already errors
-            if (mSyncResult.stats.numIoExceptions > 0 || mSyncResult.stats.numAuthExceptions > 0) {
-                return;
+                // Don't continue if there were already errors
+                if (mSyncResult.stats.numIoExceptions > 0 ||
+                    mSyncResult.stats.numAuthExceptions > 0) {
+                    return;
+                }
+                synchronizeData(userId, provider);
+            } else {
+                downloadSurveys(provider);
             }
-            synchronizeData(userId, provider);
         } catch (AuthenticationException e) {
             Log.e(TAG, "Error authenticating user", e);
             syncResult.stats.numAuthExceptions++;
@@ -243,6 +248,36 @@ public class OhmageSyncAdapter extends AbstractThreadedSyncAdapter {
                 cursor.close();
             }
         }
+    }
+
+    private void downloadSurveys(ContentProviderClient provider)
+            throws AuthenticationException, RemoteException, InterruptedException {
+
+        final CountDownLatch download = new CountDownLatch(1);
+
+        Observable<List<Survey>> surveyList = ohmageService.getDefaultSurveys();
+
+        Observable<Survey> surveys = surveyList.flatMap(new Func1<List<Survey>, Observable<Survey>>() {
+            @Override public Observable<Survey> call(List<Survey> surveys) {
+                return Observable.from(surveys);
+            }
+        });
+
+        surveyList.subscribe(new SyncSubscriber<List<Survey>>(mSyncResult,
+                new ContentProviderStateSyncSubscriber(Surveys.CONTENT_URI, true)));
+
+        surveys.subscribe(
+                new SyncSubscriber<Survey>(mSyncResult, new ContentProviderSaverSubscriber(true)));
+
+        Observable.merge(surveyList, surveys).last()
+                .finallyDo(new Action0() {
+                    @Override public void call() {
+                        download.countDown();
+                    }
+                }).subscribe();
+
+        // Wait for any async download operations to finish
+        download.await();
     }
 
     private void synchronizeData(String userId, ContentProviderClient provider)
@@ -422,7 +457,7 @@ public class OhmageSyncAdapter extends AbstractThreadedSyncAdapter {
 
     public class RefreshSurvey implements Func1<Survey, Observable<Survey>> {
         @Override public Observable<Survey> call(Survey survey) {
-            return ohmageService.getSurvey(survey.schemaId, survey.schemaVersion);
+            return ohmageService.getSurvey(survey.schemaId.toString(), survey.schemaId.getVersion());
         }
     }
 
@@ -444,11 +479,11 @@ public class OhmageSyncAdapter extends AbstractThreadedSyncAdapter {
             Cursor c = null;
             try {
                 c = provider.query(
-                        Surveys.getUriForSurveyIdVersion(survey.schemaId, survey.schemaVersion),
+                        Surveys.getUriForSurveyIdVersion(survey.schemaId),
                         new String[]{Surveys.SURVEY_ID, Surveys.SURVEY_VERSION}, null, null, null);
                 if (c.moveToFirst()) {
                     return !c.getString(0).equals(survey.schemaId) ||
-                           c.getInt(1) != survey.schemaVersion;
+                           !c.getString(1).equals(survey.schemaId.getVersion());
                 }
             } catch (RemoteException e) {
                 e.printStackTrace();

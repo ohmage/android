@@ -44,6 +44,11 @@ public class Ohmage extends Application {
     public static final String API_ROOT = API_HOST + "/dsu";
 
     /**
+     * Configure to use the datapoints api rather than uploading points for ohmage 3.0
+     */
+    public static final boolean USE_DSU_DATAPOINTS_API = true;
+
+    /**
      * Static reference to self
      */
     private static Ohmage self;
