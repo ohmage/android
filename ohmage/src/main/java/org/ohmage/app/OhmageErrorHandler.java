@@ -16,7 +16,16 @@
 
 package org.ohmage.app;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
+import android.accounts.AuthenticatorException;
+import android.accounts.OperationCanceledException;
+import android.util.Log;
+
 import org.apache.http.auth.AuthenticationException;
+import org.ohmage.auth.AuthUtil;
+
+import java.io.IOException;
 
 import retrofit.ErrorHandler;
 import retrofit.RetrofitError;
@@ -32,8 +41,17 @@ public class OhmageErrorHandler implements ErrorHandler {
     @Override public Throwable handleError(RetrofitError cause) {
 
         Response r = cause.getResponse();
-
         if (r != null && r.getStatus() == 401) {
+            // invalidate the access token
+            AccountManager accountManager = AccountManager.get(Ohmage.app());
+            Account[] accounts = accountManager.getAccountsByType(AuthUtil.ACCOUNT_TYPE);
+            if (accounts.length != 0) {
+                String token =    accountManager.peekAuthToken(accounts[0], AuthUtil.AUTHTOKEN_TYPE);
+                if(token != null){
+                    accountManager.invalidateAuthToken(AuthUtil.ACCOUNT_TYPE, token);
+                    Log.e(TAG, "Invalidated "+ token);
+                }
+            }
             return new AuthenticationException("Error authenticating with ohmage", cause);
         }
 

@@ -18,9 +18,16 @@ package org.ohmage.prompts;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Bundle;
 import android.provider.MediaStore;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ImageView;
 
 import org.ohmage.app.R;
 
@@ -50,6 +57,15 @@ public class ImagePrompt extends MediaPrompt {
             return fragment;
         }
 
+        @Override
+        public void onCreatePromptView(LayoutInflater inflater, ViewGroup container,
+                Bundle savedInstanceState) {
+            ViewGroup view = (ViewGroup) inflater.inflate(R.layout.prompt_image, container, true);
+            Button launch = (Button) view.findViewById(R.id.launch);
+            launch.setText(getLaunchButtonText());
+            launch.setOnClickListener(this);
+        }
+
         @Override protected String getLaunchButtonText() {
             return getString(R.string.take_image);
         }
@@ -66,6 +82,11 @@ public class ImagePrompt extends MediaPrompt {
             if (resultCode == Activity.RESULT_OK) {
                 //TODO: resize image
                 setValue(mFile);
+                Bitmap bitmap = BitmapFactory.decodeFile(mFile.getAbsolutePath());
+                ImageView imgView = (ImageView) this.getView().findViewById(R.id.img);
+                imgView.getLayoutParams().height = 300;
+                imgView.requestLayout();
+                imgView.setImageBitmap(bitmap);
             }
         }
 

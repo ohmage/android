@@ -19,7 +19,7 @@ package org.ohmage.models;
 /**
  * Created by cketcham on 2/21/15.
  */
-public class DataPoint {
+public class OmhDataPointHeader {
     public SchemaId schemaId;
     public String creationDateTime;
     public String id;

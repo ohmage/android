@@ -38,6 +38,8 @@ import retrofit.Callback;
 import retrofit.client.Response;
 import retrofit.http.Body;
 import retrofit.http.DELETE;
+import retrofit.http.Field;
+import retrofit.http.FormUrlEncoded;
 import retrofit.http.GET;
 import retrofit.http.Headers;
 import retrofit.http.POST;
@@ -52,14 +54,6 @@ public interface OhmageService {
 
     @GET("/auth_token") AccessToken getAccessToken(@Query("refresh_token") String refreshToken)
             throws AuthenticationException;
-
-    @Headers(AuthUtil.OMH_AUTH_HEADER)
-    @GET("/google-signin") AccessToken getAccessTokenWithCode(@Query("code") String code,
-            @Query("client_id") String clientId) throws AuthenticationException;
-
-    @Headers(AuthUtil.OMH_AUTH_HEADER)
-    @GET("/google-signin") void getAccessTokenWithCode(@Query("code") String code,
-            @Query("client_id") String clientId, CancelableCallback<AccessToken> callback);
 
     @GET("/auth_token")
     AccessToken getAccessToken(@Query("email") String email, @Query("password") String password)
@@ -123,10 +117,6 @@ public interface OhmageService {
     Observable<Survey> getSurvey(@Path("surveyId") String surveyId,
             @Path("surveyVersion") String surveyVersion);
 
-    @POST("/dataPoints")
-    Observable<Response> uploadDataPoint(@Body DataPointTypedOutput data)
-            throws AuthenticationException;
-
     @POST("/surveys/{surveyId}/{surveyVersion}/data")
     Observable<Response> uploadResponse(@Path("surveyId") String surveyId,
             @Path("surveyVersion") long surveyVersion, @Body ResponseTypedOutput data)
@@ -144,6 +134,25 @@ public interface OhmageService {
             @Path("streamVersion") long streamVersion, @Body StreamWriterOutput data)
             throws AuthenticationException;
 
+    // *** START OMH-DSU *** //
+    @Headers(AuthUtil.OMH_AUTH_HEADER)
+    @GET("/google-signin") AccessToken getAccessTokenWithCode(@Query("code") String code,
+            @Query("client_id") String clientId) throws AuthenticationException;
+
+    @Headers(AuthUtil.OMH_AUTH_HEADER)
+    @GET("/google-signin") void getAccessTokenWithCode(@Query("code") String code,
+            @Query("client_id") String clientId, CancelableCallback<AccessToken> callback);
+
+    @Headers(AuthUtil.OMH_AUTH_HEADER)
+    @FormUrlEncoded
+    @POST("/oauth/token") AccessToken refreshAccessToken(@Field("refresh_token") String refreshToken, @Field("grant_type") String type)
+            throws AuthenticationException;
+
+    @POST("/dataPoints")
+    Observable<Response> uploadDataPoint(@Body DataPointTypedOutput data)
+            throws AuthenticationException;
+
+    // *** END OMH-DSU *** //
     public abstract static class CancelableCallback<T> implements Callback<T> {
 
         private boolean mCancelled;
