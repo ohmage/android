@@ -23,8 +23,10 @@ import android.accounts.AccountManager;
 import android.accounts.NetworkErrorException;
 import android.content.Context;
 import android.content.Intent;
+import android.nfc.Tag;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.google.android.gms.auth.GoogleAuthException;
 import com.google.android.gms.auth.UserRecoverableAuthException;
@@ -108,6 +110,7 @@ public class Authenticator extends AbstractAccountAuthenticator {
             String authTokenType, Bundle loginOptions)
             throws NetworkErrorException {
 
+
         // Extract the email and refresh_token from the Account Manager, and ask
         // the server for a new refresh_token.
         String authToken = am.peekAuthToken(account, authTokenType);
@@ -115,7 +118,7 @@ public class Authenticator extends AbstractAccountAuthenticator {
         // Lets give another try to authenticate the user
         AccessToken token = null;
         UserRecoverableAuthException userRecoverableAuthException = null;
-
+        Log.e(Authenticator.class.getSimpleName(), "Get Auth token " + authToken + " Refresh " + am.getPassword(account));
         if (TextUtils.isEmpty(authToken)) {
             final String refreshToken = am.getPassword(account);
 
@@ -132,7 +135,12 @@ public class Authenticator extends AbstractAccountAuthenticator {
                             am.setUserData(account, Authenticator.USER_ID, token.getUserId());
                         }
                     } else {
-                        token = ohmageService.getAccessToken(refreshToken);
+                        // refresh token
+                        if(Ohmage.USE_DSU_DATAPOINTS_API) {
+                            token = ohmageService.refreshAccessToken(refreshToken, "refresh_token");
+                        }else {
+                            token = ohmageService.getAccessToken(refreshToken);
+                        }
                     }
                 } catch (AuthenticationException e) {
                     // This will happen if the refresh token was already used, or it was
@@ -159,6 +167,8 @@ public class Authenticator extends AbstractAccountAuthenticator {
                     } else {
                         throw new NetworkErrorException();
                     }
+                } catch(Exception e){
+                    Log.e(Authenticator.class.getSimpleName(), "", e);
                 }
             }
         }

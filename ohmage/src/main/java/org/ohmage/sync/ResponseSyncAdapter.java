@@ -34,26 +34,24 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.provider.BaseColumns;
+import android.util.Log;
 
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import org.apache.http.auth.AuthenticationException;
 import org.ohmage.app.Ohmage;
 import org.ohmage.app.OhmageService;
 import org.ohmage.auth.AuthUtil;
-import org.ohmage.models.DataPoint;
+import org.ohmage.models.OmhDataPointHeader;
 import org.ohmage.models.SchemaId;
-import org.ohmage.models.Survey;
 import org.ohmage.provider.ResponseContract;
 import org.ohmage.provider.ResponseContract.Responses;
 import org.ohmage.sync.ResponseTypedOutput.ResponseFiles;
 
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -140,7 +138,7 @@ public class ResponseSyncAdapter extends AbstractThreadedSyncAdapter {
                     Observable<Response> uploadResponse = null;
 
                     if(Ohmage.USE_DSU_DATAPOINTS_API) {
-                        uploadResponse = uploadDatapoint(cursor);
+                        uploadResponse = uploadDatapoint(cursor, files);
                     } else {
                         uploadOhmagePoint(cursor, files);
                     }
@@ -172,6 +170,7 @@ public class ResponseSyncAdapter extends AbstractThreadedSyncAdapter {
                         filesToDelete = Observable.mergeDelayError(responseFiles, filesToDelete);
                     }
                 } catch (AuthenticationException e) {
+                    Log.e(TAG, "Auth", e);
                     syncResult.stats.numAuthExceptions++;
                 }
             }
@@ -180,6 +179,7 @@ public class ResponseSyncAdapter extends AbstractThreadedSyncAdapter {
 
 
         } catch (RemoteException e) {
+            Log.e(TAG, "Remote", e);
             syncResult.stats.numIoExceptions++;
         } finally {
             if (cursor != null)
@@ -254,16 +254,16 @@ public class ResponseSyncAdapter extends AbstractThreadedSyncAdapter {
 
     }
 
-    private Observable<Response> uploadDatapoint(Cursor cursor) throws AuthenticationException {
-        DataPoint data = new DataPoint();
-        data.schemaId = new SchemaId(cursor.getString(1), cursor.getString(2));
+    private Observable<Response> uploadDatapoint(Cursor cursor, ResponseFiles files) throws AuthenticationException {
+        OmhDataPointHeader header = new OmhDataPointHeader();
+        header.schemaId = new SchemaId(cursor.getString(1), cursor.getString(2));
 
-        Type type = new TypeToken<Map<String, String>>(){}.getType();
-        Map<String, String> metadata = gson.fromJson(cursor.getString(4), type);
-        data.creationDateTime = metadata.get("timestamp");
-        data.id = metadata.get("id");
 
-        DataPointTypedOutput point = new DataPointTypedOutput(gson.toJson(data), cursor.getString(3));
+        JsonObject metadata =  new JsonParser().parse(cursor.getString(4)).getAsJsonObject();
+        header.creationDateTime = metadata.get("timestamp").getAsString();
+        header.id = metadata.get("id").getAsString();
+        Log.e(TAG, cursor.getString(3) + gson.toJson(header) + files.getIds().toString());
+        DataPointTypedOutput point = new DataPointTypedOutput(cursor.getString(3), gson.toJson(header), files);
 
         // Make the call to upload responses
         return ohmageService.uploadDataPoint(point).cache();
